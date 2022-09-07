@@ -4,6 +4,7 @@
 본 프로젝트는 클래스101 사이트에서 인강을 듣고 만든 프로젝트입니다.
 
 AI 자동 투자 봇 만들기, 노트북으로 월급을 두 배 불리는 법
+
 링크 - [https://class101.net/plus/ko/products/5e2556a44ba7b950bbd46bb5](https://class101.net/plus/ko/products/5e2556a44ba7b950bbd46bb5)
 
 
