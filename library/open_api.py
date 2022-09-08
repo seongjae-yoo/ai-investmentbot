@@ -61,7 +61,7 @@ def timedout_exit(widget):
     sys.exit(-1)
 
 
-class open_api(QAxWidget):
+class open_api(QAxWidget): # 키움증권의 OpenAPI+가 제공하는 메서드를 호출하려면 QAxWidget 클래스의 인스턴스가 필요함
     def __init__(self):
         super().__init__()
 
@@ -332,7 +332,7 @@ class open_api(QAxWidget):
         if ret == 0:
             self.tr_event_loop = QEventLoop()
             self.tr_loop_count += 1
-            # 영상 촬영 후 추가 된 코드입니다 (서버 응답이 늦을 시 예외 발생)
+            # 서버 응답이 늦을 시 예외 발생
             self.timer = QTimer()
             self.timer.timeout.connect(partial(timedout_exit, self))
             self.timer.setSingleShot(True)
@@ -1127,6 +1127,23 @@ class open_api(QAxWidget):
             self.buy_check_stop()
 
     # openapi 조회 카운트를 체크 하고 cf.max_api_call 횟수 만큼 카운트 되면 봇이 꺼지게 하는 함수
+    '''
+1. timedelta 기본 예제 참고 
+import datetime
+d1 = datetime.timedelta(seconds = 1)
+d2 = datetime.date(seconds = 2)
+d3 = d1 - d2
+
+print(d1)
+print(d2)
+print(d3)
+print(abs(d3))
+
+- Result
+0:00:01
+0:00:02
+-1 day, 23:59:59
+0:00:01'''
     def exit_check(self):
         rq_delay = datetime.timedelta(seconds=0.6)
         time_diff = datetime.datetime.now() - self.call_time
