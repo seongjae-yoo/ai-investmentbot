@@ -591,6 +591,15 @@ class simulator_func_mysql:
             # 아래 명령을 통해 테이블로 부터 데이터를 가져오면 리스트 형태로 realtime_daily_buy_list 에 담긴다.
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.invest_unit)).fetchall()
 
+        
+        # 5 / 60 골든크로스 buy
+        elif self.db_to_realtime_daily_buy_list_num == 4:
+            # orderby는 거래량 많은 순서  
+            sql = "select * from `" + date_rows_yesterday + "` a where yes_clo60 > yes_clo5 and clo5 > clo60 " \
+                                                            "and NOT exists (select null from stock_konex b where a.code=b.code) " \
+                                                            "and close < '%s' group by code"
+            realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.invest_unit)).fetchall()
+
         ######################################################################################################################################################################################
         else:
             print(f"{self.simul_num}번 알고리즘에 대한 self.db_to_realtime_daily_buy_list_num 설정이 비었습니다. variable_setting 함수에서 self.db_to_realtime_daily_buy_list_num 을 확인해주세요.")
@@ -1092,6 +1101,12 @@ class simulator_func_mysql:
 
             sell_list = self.engine_simulator.execute(sql % (0, self.losscut_point)).fetchall()
 
+       #  5/ 60  중기 이평선 데드크로스 이거나, 손절 기준 수익률 이하 떨어지면 손절하는 알고리즘
+        elif self.sell_list_num == 4:
+            sql = "SELECT code,rate,present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
+                   "and ((clo5 < clo60) or rate <= '%s') group by code"
+        
+            sell_list = self.engine_simulator.execute(sql % (0, self.losscut_point)).fetchall()
         ##################################################################################################################################################################################################################
         else:
             print(f"{self.simul_num}번 알고리즘에 대한 self.sell_list_num 설정이 비었습니다. variable_setting 함수에서 self.sell_list_num을 확인해주세요.")
