@@ -438,7 +438,7 @@ class collector_api():
         df_temp['yes_clo10'] = df_temp['clo10'].shift(1)
         df_temp['yes_clo20'] = df_temp['clo20'].shift(1)
         df_temp['yes_clo40'] = df_temp['clo40'].shift(1)
-        df_temp['yes_clo60'] = df_temp['clo60'].shift(1)
+        df_temp['yes_clo60'] = df_temp['clo60'].shift(1) # shift : 행을 1만큼 아래로 내린다. 이전날에 60일 이동평균선이라고 볼수 있다.
         df_temp['yes_clo80'] = df_temp['clo80'].shift(1)
         df_temp['yes_clo100'] = df_temp['clo100'].shift(1)
         df_temp['yes_clo120'] = df_temp['clo120'].shift(1)
