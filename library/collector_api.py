@@ -405,6 +405,9 @@ class collector_api():
         df_temp['d1_diff_rate'] = d1_diff_rate.replace(numpy.inf, numpy.nan)
 
         # 하나씩 추가할때는 append 아니면 replace
+        # rolling : 기간이동계산
+        # rolling 메서드는 현재 열에 대하여 일정 크기의 창(window)를 이용하여 그 window안의 값을 추가 메서드를 통해 계산하는 메서드 입니다.
+        # window : 계산할 창(window)의 크기 입니다. 열 기준으로 계산할 경우 행의 수입니다.
         clo5 = df_temp['close'].rolling(window=5).mean()
         clo10 = df_temp['close'].rolling(window=10).mean()
         clo20 = df_temp['close'].rolling(window=20).mean()
