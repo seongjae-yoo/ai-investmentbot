@@ -260,7 +260,7 @@ class simulator_func_mysql:
         # 시뮬레이터를 초기화 하고 처음부터 구축하기 위한 로직
         if self.simul_reset:
             print("table reset setting !!! ")
-            self.init_database()
+            self.init_database() #데이터베이스 초기화 함수 실행 
         # 시뮬레이터를 초기화 하지 않고 마지막으로 끝난 시점 부터 구동하기 위한 로직
         else:
             # self.simul_reset 이 False이고, 시뮬레이터 데이터베이스와, all_item_db 테이블, jango_table이 존재하는 경우 이어서 시뮬레이터 시작
