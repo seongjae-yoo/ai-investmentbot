@@ -7,6 +7,7 @@ if is_64bits:
 else:
     print('32bit 환경입니다.')
 
+# SQLAlchemy is the Python SQL toolkit and Object Relational Mapper
 from sqlalchemy import event
 
 import pymysql.cursors
@@ -56,7 +57,7 @@ class simulator_func_mysql:
 
     # 마지막으로 구동했던 시뮬레이터의 날짜를 가져온다.
     def get_jango_data_last_date(self):
-        sql = "SELECT date from jango_data order by date desc limit 1"
+        sql = "SELECT date from jango_data order by date desc limit 1" # limit : 출력 행 갯수 제한하는 구문 , limit 1 은 한행만 출력해준다.(desc가 내림차순 순서이므로 가장 최근의 날짜가 출력된다)
         return self.engine_simulator.execute(sql).fetchall()[0][0]
 
     # 모든 테이블을 삭제 하는 함수
@@ -340,7 +341,7 @@ class simulator_func_mysql:
             "mysql+mysqldb://" + cf.db_id + ":" + cf.db_passwd + "@" + cf.db_ip + ":" + cf.db_port + "/daily_buy_list",
             encoding='utf-8')
 
-        event.listen(self.engine_simulator, 'before_execute', escape_percentage, retval=True)
+        event.listen(self.engine_simulator, 'before_execute', escape_percentage, retval=True) # SQLAlchemy 라이브러리에서 가져온 event 함수
         event.listen(self.engine_daily_craw, 'before_execute', escape_percentage, retval=True)
         event.listen(self.engine_craw, 'before_execute', escape_percentage, retval=True)
         event.listen(self.engine_daily_buy_list, 'before_execute', escape_percentage, retval=True)
