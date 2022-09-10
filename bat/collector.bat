@@ -1,7 +1,7 @@
 @Echo off
 @Echo collector Start
 set x=0
-call "c:/Users/MyCom/AI-InvestmentBot/AI_investmentBOT_env32bit/Scripts/Activate.ps1" 
+call "C:/ProgramData/Miniconda3/Scripts/Activate.bat" 
 @taskkill /f /im python.exe 2> NUL
 
 :repeat
