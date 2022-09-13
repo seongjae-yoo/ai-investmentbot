@@ -30,7 +30,7 @@ if __name__ == "__main__":
     # 아래 클래스를 호출하자마다 __init__ 함수가 실행이 된다.
     c = Collector()
     # db_name 이라는 변수에 우리가 조회 하고자 하는 데이터베이스의 이름을 넣는다.
-    db_name = 'AI-InvestmentBot'
+    db_name = 'AiInvestmentBot'
     # mysql db 계정
     db_id = 'SeongJae-Yoo'
     # mysql db ip (자신의 PC에 DB를 구축 했을 경우 별도 수정 필요 없음)
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     c.db_setting(db_name, db_id, db_passwd, db_ip, db_port)
 
     # 데이터베이스에 실행 할 쿼리
-    sql = "select * from AI-InvestmentBot;"
+    sql = "select * from AiInvestmentBot;"
 
     # 위의 sql 문을 데이터베이스에 실행한 결과를 rows라는 변수에 담는다.
     rows = c.engine_bot.execute(sql).fetchall()
