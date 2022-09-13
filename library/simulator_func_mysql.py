@@ -116,7 +116,7 @@ class simulator_func_mysql:
 
         if self.simul_num == 1:
             # 시뮬레이팅 시작 일자(분 별 시뮬레이션의 경우 최근 1년 치 데이터만 있기 때문에 start_date 조정 필요)
-            self.simul_start_date = "20190101"
+            self.simul_start_date = "20210917"
 
             ######### 알고리즘 선택 #############
             # 매수 리스트 설정 알고리즘 번호
@@ -129,13 +129,13 @@ class simulator_func_mysql:
             # 초기 투자자금(시뮬레이션에서의 초기 투자 금액. 모의투자는 신청 당시의 금액이 초기 투자 금액이라고 보시면 됩니다)
             # 주의! start_invest_price 는 모의투자 초기 자본금과 별개. 시뮬레이션에서만 적용.
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
-            self.start_invest_price = 10000000
+            self.start_invest_price = 30000000
 
             # 매수 금액
             self.invest_unit = 1000000
 
             # 자산 중 최소로 남겨 둘 금액
-            self.limit_money = 3000000
+            self.limit_money = 1000000
 
             # 익절 수익률 기준치
             self.sell_point = 10
