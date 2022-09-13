@@ -167,6 +167,7 @@ class open_api(QAxWidget): # 키움증권의 OpenAPI+가 제공하는 메서드�
         logger.debug("variable_setting 함수에 들어왔다.")
         self.get_today_buy_list_code = 0
         self.cf = cf
+        logger.debug("db_id이름" + self.cf.db_id)
         self.reset_opw00018_output()
         # 아래 분기문은 실전 투자 인지, 모의 투자 인지 결정
         if self.account_number == cf.real_account:  # 실전
@@ -954,7 +955,7 @@ class open_api(QAxWidget): # 키움증권의 OpenAPI+가 제공하는 메서드�
         logger.debug("end_invest_count_check 함수로 들어왔습니다!")
         logger.debug("end_invest_count_check_code!!!!!!!!")
         logger.debug(code)
-
+  
         sql = "UPDATE all_item_db SET chegyul_check='%s' WHERE code='%s' and sell_date = '%s' ORDER BY buy_date desc LIMIT 1"
 
         self.engine_JB.execute(sql % (0, code, 0))
