@@ -895,7 +895,7 @@ class simulator_func_mysql:
     # 시뮬레이팅 할 날짜를 가져 오는 함수
     # 장이 열렸던 날 들을 self.date_rows 에 담기 위해서 gs글로벌의 date값을 대표적으로 가져온 것
     def get_date_for_simul(self):
-        sql = "select date from `gs` where date >= '%s' and date <= '%s' group by date"
+        sql = "select date from `gs글로벌` where date >= '%s' and date <= '%s' group by date"
         self.date_rows = self.engine_daily_craw.execute(sql % (self.simul_start_date, self.simul_end_date)).fetchall()
 
     # daily_buy_list에 일자 테이블이 존재하는지 확인하는 함수
