@@ -39,6 +39,7 @@ class simulator_func_mysql:
             self.rotate_date()
 
         # option이 real일 경우 실행(시뮬레이터와 무관)
+        # 모의투자 할때 사용됨
         elif op == 'real':
             self.op = 'real'
             self.simul_reset = False
@@ -393,7 +394,7 @@ class simulator_func_mysql:
                 # 종목명을 가져온다.
                 code_name = self.df_realtime_daily_buy_list.loc[j, 'code_name']
 
-                # (촬영 후 추가 코드) 매수 들어가기전에 db에 테이블이 존재하는지 확인
+                # 매수 들어가기전에 db에 테이블이 존재하는지 확인
                 # 분별 시뮬레이팅 인 경우
                 if self.use_min:
                     # print("code_name!!", code_name)
@@ -406,7 +407,7 @@ class simulator_func_mysql:
                     if not self.is_daily_craw_table_exist(code_name):
                         continue
 
-                # 아래 if else 구문은 영상 촬영 후 수정 하였습니다. open_price 를 가져오는 것을 분별/일별 시뮬레이션 구분하여 설정하였습니다.
+                # 아래 if else 구문은 수정 하였습니다. open_price 를 가져오는 것을 분별/일별 시뮬레이션 구분하여 설정하였습니다.
                 # 분별 시뮬레이션이 아닌 일별 시뮬레이션의 경우
                 if not self.use_min:
                     # 매수 당일 시작가를 가져온다.
@@ -423,7 +424,7 @@ class simulator_func_mysql:
                 if code_name == False or price == 0 or price == False:
                     continue
 
-                # 촬영 후 아래 if 문 추가 (향후 실시간 조건 매수 시 사용) ###################
+                # 아래 if 문 추가 (향후 실시간 조건 매수 시 사용) ###################
                 if self.use_min and not self.only_nine_buy and self.trade_check_num :
                     # 시작가
                     open = self.get_now_open_price_by_date(code, date_rows_today)
@@ -474,7 +475,7 @@ class simulator_func_mysql:
     def get_realtime_daily_buy_list(self):
         print("get_realtime_daily_buy_list 함수에 들어왔습니다!")
 
-        # 이 부분은 촬영 후 코드를 간소화 했습니다. 조건문 모두 없앴습니다.
+        # 코드를 간소화 했습니다. 조건문 모두 없앴습니다.
         # check_item = 매수 했을 시 날짜가 찍혀 있다. 매수 하지 않았을 때는 0
         sql = "select * from realtime_daily_buy_list where check_item = '%s' group by code"
 
@@ -650,7 +651,7 @@ class simulator_func_mysql:
                     # delete는 리턴 값이 없기 때문에 fetchall 쓰지 않는다.
                     self.engine_simulator.execute(sql % (0, date_rows_today, date_rows_today))
 
-                # 영상 촬영 후 추가 된 코드입니다. AI챕터에서 다룰 예정입니다.
+                # 추가 된 코드입니다. AI 부분.
                 if self.use_ai:
                     from ai_filter import ai_filter
                     ai_filter(self.ai_filter_num, engine=self.engine_simulator, until=date_rows_yesterday)
@@ -673,7 +674,7 @@ class simulator_func_mysql:
         # len_df_realtime_daily_buy_list에 다가 0을 넣는다.
         else:
             self.len_df_realtime_daily_buy_list = 0
-            #강의 촬영 후 추가 코드 (매수 조건에 맞는 종목이 하나도 없을 경우 realtime_daily_buy_list 를 비워준다)
+            #추가 코드 (매수 조건에 맞는 종목이 하나도 없을 경우 realtime_daily_buy_list 를 비워준다)
             if self.engine_simulator.dialect.has_table(self.engine_simulator, "realtime_daily_buy_list"):
                 self.engine_simulator.execute("""
                     DELETE FROM realtime_daily_buy_list 
@@ -682,7 +683,7 @@ class simulator_func_mysql:
     # 현재의 주가를 all_item_db에 있는 보유한 종목들에 대해서 반영 한다.
     def db_to_all_item_present_price_update(self, code_name, d1_diff_rate, close, open, high, low, volume, clo5, clo10, clo20,
                                                          clo40, clo60, clo80, clo100, clo120, option='ALL'):
-        # 영상 촬영 후 아래 내용 업데이트 하였습니다.
+        
         if self.op == 'real': # 콜렉터에서 업데이트 할 때는 현재가를 종가로 업데이트(trader에서 실시간으로 present_price 업데이트함)
             present_price = close
         else:
@@ -1405,7 +1406,7 @@ class simulator_func_mysql:
 
     # 분 데이터를 가져오는 함수
     def get_date_min_for_simul(self, simul_start_date):
-        # 촬영 후 업데이트 되었습니다
+        
         dt_format = '%Y%m%d%H%M'
         simul_time = datetime.datetime.strptime(simul_start_date + "0900", dt_format)
         min_delta = datetime.timedelta(minutes=1)
