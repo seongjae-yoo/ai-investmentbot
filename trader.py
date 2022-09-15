@@ -23,21 +23,22 @@ class Trader(QMainWindow):
         self.open_api.py_gubun = "trader"
         ################ 모의, 실전 ####################
         # 장시작 시간 설정
-        #self.market_start_time = QTime(9, 0, 0)
+        self.market_start_time = QTime(9, 0, 0)
         # 장마감 시간 설정
-        #self.market_end_time = QTime(15, 30, 0)
+        self.market_end_time = QTime(15, 30, 0)
         # 매수를 몇 시 까지 할지 설정. (시, 분, 초)
-        #self.buy_end_time = QTime(9, 6, 0)
+      #  self.buy_end_time = QTime(9, 6, 0)
+        self.buy_end_time = QTime(12, 28, 0)
 
         ############################################
 
         ################ 테스트용 ###################
         # 장시작 시간 설정
-        self.market_start_time = QTime(0, 0, 0)
+       #self.market_start_time = QTime(0, 0, 0)
         # # 장마감 시간 설정
-        self.market_end_time = QTime(23, 59, 0)
+       #self.market_end_time = QTime(23, 59, 0)
         # # 매수를 몇 시 까지 할지 설정. (시, 분, 초)
-        self.buy_end_time = QTime(23, 59, 0)
+      # self.buy_end_time = QTime(23, 59, 0)
 
         # ############################################
 
