@@ -94,6 +94,7 @@ class simulator_func_mysql:
         # 아래 3개는 분별시뮬레이션 옵션
         # (use_min, only_nine_buy 변수만 각각의 알고리즘에 붙여 넣기 해서 사용)
         # 분별 시뮬레이션을 사용하고 싶을 경우 아래 옵션을 True로 변경하여 사용
+        # 일별 시뮬레이션을 사용하고 싶을 경우 False 
         self.use_min = False
         # 아침 9시에만 매수를 하고 싶은 경우 True, 9시가 아니어도 매수를 하고 싶은 경우 False(분별 시뮬레이션 적용 가능 / 일별 시뮬레이션은 9시에만 매수, 매도)
         self.only_nine_buy = True
@@ -115,7 +116,7 @@ class simulator_func_mysql:
         ###!@####################################################################################################################
         # 아래 부터는 알고리즘 별로 별도의 설정을 해주는 부분
 
-        if self.simul_num == 1:
+        if self.simul_num in (1,4):
             # 시뮬레이팅 시작 일자(분 별 시뮬레이션의 경우 최근 1년 치 데이터만 있기 때문에 start_date 조정 필요)
             self.simul_start_date = "20210917"
 
@@ -148,6 +149,11 @@ class simulator_func_mysql:
             self.invest_limit_rate = 1.01
             # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
             self.invest_min_limit_rate = 0.98
+            # 분별 시뮬레이션을 사용하고 싶을 경우 (simul_num을 4로 입력)
+            if self.simul_num ==4:
+                self.simul_start_date = '20220913'
+                self.use_min = True
+                self.only_nine_buy = False
 
         elif self.simul_num == 2:
             # 시뮬레이팅 시작 일자
