@@ -151,7 +151,7 @@ class simulator_func_mysql:
             self.invest_min_limit_rate = 0.98
             # 분별 시뮬레이션을 사용하고 싶을 경우 (simul_num을 4로 입력)
             if self.simul_num ==4:
-                self.simul_start_date = '20220913'
+                self.simul_start_date = '20210920'
                 self.use_min = True
                 self.only_nine_buy = False
 
