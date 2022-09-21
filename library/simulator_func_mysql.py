@@ -125,7 +125,7 @@ class simulator_func_mysql:
             self.db_to_realtime_daily_buy_list_num = 1
 
             # 매도 리스트 설정 알고리즘 번호
-            self.sell_list_num = 1
+            self.sell_list_num = 2
             ###################################
 
             # 초기 투자자금(시뮬레이션에서의 초기 투자 금액. 모의투자는 신청 당시의 금액이 초기 투자 금액이라고 보시면 됩니다)
@@ -134,21 +134,20 @@ class simulator_func_mysql:
             self.start_invest_price = 10000000
 
             # 매수 금액
-            self.invest_unit = 100000
+            self.invest_unit = 10000000
 
             # 자산 중 최소로 남겨 둘 금액
-            self.limit_money = 1000
+            self.limit_money = 0
 
             # 익절 수익률 기준치
-            self.sell_point = 10
+            self.sell_point = 2
 
             # 손절 수익률 기준치
-            self.losscut_point = -2
+            self.losscut_point = -1
 
-            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_limit_rate = 1.01
-            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_min_limit_rate = 0.98
+            self.invest_limit_rate = 100
+            self.invest_min_limit_rate = 0            
+            
             # 분별 시뮬레이션을 사용하고 싶을 경우 (simul_num을 4로 입력)
             if self.simul_num ==4:
                 self.simul_start_date = '20220901'
@@ -170,25 +169,25 @@ class simulator_func_mysql:
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
             self.start_invest_price = 10000000
             # 매수 금액
-            self.invest_unit = 10000
+            self.invest_unit = 10000000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
             # # 익절 수익률 기준치
-            self.sell_point = 10
+            self.sell_point = 5
             # 손절 수익률 기준치
-            self.losscut_point = -2
-            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_limit_rate = 1.01
-            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_min_limit_rate = 0.98
+            self.losscut_point = -5
+            
+            self.invest_limit_rate = 1.02
+           
+            self.invest_min_limit_rate = 0.97
 
 
         elif self.simul_num == 3:
 
             # 시뮬레이팅 시작 일자
 
-            self.simul_start_date = "20220801"
+            self.simul_start_date = "20220701"
 
             ######### 알고리즘 선택 #############
 
@@ -208,21 +207,21 @@ class simulator_func_mysql:
             self.start_invest_price = 10000000
 
             # 매수 금액
-            self.invest_unit = 10000
+            self.invest_unit = 10000000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
 
             # 익절 수익률 기준치
-            self.sell_point = 5
+            self.sell_point = 10
 
             # 손절 수익률 기준치
-            self.losscut_point = -2
+            self.losscut_point = -5
 
-            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_limit_rate = 1.01
-            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_min_limit_rate = 0.98
+            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 2% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
+            self.invest_limit_rate = 1.02
+            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -3% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
+            self.invest_min_limit_rate = 0.97
         else:
             logger.error(f"입력 하신 {self.simul_num}번 알고리즘에 대한 설정이 없습니다. simulator_func_mysql.py 파일의 variable_setting함수에 알고리즘을 설정해주세요. ")
             sys.exit(1)
