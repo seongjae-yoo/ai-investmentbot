@@ -97,7 +97,7 @@ class simulator_func_mysql:
         # 일별 시뮬레이션을 사용하고 싶을 경우 False 
         self.use_min = False
         # 아침 9시에만 매수를 하고 싶은 경우 True, 9시가 아니어도 매수를 하고 싶은 경우 False(분별 시뮬레이션 적용 가능 / 일별 시뮬레이션은 9시에만 매수, 매도)
-        self.only_nine_buy = True
+        self.only_nine_buy = False
         # self.buy_stop옵션은 수정 필요가 없음. self.only_nine_buy 옵션을 True로 하게 되면 시뮬레이터가 9시에 매수 후에 self.buy_stop을 true로 변경해서 당일에는 더이상 매수하지 않도록 설정함
         self.buy_stop = False
 
@@ -118,7 +118,7 @@ class simulator_func_mysql:
 
         if self.simul_num in (1,4):
             # 시뮬레이팅 시작 일자(분 별 시뮬레이션의 경우 최근 1년 치 데이터만 있기 때문에 start_date 조정 필요)
-            self.simul_start_date = "20210917"
+            self.simul_start_date = "20190102"
 
             ######### 알고리즘 선택 #############
             # 매수 리스트 설정 알고리즘 번호
@@ -131,13 +131,13 @@ class simulator_func_mysql:
             # 초기 투자자금(시뮬레이션에서의 초기 투자 금액. 모의투자는 신청 당시의 금액이 초기 투자 금액이라고 보시면 됩니다)
             # 주의! start_invest_price 는 모의투자 초기 자본금과 별개. 시뮬레이션에서만 적용.
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
-            self.start_invest_price = 30000000
+            self.start_invest_price = 10000000
 
             # 매수 금액
-            self.invest_unit = 1000000
+            self.invest_unit = 100000
 
             # 자산 중 최소로 남겨 둘 금액
-            self.limit_money = 1000000
+            self.limit_money = 1000
 
             # 익절 수익률 기준치
             self.sell_point = 10
@@ -151,18 +151,18 @@ class simulator_func_mysql:
             self.invest_min_limit_rate = 0.98
             # 분별 시뮬레이션을 사용하고 싶을 경우 (simul_num을 4로 입력)
             if self.simul_num ==4:
-                self.simul_start_date = '20210920'
+                self.simul_start_date = '20220901'
                 self.use_min = True
                 self.only_nine_buy = False
 
         elif self.simul_num == 2:
             # 시뮬레이팅 시작 일자
-            self.simul_start_date = "20190101"
+            self.simul_start_date = "20220801"
 
             ######### 알고리즘 선택 #############
-            # 매수 리스트 설정 알고리즘 번호
+            # 매수 리스트 설정 알고리즘 번호 # 5 / 20 이동 평균선 골든크로스 buy
             self.db_to_realtime_daily_buy_list_num = 1
-            # 매도 리스트 설정 알고리즘 번호
+            # 매도 리스트 설정 알고리즘 번호 # 5 / 20 이동 평균선 
             self.sell_list_num = 2
             ###################################
             # 초기 투자자금
@@ -170,12 +170,12 @@ class simulator_func_mysql:
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
             self.start_invest_price = 10000000
             # 매수 금액
-            self.invest_unit = 1000000
+            self.invest_unit = 10000
 
             # 자산 중 최소로 남겨 둘 금액
-            self.limit_money = 1000000
+            self.limit_money = 0
             # # 익절 수익률 기준치
-            self.sell_point = False
+            self.sell_point = 10
             # 손절 수익률 기준치
             self.losscut_point = -2
             # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
@@ -188,17 +188,17 @@ class simulator_func_mysql:
 
             # 시뮬레이팅 시작 일자
 
-            self.simul_start_date = "20190101"
+            self.simul_start_date = "20220801"
 
             ######### 알고리즘 선택 #############
 
             # 매수 리스트 설정 알고리즘 번호
-
-            self.db_to_realtime_daily_buy_list_num = 3
+            # 5 / 40 골든크로스 buy
+            self.db_to_realtime_daily_buy_list_num = 2
 
             # 매도 리스트 설정 알고리즘 번호
-
-            self.sell_list_num = 2
+            # 5 / 40 이동 평균선 데드크로스 
+            self.sell_list_num = 3
 
             ###################################
 
@@ -208,13 +208,13 @@ class simulator_func_mysql:
             self.start_invest_price = 10000000
 
             # 매수 금액
-            self.invest_unit = 3000000
+            self.invest_unit = 10000
 
             # 자산 중 최소로 남겨 둘 금액
-            self.limit_money = 1000000
+            self.limit_money = 0
 
             # 익절 수익률 기준치
-            self.sell_point = 10
+            self.sell_point = 5
 
             # 손절 수익률 기준치
             self.losscut_point = -2
