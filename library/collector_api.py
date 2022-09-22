@@ -13,7 +13,7 @@ import time
 from PyQt5.QtWidgets import *
 from library.daily_buy_list import *
 from pandas import DataFrame
-# from kind_crawling import *
+from kind_crawling import *
 
 MARKET_KOSPI = 0
 MARKET_KOSDAQ = 10
@@ -25,7 +25,7 @@ class collector_api():
         self.open_api = open_api()
         self.engine_JB = self.open_api.engine_JB
         self.variable_setting()
-        # self.kind = KINDCrawler()
+        self.kind = KINDCrawler() # kind_crawling.py 파일에서 KINDCrawler 클래스 호출 하는 객체생성
 
     def variable_setting(self):
         self.open_api.py_gubun = "collector"
@@ -82,7 +82,7 @@ class collector_api():
         if rows[0][8] != self.open_api.today:
             self.min_crawler_check()
 
-        # self.kind.craw()
+        self.kind.craw() # kind_crawling.py 파일의 class KINDCrawler: 클래스에서 크롤링 시작하는 craw 함수 호출
 
         logger.debug("collecting 작업을 모두 정상적으로 마쳤습니다.")
 
