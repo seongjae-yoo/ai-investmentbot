@@ -15,7 +15,7 @@ db_port='3306'
 imi1_accout="8031370111" # [모의투자 계좌번호를 넣어주세요. 주의! 10자리 계좌번호입니다. 모의투자는 8자리 계좌번호 뒤에 11, 실전은 10이 붙어 있음]
 
 # imi1_simul_num은 알고리즘의 번호이다. 새로운 알고리즘으로 새롭게 database를 구축해서 운영하고 싶을 경우 번호를 2, 3, 4 ... 순차적으로 올려 주면 된다.
-imi1_simul_num=2
+imi1_simul_num=1
 imi1_db_name = "AiInvestmentBot"+str(imi1_simul_num)+"_imi0921"
 
 
