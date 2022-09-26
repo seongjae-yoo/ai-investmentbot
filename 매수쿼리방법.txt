@@ -19,30 +19,30 @@ select * from stock_insincerity where code_name !='';
 # 3 대신 다른 숫자 가능 , MONTH 대신 YEAR(년), DAY(일) 가능
 # Date() -> 스트링을 date type으로 변환
 select * from stock_invest_caution
-where DATE_SUB(20200203, INTERVAL 3 MONTH ) < post_date and post_date < Date(20200203) and type != '투자경고 지정해제' group by code;
+where DATE_SUB(20220927, INTERVAL 3 MONTH ) < post_date and post_date < Date(20220927) and type != '투자경고 지정해제' group by code;
 
 # 투자 경고 종목
 # cleared_date is null : 날짜를 오늘로 지정 했을 때 아직 해지일(cleard_date)가 없는 경우가 있기 때문에 설정
-# test를 방법 : ctrl+shift+r-> scope -> current file -> 20200203을 오늘날짜로 모두 변경 후 테스트
+# test를 방법 : ctrl+shift+r-> scope -> current file -> 20220927을 오늘날짜로 모두 변경 후 테스트
 select * from stock_invest_warning
-where post_date <= DATE(20200203)
-  and (cleared_date > DATE(20200203) or cleared_date is null)
+where post_date <= DATE(20220927)
+  and (cleared_date > DATE(20220927) or cleared_date is null)
 group by code;
 
 # 투자 위험 종목
 select * from stock_invest_danger
-where post_date <= DATE(20200203)
-  and (cleared_date > DATE(20200203) or cleared_date is null)
+where post_date <= DATE(20220927)
+  and (cleared_date > DATE(20220927) or cleared_date is null)
 group by code;
 
 
 # 매수 알고리즘 쿼리문 만들기
 # 1단계. daily_buy_list db에서 특정 날짜를 선택 한다.
-select * from `20200203`;
+select * from `20220927`;
 
 # 2단계. 조건을 하나씩 넣는다.
 # 2-1단계: 매수 조건 넣기 (5 / 20 골든크로스 buy)
-select * from `20200203`
+select * from `20220927`
 where yes_clo20 > yes_clo5 and clo5 > clo20;
 
 
@@ -52,37 +52,37 @@ where yes_clo20 > yes_clo5 and clo5 > clo20;
 
 
 # not in
-select * from `20200203` a
+select * from `20220927` a
 where yes_clo20 > yes_clo5 and clo5 > clo20
 and a.code not in (select code from stock_konex b);
 
 # NOT exists
-select * from `20200203` a
+select * from `20220927` a
 where yes_clo20 > yes_clo5 and clo5 > clo20
 and NOT exists (select null from stock_konex b where a.code=b.code);
 
 
 
 # 2-3단계) 관리, 불성실, 주의, 경고, 위험 제외
-select * from `20200203` a
+select * from `20220927` a
 where yes_clo20 > yes_clo5 and clo5 > clo20
 and NOT exists (select null from stock_konex b where a.code=b.code)
 and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code)
 and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code)
-and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB(20200203, INTERVAL 3 MONTH ) < e.post_date and e.post_date < Date(20200203) and e.type != '투자경고 지정해제' group by e.code)
-and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE(20200203) and (f.cleared_date > DATE(20200203) or f.cleared_date is null) group by f.code)
-and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE(20200203) and (g.cleared_date > DATE(20200203) or g.cleared_date is null) group by g.code);
+and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB(20220927, INTERVAL 3 MONTH ) < e.post_date and e.post_date < Date(20220927) and e.type != '투자경고 지정해제' group by e.code)
+and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE(20220927) and (f.cleared_date > DATE(20220927) or f.cleared_date is null) group by f.code)
+and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE(20220927) and (g.cleared_date > DATE(20220927) or g.cleared_date is null) group by g.code);
 
 # 2-4단계) 종가가 invest_unit 보다 작은 것들만 가져온다, (한 주의 종가가 invest_unit(종목당 투자금액) 보다 크면 매수 자체가 불가하기 떄문
 # 아래 예제는 invest_unit이 5만원 일경우
-select * from `20200203` a
+select * from `20220927` a
 where yes_clo20 > yes_clo5 and clo5 > clo20
 and NOT exists (select null from stock_konex b where a.code=b.code)
 and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code)
 and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code)
-and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB(20200203, INTERVAL 3 MONTH ) < e.post_date and e.post_date < Date(20200203) and e.type != '투자경고 지정해제' group by e.code)
-and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE(20200203) and (f.cleared_date > DATE(20200203) or f.cleared_date is null) group by f.code)
-and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE(20200203) and (g.cleared_date > DATE(20200203) or g.cleared_date is null) group by g.code)
+and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB(20220927, INTERVAL 3 MONTH ) < e.post_date and e.post_date < Date(20220927) and e.type != '투자경고 지정해제' group by e.code)
+and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE(20220927) and (f.cleared_date > DATE(20220927) or f.cleared_date is null) group by f.code)
+and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE(20220927) and (g.cleared_date > DATE(20220927) or g.cleared_date is null) group by g.code)
 and a.close < 50000;
 
 
