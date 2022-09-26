@@ -180,9 +180,9 @@ class DARTApi:
                       )
 
     def get_recent_5y(self):
-        # 최근 5년 조회 가능
+        # 최근 6년 조회 가능
         this_year = datetime.date.today().year
-        for date in range(this_year - 5, this_year):
+        for date in range(this_year - 5, this_year+1):
             self.get_all_econ_info(date)
 
 
