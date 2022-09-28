@@ -134,7 +134,7 @@ class simulator_func_mysql:
             self.start_invest_price = 9448076
 
             # 매수 금액
-            self.invest_unit = 9448076
+            self.invest_unit = 100000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
@@ -222,6 +222,38 @@ class simulator_func_mysql:
             self.invest_limit_rate = 1.02
             # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -3% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
             self.invest_min_limit_rate = 0.97
+
+        elif self.simul_num == 5:    
+            self.simul_start_date = "20190102"
+
+            ######### 알고리즘 선택 #############
+            # 매수 리스트 설정 알고리즘 번호
+            self.db_to_realtime_daily_buy_list_num = 5
+
+            self.interval_month = 3
+
+            # 매도 리스트 설정 알고리즘 번호
+            self.sell_list_num = 2
+            ###################################
+
+
+            self.start_invest_price = 9448076
+
+            # 매수 금액
+            self.invest_unit = 50000
+
+            # 자산 중 최소로 남겨 둘 금액
+            self.limit_money = 0
+
+            # 익절 수익률 기준치
+            self.sell_point = 10
+
+            # 손절 수익률 기준치
+            self.losscut_point = -5
+
+            self.invest_limit_rate = 1.02
+            self.invest_min_limit_rate = 0.97   
+
         else:
             logger.error(f"입력 하신 {self.simul_num}번 알고리즘에 대한 설정이 없습니다. simulator_func_mysql.py 파일의 variable_setting함수에 알고리즘을 설정해주세요. ")
             sys.exit(1)
@@ -605,6 +637,21 @@ class simulator_func_mysql:
                                                             "and NOT exists (select null from stock_konex b where a.code=b.code) " \
                                                             "and close < '%s' group by code"
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.invest_unit)).fetchall()
+        
+        #관리, 불성실, 주의, 경고, 위험 제외 하고 buy
+        elif self.db_to_realtime_daily_buy_list_num == 5:
+            
+            sql = "select * from `" + date_rows_yesterday + "` a " \
+                    "where yes_clo20 > yes_clo5 and clo5 > clo20 " \
+                    "and NOT exists (select null from stock_konex b where a.code=b.code)" \
+                    "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
+                    "and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code) " \
+                    "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code)"\
+                    "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)"\
+                    "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)"\
+                    "and a.close < '%s'"
+
+            realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (date_rows_yesterday, self.interval_month, date_rows_yesterday,date_rows_yesterday ,date_rows_yesterday,date_rows_yesterday,date_rows_yesterday, self.invest_unit)).fetchall()
 
         ######################################################################################################################################################################################
         else:
