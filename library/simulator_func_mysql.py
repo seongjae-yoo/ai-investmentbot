@@ -131,22 +131,22 @@ class simulator_func_mysql:
             # 초기 투자자금(시뮬레이션에서의 초기 투자 금액. 모의투자는 신청 당시의 금액이 초기 투자 금액이라고 보시면 됩니다)
             # 주의! start_invest_price 는 모의투자 초기 자본금과 별개. 시뮬레이션에서만 적용.
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
-            self.start_invest_price = 10000000
+            self.start_invest_price = 9448076
 
             # 매수 금액
-            self.invest_unit = 10000000
+            self.invest_unit = 9448076
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
 
             # 익절 수익률 기준치
-            self.sell_point = 2
+            self.sell_point = 10
 
             # 손절 수익률 기준치
-            self.losscut_point = -1
+            self.losscut_point = -5
 
-            self.invest_limit_rate = 100
-            self.invest_min_limit_rate = 0            
+            self.invest_limit_rate = 1.02
+            self.invest_min_limit_rate = 0.97           
             
             # 분별 시뮬레이션을 사용하고 싶을 경우 (simul_num을 4로 입력)
             if self.simul_num ==4:
