@@ -656,10 +656,10 @@ class simulator_func_mysql:
                     # delete는 리턴 값이 없기 때문에 fetchall 쓰지 않는다.
                     self.engine_simulator.execute(sql % (0, date_rows_today, date_rows_today))
 
-                # 추가 된 코드입니다. AI 부분.
-                if self.use_ai:
-                    from ai_filter import ai_filter
-                    ai_filter(self.ai_filter_num, engine=self.engine_simulator, until=date_rows_yesterday)
+                # # 추가 된 코드입니다. AI 부분.
+                # if self.use_ai:
+                #     from ai_filter import ai_filter
+                #     ai_filter(self.ai_filter_num, engine=self.engine_simulator, until=date_rows_yesterday)
 
                 # 최종적으로 realtime_daily_buy_list 테이블에 저장 된 종목들을 가져온다.
                 self.get_realtime_daily_buy_list()
