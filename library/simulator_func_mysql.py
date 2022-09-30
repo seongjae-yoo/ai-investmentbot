@@ -101,11 +101,11 @@ class simulator_func_mysql:
         # self.buy_stop옵션은 수정 필요가 없음. self.only_nine_buy 옵션을 True로 하게 되면 시뮬레이터가 9시에 매수 후에 self.buy_stop을 true로 변경해서 당일에는 더이상 매수하지 않도록 설정함
         self.buy_stop = False
 
-        # AI알고리즘 사용 여부 (고급 챕터에서 소개)
+        # AI알고리즘 사용 여부 
         self.use_ai = False  # ai 알고리즘 사용 시 True 사용 안하면 False
         self.ai_filter_num = 1  # ai 알고리즘 선택
 
-        # 실시간 조건 매수 옵션 (고급 챕터에서 소개)
+        # 실시간 조건 매수 옵션 
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함
         # self.use_min 옵션이 반드시 True로 설정이 되어야함
         # 실시간 조건 매수 알고리즘 선택 (1,2,3..)
@@ -150,7 +150,7 @@ class simulator_func_mysql:
             
             # 분별 시뮬레이션을 사용하고 싶을 경우 (simul_num을 4로 입력)
             if self.simul_num ==4:
-                self.simul_start_date = '20220901'
+                self.simul_start_date = '20220923'
                 self.use_min = True
                 self.only_nine_buy = False
 
@@ -223,7 +223,7 @@ class simulator_func_mysql:
             # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -3% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
             self.invest_min_limit_rate = 0.97
 
-        elif self.simul_num == 5:    
+        elif self.simul_num in (5,6):    
             self.simul_start_date = "20190102"
 
             ######### 알고리즘 선택 #############
@@ -253,6 +253,24 @@ class simulator_func_mysql:
 
             self.invest_limit_rate = 1.02
             self.invest_min_limit_rate = 0.97   
+
+            # 관리, 불성실, 주의, 경고, 위험 제외 하고 buy 분별 시뮬레이션을 사용하고 싶을 경우
+            # 2022-09-30 Written by SEONGJAE-YOO
+            if self.simul_num == 6:
+
+                self.simul_start_date = '20220926'
+                
+                # 매도 리스트 설정 알고리즘 번호
+                self.sell_list_num = 2
+            
+                # 익절 수익률 기준치
+                self.sell_point = 5
+
+                # 손절 수익률 기준치
+                self.losscut_point = -1
+
+                self.use_min = True
+                self.only_nine_buy = False
 
         else:
             logger.error(f"입력 하신 {self.simul_num}번 알고리즘에 대한 설정이 없습니다. simulator_func_mysql.py 파일의 variable_setting함수에 알고리즘을 설정해주세요. ")
