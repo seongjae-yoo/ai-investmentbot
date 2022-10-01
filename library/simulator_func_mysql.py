@@ -274,7 +274,9 @@ class simulator_func_mysql:
 
         # 5 / 20 골든크로스 적용되고
         # 관리, 불성실, 주의, 경고, 위험 제외 하고 
-        # volume * close (총 거래대금 금액)이 10000000000 원 보다 큰 주식을 buy 
+        # volume * close (총 거래대금 금액)이 self.total_transaction_price( 변경가능) 원 보다 큰 주식을 buy 
+        # 20일 평균거래량(거래량20이평선)대비 3배이상 거래량 터졌을때 강세( vol20 * '%s' < volume )이므로 buy
+        # 전날보다  self.d1_diff 변수 값 (변경가능) 이상 올랐을 때 buy 
         # 분별 시뮬레이션을 사용하고 싶을 경우
         # 2022-10-01 Written by SEONGJAE-YOO   
         elif self.simul_num == 7:    
@@ -294,7 +296,7 @@ class simulator_func_mysql:
                     self.start_invest_price = 9448076
 
                     # 매수 금액
-                    self.invest_unit = 50000
+                    self.invest_unit = 70000
 
                     # 자산 중 최소로 남겨 둘 금액
                     self.limit_money = 0
@@ -308,10 +310,13 @@ class simulator_func_mysql:
                     self.invest_limit_rate = 1.01
                     self.invest_min_limit_rate = 0.98   
                     # volume * close (총 거래대금 금액) 의 변수: total_transaction_price
-                    self.total_transaction_price = 10000000000
+                    self.total_transaction_price = 1000000
 
                     self.use_min = True
                     self.only_nine_buy = False
+
+                    self.vol_mul = 3 
+                    self.d1_diff = 2 
 
                             
 
@@ -717,24 +722,27 @@ class simulator_func_mysql:
         # 5 / 20 골든크로스 적용되고
         # 관리, 불성실, 주의, 경고, 위험 제외 하고 buy
         # volume * close (총 거래대금 금액)이  self.total_transaction_price(변경가능) 원 보다 큰 주식을 buy 
-        # 시뮬레이션을 사용하고 싶을 경우
+        # 20일 평균거래량(거래량20이평선)대비 3배이상 거래량 터졌을때 강세( vol20 * '%s' < volume )이므로 buy
+        # 전날보다  self.d1_diff 변수 값 (변경가능) 이상 올랐을 때 buy ( d1_diff_rate)
         ## 2022-10-01 Written by SEONGJAE-YOO   
         
         elif self.db_to_realtime_daily_buy_list_num == 6:
             
             sql = "select * from `" + date_rows_yesterday + "` a " \
                     "where yes_clo20 > yes_clo5 and clo5 > clo20 " \
-                    "and volume * close > '%s'" \
-                    "and NOT exists (select null from stock_konex b where a.code=b.code)" \
+                    "and volume * close > '%s' " \
+                    "and vol20 * '%s' < volume " \
+                    "and d1_diff_rate > '%s' " \
+                    "and NOT exists (select null from stock_konex b where a.code=b.code) " \
                     "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
                     "and NOT exists (select null from stock_insincerity d where a.code=d.code and d.code_name !='' group by d.code) " \
-                    "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code)"\
-                    "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code)"\
-                    "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code)"\
-                    "and a.close < '%s'" \
-                    "order by volume * close desc"
+                    "and NOT exists (select null from stock_invest_caution e where a.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code) " \
+                    "and NOT exists (select null from stock_invest_warning f where a.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code) " \
+                    "and NOT exists (select null from stock_invest_danger g where a.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code) " \
+                    "and a.close < '%s' " \
+                    "order by volume * close desc "
 
-            realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.total_transaction_price, date_rows_yesterday, self.interval_month, date_rows_yesterday,date_rows_yesterday ,date_rows_yesterday,date_rows_yesterday,date_rows_yesterday, self.invest_unit)).fetchall()
+            realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.total_transaction_price,self.vol_mul, self.d1_diff, date_rows_yesterday, self.interval_month, date_rows_yesterday,date_rows_yesterday ,date_rows_yesterday,date_rows_yesterday,date_rows_yesterday, self.invest_unit)).fetchall()
 
 
 
