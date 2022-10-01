@@ -21,6 +21,12 @@ AI 자동 투자 봇 만들기, 노트북으로 월급을 두 배 불리는 법
 2. 꾸준히 투자 봇을 공부해 알고리즘 및 소스를 수정할 계획입니다.
 
 
+* commit 기록 공간에 실행결과 캡쳐 사진들과 함께 올려 두었습니다.
+
+링크 클릭 - [https://github.com/SEONGJAE-YOO/AI-InvestmentBot/commits/main](https://github.com/SEONGJAE-YOO/AI-InvestmentBot/commits/main)
+
+
+
 
 * 초기 세팅
 
