@@ -278,9 +278,9 @@ class simulator_func_mysql:
         # 20일 평균거래량(거래량20이평선)대비 3배이상 거래량 터졌을때 강세( vol20 * '%s' < volume )이므로 buy
         # 전날보다  self.d1_diff 변수 값 (변경가능) 이상 올랐을 때 buy 
         # 분별 시뮬레이션을 사용하고 싶을 경우
-        # 2022-10-01 Written by SEONGJAE-YOO   
+        # 2022-10-04 Written by SEONGJAE-YOO  (Commits on Oct 4, 2022)
         elif self.simul_num == 7:    
-                    self.simul_start_date = "20220922"
+                    self.simul_start_date = "20220920"
 
                     ######### 알고리즘 선택 #############
                     # 매수 리스트 설정 알고리즘 번호
@@ -288,24 +288,24 @@ class simulator_func_mysql:
 
                     self.interval_month = 3
 
-                    # 매도 리스트 설정 알고리즘 번호
-                    self.sell_list_num = 2
+                    # 5 / 40 이동 평균선 데드크로스 매도 리스트 설정 알고리즘 번호
+                    self.sell_list_num = 3
                     ###################################
 
 
                     self.start_invest_price = 9448076
 
                     # 매수 금액
-                    self.invest_unit = 70000
+                    self.invest_unit = 50000
 
                     # 자산 중 최소로 남겨 둘 금액
                     self.limit_money = 0
 
                     # 익절 수익률 기준치
-                    self.sell_point = 4
+                    self.sell_point = 5
 
                     # 손절 수익률 기준치
-                    self.losscut_point = -2
+                    self.losscut_point = -5
 
                     self.invest_limit_rate = 1.01
                     self.invest_min_limit_rate = 0.98   
