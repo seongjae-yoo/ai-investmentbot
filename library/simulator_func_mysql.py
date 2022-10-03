@@ -278,7 +278,7 @@ class simulator_func_mysql:
         # 20일 평균거래량(거래량20이평선)대비 3배이상 거래량 터졌을때 강세( vol20 * '%s' < volume )이므로 buy
         # 전날보다  self.d1_diff 변수 값 (변경가능) 이상 올랐을 때 buy 
         # 분별 시뮬레이션을 사용하고 싶을 경우
-        # 2022-10-04 Written by SEONGJAE-YOO  (Commits on Oct 4, 2022)
+        # 2022-10-04 Written by SEONGJAE-YOO  (Commits on october 4, 2022)
         elif self.simul_num == 7:    
                     self.simul_start_date = "20220920"
 
@@ -288,7 +288,7 @@ class simulator_func_mysql:
 
                     self.interval_month = 3
 
-                    # 5 / 40 이동 평균선 데드크로스 매도 리스트 설정 알고리즘 번호
+                    # 5 / 40 moving average Death Cross sell list setting 알고리즘 번호
                     self.sell_list_num = 3
                     ###################################
 
@@ -302,15 +302,15 @@ class simulator_func_mysql:
                     self.limit_money = 0
 
                     # 익절 수익률 기준치
-                    self.sell_point = 5
+                    self.sell_point = 3
 
                     # 손절 수익률 기준치
-                    self.losscut_point = -5
+                    self.losscut_point = -3
 
                     self.invest_limit_rate = 1.01
-                    self.invest_min_limit_rate = 0.98   
+                    self.invest_min_limit_rate = 0.99   
                     # volume * close (총 거래대금 금액) 의 변수: total_transaction_price
-                    self.total_transaction_price = 1000000
+                    self.total_transaction_price = 10000000
 
                     self.use_min = True
                     self.only_nine_buy = False
@@ -1234,21 +1234,21 @@ class simulator_func_mysql:
                   "and (rate>='%s' or rate <= '%s') group by code"
             sell_list = self.engine_simulator.execute(sql % (0, self.sell_point, self.losscut_point)).fetchall()
 
-        # 5 / 20 이동 평균선 데드크로스 이거나, losscut_point(손절 기준 수익률) 이하로 떨어지면 손절하는 알고리즘
+        # 5 / 20 moving average Death Cross sell list setting 이거나, losscut_point(손절 기준 수익률) 이하로 떨어지면 손절하는 알고리즘
         elif self.sell_list_num == 2:
             sql = "SELECT code, rate, present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
                   "and ((clo5 < clo20) or rate <= '%s') group by code"
             sell_list = self.engine_simulator.execute(sql % (0, self.losscut_point)).fetchall()
 
 
-        # 5 / 40 이동 평균선 데드크로스 이거나, losscut_point(손절 기준 수익률) 이하로 떨어지면 손절하는 알고리즘
+        # 5 / 40 moving average Death Cross sell list setting 이거나, losscut_point(손절 기준 수익률) 이하로 떨어지면 손절하는 알고리즘
         elif self.sell_list_num == 3:
             sql = "SELECT code, rate, present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
                   "and ((clo5 < clo40) or rate <= '%s') group by code"
 
             sell_list = self.engine_simulator.execute(sql % (0, self.losscut_point)).fetchall()
 
-       #  5/ 60  중기 이평선 데드크로스 이거나, 손절 기준 수익률 이하 떨어지면 손절하는 알고리즘
+       #  5/ 60  moving average Death Cross sell list setting 이거나, 손절 기준 수익률 이하 떨어지면 손절하는 알고리즘
         elif self.sell_list_num == 4:
             sql = "SELECT code,rate,present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
                    "and ((clo5 < clo60) or rate <= '%s') group by code"
