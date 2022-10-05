@@ -328,12 +328,12 @@ class simulator_func_mysql:
                     # 시뮬레이팅 시작 일자(분 별 시뮬레이션의 경우 최근 1년 치 데이터만 있기 때문에 start_date 조정 필요)
                     self.simul_start_date = "20220601"
                     # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
-                    self.day_before = 20 # 단위 일
+                    self.day_before = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                     # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
-                    self.diff_point = 10 # 단위 %
+                    self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
                     # # 분별 시뮬레이션 옵션
-                    # self.use_min = True
-                    # self.only_nine_buy = False
+                    self.use_min = True
+                    self.only_nine_buy = False  
                     self.invest_unit = 100000
                     self.start_invest_price = 9448076
 
@@ -859,8 +859,7 @@ class simulator_func_mysql:
                      "AND YES_DAY.close < '%s'" \
                      "ORDER BY (YES_DAY.close - BEFORE_DAY.close) / BEFORE_DAY.close * 100 DESC"
         
-                realtime_daily_buy_list = self.engine_daily_buy_list.execute(
-                    sql % (self.diff_point, self.invest_unit)).fetchall()
+                realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.diff_point, self.invest_unit)).fetchall()
 
 
 
