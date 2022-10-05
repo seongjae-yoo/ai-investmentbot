@@ -14,7 +14,7 @@ from ai.SPPModel import load_data, create_model, evaluate, predict, DataNotEnoug
 from library import cf
 from library.open_api import setup_sql_mod
 
-listen(Pool, 'connect', setup_sql_mod)
+listen(Pool, 'connect', setup_sql_mod) # 서버와 클라이언트를 연결해준다.
 listen(Pool, 'first_connect', setup_sql_mod)
 
 
@@ -104,8 +104,8 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
             "dropout": 0.2, # overfitting 방지를 위해 몇개의 노드를 죽이고 남은 노드들을 통해서만 훈련을 하는 것(0.2 -> 20%를 죽인다)
             "loss": "mae", # loss : 최적화 과정에서 최소화될 손실 함수(loss function)를 설정 # mae : mean absolute error (평균 절대 오차)
             "optimizer": "adam", # optimizer : 최적화 알고리즘 선택
-            "batch_size": 12, # 각 학습 반복에 사용할 데이터 샘플 수 ex)64
-            "epochs": 100, # 몇 번 테스트 할지 ex) 400
+            "batch_size": 2, # 각 학습 반복에 사용할 데이터 샘플 수 ex)64
+            "epochs": 10, # 몇 번 테스트 할지 (에폭을 크게하면 너무 시간이 오래걸려 일단 테스트를 해야해서 10으로 설정)ex) 400
             "ratio_cut": 3, #단위:(%) lookup_step 기간 뒤 ratio_cut(%) 만큼 증가 할 것이 예측 된다면 매수
             "table": "daily_craw",  #분석 시 daily_craw(일별데이터)를 이용 할지 min_craw(분별데이터)를 이용 할지 선택. ** 주의: min_craw 선택 시  simulator_func_mysql.py에서 self.simul_start_date를  설정 필요
             "is_used_predicted_close" : True # ratio(예상 상승률) 계산 시 예측 그래프의 close 값을 이용 할 경우 True, 실제 close 값을 이용할 시 False

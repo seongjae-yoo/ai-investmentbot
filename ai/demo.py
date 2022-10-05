@@ -4,7 +4,8 @@ print(f"demo Version: {ver}")
 import pymysql
 import pandas as pd
 
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping #모델을 더 이상 학습을 못할 경우(loss, metric등의 개선이 없을 경우), 학습 도중 미리 학습을 종료시키는 콜백함수입니다.
+
 from tensorflow.keras.layers import LSTM
 
 from ai.SPPModel import load_data, evaluate, DataNotEnough, create_model, predict, plot_graph, train
@@ -24,7 +25,8 @@ until = '20221004'
 sql = """
     SELECT {} FROM `{}`
     WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
-""".format(','.join(FEATURE_COLUMNS), code_name, until)
+""".format(','.join(FEATURE_COLUMNS), code_name, until) #STR_TO_DATE : 형식 문자열에 날짜 및 시간 부분이 모두 포함 된 경우 DATETIME 값을 반환
+
 
 df = pd.read_sql(sql, conn)
 if not len(df):
