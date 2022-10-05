@@ -44,4 +44,4 @@ max_api_call = 999
 dart_api_key = '238e0d032ab2ef85eeca2251fc8aa0be4bbc360f'
 
 # etf 사용 여부 
-use_etf = False
+use_etf = True

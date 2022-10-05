@@ -326,14 +326,14 @@ class simulator_func_mysql:
                     # 매도 리스트 설정 알고리즘 번호(Absolute Momentum code ver)
                     self.sell_list_num = 5
                     # 시뮬레이팅 시작 일자(분 별 시뮬레이션의 경우 최근 1년 치 데이터만 있기 때문에 start_date 조정 필요)
-                    self.simul_start_date = "20220601"
+                    self.simul_start_date = "20220901"
                     # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
                     self.day_before = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                     # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
                     self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
                     # # 분별 시뮬레이션 옵션
-                    self.use_min = True
-                    self.only_nine_buy = False  
+                    # self.use_min = True
+                    # self.only_nine_buy = False  
                     self.invest_unit = 100000
                     self.start_invest_price = 9448076
 
@@ -367,8 +367,13 @@ class simulator_func_mysql:
                     elif self.simul_num == 11:
                         # 매수 리스트 설정 알고리즘 번호 (Relative Strength Momentum query ver)
                         self.db_to_realtime_daily_buy_list_num = 9
+
                         # 매도 리스트 설정 알고리즘 번호 (Absolute Momentum query ver + losscut point 추가)
                         self.sell_list_num = 7
+
+                        # AI알고리즘 사용 여부 
+                        self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                        self.ai_filter_num = 1  # ai 알고리즘 선택
 
 
         else:
@@ -914,10 +919,10 @@ class simulator_func_mysql:
                     # delete는 리턴 값이 없기 때문에 fetchall 쓰지 않는다.
                     self.engine_simulator.execute(sql % (0, date_rows_today, date_rows_today))
 
-                # # 추가 된 코드입니다. AI 부분.
-                # if self.use_ai:
-                #     from ai_filter import ai_filter
-                #     ai_filter(self.ai_filter_num, engine=self.engine_simulator, until=date_rows_yesterday)
+                # AI 부분.
+                if self.use_ai:
+                    from ai_filter import ai_filter
+                    ai_filter(self.ai_filter_num, engine=self.engine_simulator, until=date_rows_yesterday)
 
                 # 최종적으로 realtime_daily_buy_list 테이블에 저장 된 종목들을 가져온다.
                 self.get_realtime_daily_buy_list()
