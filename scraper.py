@@ -19,7 +19,7 @@ import MySQLdb
 # total_date_count : 총 매수한 일자 수
 # total_profitcut_rate : 익절률 ( 총익절종목수 / 총매수종목수 ) * 100
 # total_buy_count : 총 매수 종목수
-
+# 2022-10-08 Written by SEONGJAE-YOO (Commits on Oct 8, 2022)
 
 class simul_scraper():
     def __init__(self):
