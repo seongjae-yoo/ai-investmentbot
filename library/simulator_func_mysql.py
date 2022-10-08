@@ -101,11 +101,11 @@ class simulator_func_mysql:
         # self.buy_stop옵션은 수정 필요가 없음. self.only_nine_buy 옵션을 True로 하게 되면 시뮬레이터가 9시에 매수 후에 self.buy_stop을 true로 변경해서 당일에는 더이상 매수하지 않도록 설정함
         self.buy_stop = False
 
-        # AI알고리즘 사용 여부 
+        # AI알고리즘 사용 여부 (기본값 False 설정)
         self.use_ai = False  # ai 알고리즘 사용 시 True 사용 안하면 False
         self.ai_filter_num = 1  # ai 알고리즘 선택
 
-        # 실시간 조건 매수 옵션 
+        # 실시간 조건 매수 옵션 (기본값 False 설정)
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함
         # self.use_min 옵션이 반드시 True로 설정이 되어야함
         # 실시간 조건 매수 알고리즘 선택 (1,2,3..)
@@ -118,7 +118,7 @@ class simulator_func_mysql:
 
         if self.simul_num in (1,4):
             # 시뮬레이팅 시작 일자(분 별 시뮬레이션의 경우 최근 1년 치 데이터만 있기 때문에 start_date 조정 필요)
-            self.simul_start_date = "20190102"
+            self.simul_start_date = "20220802"
 
             ######### 알고리즘 선택 #############
             # 매수 리스트 설정 알고리즘 번호
@@ -150,13 +150,13 @@ class simulator_func_mysql:
             
             # 분별 시뮬레이션을 사용하고 싶을 경우 (simul_num을 4로 입력)
             if self.simul_num ==4:
-                self.simul_start_date = '20220923'
+                self.simul_start_date = '20220802'
                 self.use_min = True
                 self.only_nine_buy = False
 
         elif self.simul_num == 2:
             # 시뮬레이팅 시작 일자
-            self.simul_start_date = "20220801"
+            self.simul_start_date = "20220802"
 
             ######### 알고리즘 선택 #############
             # 매수 리스트 설정 알고리즘 번호 # 5 / 20 이동 평균선 골든크로스 buy
@@ -167,9 +167,9 @@ class simulator_func_mysql:
             # 초기 투자자금
             # 주의! start_invest_price 는 모의투자 초기 자본금과 별개. 시뮬레이션에서만 적용.
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
-            self.start_invest_price = 10000000
+            self.start_invest_price = 9448076
             # 매수 금액
-            self.invest_unit = 10000000
+            self.invest_unit = 100000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
@@ -187,7 +187,7 @@ class simulator_func_mysql:
 
             # 시뮬레이팅 시작 일자
 
-            self.simul_start_date = "20220701"
+            self.simul_start_date = "20220802"
 
             ######### 알고리즘 선택 #############
 
@@ -204,10 +204,10 @@ class simulator_func_mysql:
             # 초기 투자자금
             # 주의! start_invest_price 는 모의투자 초기 자본금과 별개. 시뮬레이션에서만 적용.
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
-            self.start_invest_price = 10000000
+            self.start_invest_price = 9448076
 
             # 매수 금액
-            self.invest_unit = 10000000
+            self.invest_unit = 100000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
@@ -224,7 +224,7 @@ class simulator_func_mysql:
             self.invest_min_limit_rate = 0.97
 
         elif self.simul_num in (5,6):    
-            self.simul_start_date = "20190102"
+            self.simul_start_date = "20220802"
 
             ######### 알고리즘 선택 #############
             # 매수 리스트 설정 알고리즘 번호
@@ -240,7 +240,7 @@ class simulator_func_mysql:
             self.start_invest_price = 9448076
 
             # 매수 금액
-            self.invest_unit = 50000
+            self.invest_unit = 100000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
@@ -254,11 +254,11 @@ class simulator_func_mysql:
             self.invest_limit_rate = 1.02
             self.invest_min_limit_rate = 0.97   
 
-            # 관리, 불성실, 주의, 경고, 위험 제외 하고 buy 분별 시뮬레이션을 사용하고 싶을 경우
+            # 관리, 불성실, 주의, 경고, 위험 제외 하고 buy 시뮬레이션을 사용하고 싶을 경우
             # 2022-09-30 Written by SEONGJAE-YOO
             if self.simul_num == 6:
 
-                self.simul_start_date = '20220926'
+                self.simul_start_date = '20220802'
                 
                 # 매도 리스트 설정 알고리즘 번호
                 self.sell_list_num = 2
@@ -269,18 +269,19 @@ class simulator_func_mysql:
                 # 손절 수익률 기준치
                 self.losscut_point = -1
 
-                self.use_min = True
-                self.only_nine_buy = False
+                #분별 시뮬레이션을 사용하고 싶을 경우
+                # self.use_min = True
+                # self.only_nine_buy = False
 
         # 5 / 20 골든크로스 적용되고
         # 관리, 불성실, 주의, 경고, 위험 제외 하고 
         # volume * close (총 거래대금 금액)이 self.total_transaction_price( 변경가능) 원 보다 큰 주식을 buy 
         # 20일 평균거래량(거래량20이평선)대비 3배이상 거래량 터졌을때 강세( vol20 * '%s' < volume )이므로 buy
         # 전날보다  self.d1_diff 변수 값 (변경가능) 이상 올랐을 때 buy 
-        # 분별 시뮬레이션을 사용하고 싶을 경우
+        
         # 2022-10-04 Written by SEONGJAE-YOO  (Commits on october 4, 2022)
         elif self.simul_num == 7:    
-                    self.simul_start_date = "20220920"
+                    self.simul_start_date = "20220802"
 
                     ######### 알고리즘 선택 #############
                     # 매수 리스트 설정 알고리즘 번호
@@ -296,7 +297,7 @@ class simulator_func_mysql:
                     self.start_invest_price = 9448076
 
                     # 매수 금액
-                    self.invest_unit = 50000
+                    self.invest_unit = 100000
 
                     # 자산 중 최소로 남겨 둘 금액
                     self.limit_money = 0
@@ -312,21 +313,22 @@ class simulator_func_mysql:
                     # volume * close (총 거래대금 금액) 의 변수: total_transaction_price
                     self.total_transaction_price = 10000000
 
-                    self.use_min = True
-                    self.only_nine_buy = False
+                    ## 분별 시뮬레이션을 사용하고 싶을 경우()
+                    # self.use_min = True
+                    # self.only_nine_buy = False
 
                     self.vol_mul = 3 
                     self.d1_diff = 2 
 
        #  상대 모멘텀 / 절대 모멘텀 (Relative Strength Momentum function, Absolute Momentum function)
        # 2022-10-04 Written by SEONGJAE-YOO  (Commits on october 4, 2022)
-        elif self.simul_num in (8,9,10,11) :
+        elif self.simul_num in (8,9,10,11):
                     # 매수 리스트 설정 알고리즘 번호(Absolute Momentum code ver)
                     self.db_to_realtime_daily_buy_list_num = 7
                     # 매도 리스트 설정 알고리즘 번호(Absolute Momentum code ver)
                     self.sell_list_num = 5
                     # 시뮬레이팅 시작 일자(분 별 시뮬레이션의 경우 최근 1년 치 데이터만 있기 때문에 start_date 조정 필요)
-                    self.simul_start_date = "20220821"
+                    self.simul_start_date = "20220802"
                     # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
                     self.day_before = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                     # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
@@ -371,9 +373,67 @@ class simulator_func_mysql:
                         # 매도 리스트 설정 알고리즘 번호 (Absolute Momentum query ver + losscut point 추가)
                         self.sell_list_num = 7
 
-                        # AI알고리즘 사용 여부 
-                        self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
-                        self.ai_filter_num = 1  # ai 알고리즘 선택
+                        # # AI알고리즘 사용 여부 
+                        # self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                        # self.ai_filter_num = 1  # ai 알고리즘 선택
+
+        elif self.simul_num in (12,13,14):
+            
+            self.simul_start_date = "20220802"
+
+            ######### 알고리즘 선택 #############
+            # 매수 리스트 설정 알고리즘 번호
+            self.db_to_realtime_daily_buy_list_num = 9
+
+            # 매도 리스트 설정 알고리즘 번호
+            self.sell_list_num = 7
+            ###################################
+
+            # 초기 투자자금(시뮬레이션에서의 초기 투자 금액. 모의투자는 신청 당시의 금액이 초기 투자 금액이라고 보시면 됩니다)
+            # 주의! start_invest_price 는 모의투자 초기 자본금과 별개. 시뮬레이션에서만 적용.
+            # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
+            self.start_invest_price = 9448076
+
+            # 매수 금액
+            self.invest_unit = 100000
+
+            # 자산 중 최소로 남겨 둘 금액
+            self.limit_money = 0
+
+            # 익절 수익률 기준치
+            self.sell_point = 10
+
+            # 손절 수익률 기준치
+            self.losscut_point = -5
+
+            # 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
+            self.invest_limit_rate = 1.01
+            # 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
+            self.invest_min_limit_rate = 0.98
+
+            # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
+            self.day_before = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+            # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
+            self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+            
+
+            self.use_min = True
+            self.only_nine_buy = False
+            self.trade_check_num = 1 # 실시간 조건 매수 알고리즘 선택 
+            self.volume_up = 2  # 특정 거래대금 보다 x배 이상 증가 할 경우 매수
+
+            if self.simul_num == 13:
+                
+                self.trade_check_num = 2
+                # 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
+                self.invest_limit_rate = 1.01
+                # 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
+                self.invest_min_limit_rate = 0.98
+
+            # 래리윌리엄스 변동성 돌파 전략
+            elif self.simul_num == 14:
+                self.trade_check_num = 3
+                self.rarry_k = 0.5
 
 
         else:
@@ -501,11 +561,15 @@ class simulator_func_mysql:
             "mysql+mysqldb://" + cf.db_id + ":" + cf.db_passwd + "@" + cf.db_ip + ":" + cf.db_port + "/daily_buy_list",
             encoding='utf-8')
 
-        event.listen(self.engine_simulator, 'before_execute', escape_percentage, retval=True) # SQLAlchemy 라이브러리에서 가져온 event 함수
+        # event.listen(self.engine_simulator, 'before_execute', escape_percentage, retval=True) # SQLAlchemy 라이브러리에서 가져온 event 함수
+        # event.listen(self.engine_daily_craw, 'before_execute', escape_percentage, retval=True)
+        # event.listen(self.engine_craw, 'before_execute', escape_percentage, retval=True)
+        # event.listen(self.engine_daily_buy_list, 'before_execute', escape_percentage, retval=True)
+        from library.open_api import escape_percentage
+        event.listen(self.engine_simulator, 'before_execute', escape_percentage, retval=True)
         event.listen(self.engine_daily_craw, 'before_execute', escape_percentage, retval=True)
         event.listen(self.engine_craw, 'before_execute', escape_percentage, retval=True)
         event.listen(self.engine_daily_buy_list, 'before_execute', escape_percentage, retval=True)
-
         # 특정 데이터 베이스가 아닌, mysql 에 접속하는 객체
         self.db_conn = pymysql.connect(host=cf.db_ip, port=int(cf.db_port), user=cf.db_id, password=cf.db_passwd,
                                        charset='utf8')
@@ -583,8 +647,8 @@ class simulator_func_mysql:
                 if code_name == False or price == 0 or price == False:
                     continue
 
-                # 아래 if 문 추가 (향후 실시간 조건 매수 시 사용) ###################
-                if self.use_min and not self.only_nine_buy and self.trade_check_num :
+                # 아래 if 문 추가 (향후 실시간 조건 매수 시 사용) , if문에서 use_min, only_nine_buy,trade_check_num(1,2,3.../ 0만 False) 세가지 변수가 True이면 아래 함수 살행함
+                if self.use_min and not self.only_nine_buy and self.trade_check_num:
                     # 시작가
                     open = self.get_now_open_price_by_date(code, date_rows_today)
                     # 당일 누적 거래량
@@ -669,7 +733,7 @@ class simulator_func_mysql:
             return False
         return row[0][0]
 
-    # 실시간 주가 분석 알고리즘 함수 (느낌표 골뱅이 추가하면 검색 시 편합니다) (고급클래스에서 소개)
+    # 실시간 주가 분석 알고리즘 함수 
     def trade_check(self, df_row, open_price, current_price, current_sum_volume):
         '''
         :param df_row: 매수 종목 리스트(realtime_daily_buy_list)
@@ -720,6 +784,9 @@ class simulator_func_mysql:
         else:
             logger.debug("trade_check 함수에 self.trade_check_num = {} 에 맞는 알고리즘이 없습니다. ".format(self.trade_check_num))
             exit(1)
+
+
+    
 
     # 여기서 sql문의 date는 반드시 어제 일자여야 한다. -> 어제 일자 기준 반영된 데이터로 종목을 선정해야함.
     ##!@####################################################################################################################################################################################
