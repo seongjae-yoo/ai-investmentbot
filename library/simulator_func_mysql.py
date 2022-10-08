@@ -439,6 +439,7 @@ class simulator_func_mysql:
                 self.only_nine_buy = False
 
             # 래리윌리엄스 변동성 돌파 전략
+            # 2022-10-08 Written by SEONGJAE-YOO (Commits on Oct 8, 2022)
             elif self.simul_num == 14:
                 self.trade_check_num = 3
                 self.rarry_k = 0.5
