@@ -383,7 +383,7 @@ class simulator_func_mysql:
 
             ######### 알고리즘 선택 #############
             # 매수 리스트 설정 알고리즘 번호
-            self.db_to_realtime_daily_buy_list_num = 9
+            self.db_to_realtime_daily_buy_list_num = 10
 
             # 매도 리스트 설정 알고리즘 번호
             self.sell_list_num = 7
@@ -416,11 +416,16 @@ class simulator_func_mysql:
             # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
             self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
             
+            # volume * close (총 거래대금 금액) 의 변수: total_transaction_price
+            self.total_transaction_price = 1000000
+            self.vol_mul = 3 
+            self.d1_diff = 2 
+            self.interval_month = 3
 
             self.use_min = True
             self.only_nine_buy = False
             self.trade_check_num = 1 # 실시간 조건 매수 알고리즘 선택 
-            self.volume_up = 2  # 특정 거래대금 보다 x배 이상 증가 할 경우 매수
+            self.volume_up = 3  # 특정 거래대금 보다 x배 이상 증가 할 경우 매수
 
             if self.simul_num == 13:
                 
@@ -429,11 +434,15 @@ class simulator_func_mysql:
                 self.invest_limit_rate = 1.01
                 # 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
                 self.invest_min_limit_rate = 0.98
+                self.use_min = False
+                self.only_nine_buy = False
 
             # 래리윌리엄스 변동성 돌파 전략
             elif self.simul_num == 14:
                 self.trade_check_num = 3
                 self.rarry_k = 0.5
+                self.use_min = False
+                self.only_nine_buy = True
 
 
         else:
@@ -933,8 +942,31 @@ class simulator_func_mysql:
         
                 realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.diff_point, self.invest_unit)).fetchall()
 
+        elif self.db_to_realtime_daily_buy_list_num == 10:
+            if i < self.day_before + 1:
+                realtime_daily_buy_list = []
+                pass
+            else:
+                date_before = self.date_rows[i - 1 - self.day_before][0]
+                sql = "SELECT YES_DAY.* " \
+                    "FROM `" + date_before + "` BEFORE_DAY, `" + date_rows_yesterday + "` YES_DAY " \
+                    "WHERE BEFORE_DAY.code = YES_DAY.code " \
+                    "and YES_DAY.yes_clo20 > YES_DAY.yes_clo5 and YES_DAY.clo5 > YES_DAY.clo20 " \
+                    "and YES_DAY.volume * YES_DAY.close > '%s' " \
+                    "and YES_DAY.vol20 * '%s' < YES_DAY.volume " \
+                    "and YES_DAY.d1_diff_rate > '%s' " \
+                    "and NOT exists (select null from stock_konex b where YES_DAY.code=b.code) " \
+                    "and NOT exists (select null from stock_managing c where YES_DAY.code=c.code and c.code_name != '' group by c.code) " \
+                    "and NOT exists (select null from stock_insincerity d where YES_DAY.code=d.code and d.code_name !='' group by d.code) " \
+                    "and NOT exists (select null from stock_invest_caution e where YES_DAY.code=e.code and DATE_SUB('%s', INTERVAL '%s' MONTH ) < e.post_date and e.post_date < Date('%s') and e.type != '투자경고 지정해제' group by e.code) " \
+                    "and NOT exists (select null from stock_invest_warning f where YES_DAY.code=f.code and f.post_date <= DATE('%s') and (f.cleared_date > DATE('%s') or f.cleared_date is null) group by f.code) " \
+                    "and NOT exists (select null from stock_invest_danger g where YES_DAY.code=g.code and g.post_date <= DATE('%s') and (g.cleared_date > DATE('%s') or g.cleared_date is null) group by g.code) " \
+                    "AND (YES_DAY.close - BEFORE_DAY.close) / BEFORE_DAY.close * 100 > '%s' " \
+                    "AND NOT exists (SELECT null FROM stock_konex b WHERE YES_DAY.code=b.code)" \
+                    "AND YES_DAY.close < '%s'" \
+                    "ORDER BY (YES_DAY.close - BEFORE_DAY.close) / BEFORE_DAY.close * 100 DESC"
 
-
+                realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.total_transaction_price,self.vol_mul, self.d1_diff, date_rows_yesterday, self.interval_month, date_rows_yesterday,date_rows_yesterday ,date_rows_yesterday,date_rows_yesterday,date_rows_yesterday,self.diff_point, self.invest_unit)).fetchall()
 
         ######################################################################################################################################################################################
         else:
