@@ -377,6 +377,7 @@ class simulator_func_mysql:
                         # self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                         # self.ai_filter_num = 1  # ai 알고리즘 선택
 
+        # 2022-10-08 Written by SEONGJAE-YOO (Commits on Oct 8, 2022)
         elif self.simul_num in (12,13,14):
             
             self.simul_start_date = "20220802"
@@ -417,7 +418,7 @@ class simulator_func_mysql:
             self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
             
             # volume * close (총 거래대금 금액) 의 변수: total_transaction_price
-            self.total_transaction_price = 1000000
+            self.total_transaction_price = 15000000
             self.vol_mul = 3 
             self.d1_diff = 2 
             self.interval_month = 3
@@ -441,8 +442,8 @@ class simulator_func_mysql:
             elif self.simul_num == 14:
                 self.trade_check_num = 3
                 self.rarry_k = 0.5
-                self.use_min = False
-                self.only_nine_buy = True
+                self.use_min = True
+                self.only_nine_buy = False
 
 
         else:
@@ -942,6 +943,7 @@ class simulator_func_mysql:
         
                 realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.diff_point, self.invest_unit)).fetchall()
 
+        # 2022-10-08 Written by SEONGJAE-YOO (Commits on Oct 8, 2022)
         elif self.db_to_realtime_daily_buy_list_num == 10:
             if i < self.day_before + 1:
                 realtime_daily_buy_list = []
