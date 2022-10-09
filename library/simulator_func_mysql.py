@@ -680,6 +680,8 @@ class simulator_func_mysql:
                         # df_realtime_daily_buy_list 에 있는 모든 종목들을 하나 하나씩 가져오는 역할을 한다.
                         if not self.trade_check(self.df_realtime_daily_buy_list.loc[j], open, price, sum_volume):
                             # 실시간 매수 조건에 맞지 않는 경우 pass
+                            # trade_check 함수에서 true 반환하면 if not 함수로 인해 false가 되므로 continue 되지 않고 
+                            # 바로 invest_send_order 함수로 들어간다.
                             continue
                 ################################################################
 
@@ -775,7 +777,7 @@ class simulator_func_mysql:
             yes_total_tr_price = yes_close * yes_volume
             # 현재 거래 대금
             current_total_tr_price = current_price * current_sum_volume
-            # 어제 종가 보다 현재가가 증가했고, 거래 대금이 어제 거래대금에 비해서 x배 올라갔을 때 매수
+            # 어제 종가 보다 현재가가 증가했고, 현재 거래 대금이 어제 거래대금에 비해서 x배 올라갔을 때 매수
             if current_price > yes_close and current_total_tr_price > yes_total_tr_price * self.volume_up:
                 return True
             else:
