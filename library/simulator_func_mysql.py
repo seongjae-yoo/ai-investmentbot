@@ -12,6 +12,7 @@ from sqlalchemy import event
 
 import pymysql.cursors
 
+from library.daily_crawler import *
 from library.logging_pack import *
 from library import cf
 from pandas import DataFrame
@@ -378,6 +379,10 @@ class simulator_func_mysql:
                         # self.ai_filter_num = 1  # ai 알고리즘 선택
 
         # 2022-10-08 Written by SEONGJAE-YOO (Commits on Oct 8, 2022)
+        # 실시간 조건 매수 (realtime_daily_buy_list 데이터 에서 trade_check_num 알고리즘에 따라 매수하는 전략)
+        # self.only_nine_buy 옵션을 반드시 False로 설정해야함 (실시간 조건 매수 조건)
+        # self.use_min 옵션이 반드시 True로 설정이 되어야함 (실시간 조건 매수 조건)
+        # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다.
         elif self.simul_num in (12,13,14):
             
             self.simul_start_date = "20220802"
@@ -402,7 +407,7 @@ class simulator_func_mysql:
             self.limit_money = 0
 
             # 익절 수익률 기준치
-            self.sell_point = 10
+            self.sell_point = 5
 
             # 손절 수익률 기준치
             self.losscut_point = -5
@@ -422,7 +427,8 @@ class simulator_func_mysql:
             self.vol_mul = 3 
             self.d1_diff = 2 
             self.interval_month = 3
-
+            # self.only_nine_buy 옵션을 반드시 False로 설정해야함
+            # self.use_min 옵션이 반드시 True로 설정이 되어야함
             self.use_min = True
             self.only_nine_buy = False
             self.trade_check_num = 1 # 실시간 조건 매수 알고리즘 선택 
@@ -435,7 +441,9 @@ class simulator_func_mysql:
                 self.invest_limit_rate = 1.01
                 # 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
                 self.invest_min_limit_rate = 0.98
-                self.use_min = False
+                # self.only_nine_buy 옵션을 반드시 False로 설정해야함
+                # self.use_min 옵션이 반드시 True로 설정이 되어야함
+                self.use_min = True
                 self.only_nine_buy = False
 
             # 래리윌리엄스 변동성 돌파 전략
@@ -668,6 +676,8 @@ class simulator_func_mysql:
                     # open, sum_volume 값이 존재 할 경우
                     if open and sum_volume:
                         # 매수 할 종목에 대한 dataframe row와, 시작가, 현재가, 분별 누적 거래량 정보를 전달
+                        # loc[j] 에서 'j'는  for j in range(self.len_df_realtime_daily_buy_list): 에서 
+                        # df_realtime_daily_buy_list 에 있는 모든 종목들을 하나 하나씩 가져오는 역할을 한다.
                         if not self.trade_check(self.df_realtime_daily_buy_list.loc[j], open, price, sum_volume):
                             # 실시간 매수 조건에 맞지 않는 경우 pass
                             continue
