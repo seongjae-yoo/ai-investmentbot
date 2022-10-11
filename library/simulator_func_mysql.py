@@ -1536,6 +1536,7 @@ class simulator_func_mysql:
 
         # Absolute Momentum 전략 + sell_point 추가 + losscut_point 추가 (특정일 전 보다 n% 이하로 떨어지면 매도) / query version
         # group by ALLDB.code DESC : 동일한 코드를 제거한 후  내림차순(DESC)으로 정렬
+        # 2022-10-11 Written by SEONGJAE-YOO (Commits on Oct 11, 2022)
         elif self.sell_list_num == 8:
             date_before = self.date_rows[i - self.day_before][0]
             sql = "SELECT ALLDB.code, ALLDB.rate, ALLDB.present_price, ALLDB.valuation_profit " \
