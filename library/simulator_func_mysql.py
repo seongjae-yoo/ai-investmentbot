@@ -392,7 +392,7 @@ class simulator_func_mysql:
             self.db_to_realtime_daily_buy_list_num = 10
 
             # 매도 리스트 설정 알고리즘 번호
-            self.sell_list_num = 7
+            self.sell_list_num = 8
             ###################################
 
             # 초기 투자자금(시뮬레이션에서의 초기 투자 금액. 모의투자는 신청 당시의 금액이 초기 투자 금액이라고 보시면 됩니다)
@@ -1543,8 +1543,8 @@ class simulator_func_mysql:
                  "WHERE ALLDB.code = BEFORE_DAY.code " \
                  "AND ALLDB.sell_date = '%s' " \
                  "AND ((ALLDB.present_price - BEFORE_DAY.close) / BEFORE_DAY.close * 100 < '%s' " \
-                 "AND ((clo5 < clo20) and ALLDB.rate >= '%s' and ALLDB.rate <= '%s')) " \
-                 "group by ALLDB.rate ASC"       
+                 "OR ((ALLDB.clo5 < ALLDB.clo20) or (ALLDB.clo5 < ALLDB.clo40) or (ALLDB.clo5 < ALLDB.clo60) or ALLDB.rate >= '%s' or ALLDB.rate <= '%s')) " \
+                 "ORDER by ALLDB.valuation_profit DESC"       
             sell_list = self.engine_simulator.execute(sql % (0, self.diff_point * (-1), self.sell_point, self.losscut_point)).fetchall()    
 
         ##################################################################################################################################################################################################################
