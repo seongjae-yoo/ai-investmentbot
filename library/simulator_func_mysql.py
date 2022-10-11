@@ -385,7 +385,7 @@ class simulator_func_mysql:
         # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다.
         elif self.simul_num in (12,13,14):
             
-            self.simul_start_date = "20220802"
+            self.simul_start_date = "20220502"
 
             ######### 알고리즘 선택 #############
             # 매수 리스트 설정 알고리즘 번호
@@ -401,16 +401,16 @@ class simulator_func_mysql:
             self.start_invest_price = 9448076
 
             # 매수 금액
-            self.invest_unit = 100000
+            self.invest_unit = 1000000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
 
             # 익절 수익률 기준치
-            self.sell_point = 5
+            self.sell_point = 3
 
             # 손절 수익률 기준치
-            self.losscut_point = -5
+            self.losscut_point = -3
 
             # 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
             self.invest_limit_rate = 1.01
@@ -418,12 +418,12 @@ class simulator_func_mysql:
             self.invest_min_limit_rate = 0.98
 
             # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
-            self.day_before = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+            self.day_before = 60 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
             # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
-            self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+            self.diff_point = 5 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
             
             # volume * close (총 거래대금 금액) 의 변수: total_transaction_price
-            self.total_transaction_price = 15000000
+            self.total_transaction_price = 100000
             self.vol_mul = 3 
             self.d1_diff = 2 
             self.interval_month = 3
@@ -432,7 +432,7 @@ class simulator_func_mysql:
             self.use_min = True
             self.only_nine_buy = False
             self.trade_check_num = 1 # 실시간 조건 매수 알고리즘 선택 
-            self.volume_up = 3  # 특정 거래대금 보다 x배 이상 증가 할 경우 매수
+            self.volume_up = 2  # 특정 거래대금 보다 x배 이상 증가 할 경우 매수
 
             if self.simul_num == 13:
                 
@@ -450,7 +450,7 @@ class simulator_func_mysql:
             # 2022-10-08 Written by SEONGJAE-YOO (Commits on Oct 8, 2022)
             elif self.simul_num == 14:
                 self.trade_check_num = 3
-                self.rarry_k = 0.5
+                self.rarry_k = 0.6
                 self.use_min = True
                 self.only_nine_buy = False
 
@@ -1522,8 +1522,8 @@ class simulator_func_mysql:
                     "AND ALLDB.sell_date = 0 "\
                     "AND (ALLDB.present_price - BEFORE_DAY.close) / BEFORE_DAY.close * 100 < '%s' "
             sell_list = self.engine_simulator.execute(sql % (self.diff_point * (-1))).fetchall()
-     
-        # Absolute Momentum 전략 + losscut_point 추가 (특정일 전 보다 n% 이하로 떨어지면 매도) / query version
+        # 2022-10-11 Written by SEONGJAE-YOO (Commits on Oct 11, 2022)
+        # Absolute Momentum 전략 + sell_point 추가 + losscut_point 추가 (특정일 전 보다 n% 이하로 떨어지면 매도) / query version
         elif self.sell_list_num == 7:
             date_before = self.date_rows[i - self.day_before][0]
             sql = "SELECT ALLDB.code, ALLDB.rate, ALLDB.present_price, ALLDB.valuation_profit " \
@@ -1531,8 +1531,22 @@ class simulator_func_mysql:
                  "WHERE ALLDB.code = BEFORE_DAY.code " \
                  "AND ALLDB.sell_date = 0 " \
                  "AND ((ALLDB.present_price - BEFORE_DAY.close) / BEFORE_DAY.close * 100 < '%s' " \
-                 "OR ALLDB.rate <= '%s')"
-            sell_list = self.engine_simulator.execute(sql % (self.diff_point * (-1), self.losscut_point)).fetchall()    
+                 "OR (ALLDB.rate >= '%s' or ALLDB.rate <= '%s'))"
+            sell_list = self.engine_simulator.execute(sql % (self.diff_point * (-1), self.sell_point, self.losscut_point)).fetchall() 
+
+        # Absolute Momentum 전략 + sell_point 추가 + losscut_point 추가 (특정일 전 보다 n% 이하로 떨어지면 매도) / query version
+        # group by ALLDB.code DESC : 동일한 코드를 제거한 후  내림차순(DESC)으로 정렬
+        elif self.sell_list_num == 8:
+            date_before = self.date_rows[i - self.day_before][0]
+            sql = "SELECT ALLDB.code, ALLDB.rate, ALLDB.present_price, ALLDB.valuation_profit " \
+                  "FROM all_item_db ALLDB, daily_buy_list.`" + date_before + "` BEFORE_DAY " \
+                 "WHERE ALLDB.code = BEFORE_DAY.code " \
+                 "AND ALLDB.sell_date = '%s' " \
+                 "AND ((ALLDB.present_price - BEFORE_DAY.close) / BEFORE_DAY.close * 100 < '%s' " \
+                 "AND ((clo5 < clo20) and ALLDB.rate >= '%s' and ALLDB.rate <= '%s')) " \
+                 "group by ALLDB.rate ASC"       
+            sell_list = self.engine_simulator.execute(sql % (0, self.diff_point * (-1), self.sell_point, self.losscut_point)).fetchall()    
+
         ##################################################################################################################################################################################################################
         else:
             print(f"{self.simul_num}번 알고리즘에 대한 self.sell_list_num 설정이 비었습니다. variable_setting 함수에서 self.sell_list_num을 확인해주세요.")
