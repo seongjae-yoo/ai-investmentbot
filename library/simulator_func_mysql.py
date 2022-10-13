@@ -134,7 +134,8 @@ class simulator_func_mysql:
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
             self.start_invest_price = 9448076
 
-            # 매수 금액
+            # ex. 10만원 씩 분산 투자 해서 설정한 경우 / start_invest_price 에서 invest_unit 변수 값 만큼 매일 분산해서 여러종목을 투자한다.
+            # 매일 한종목에 invest_unit 변수 값만큼 투자 하고 나머지 금액은 여러 종목마다  invest_unit 값만큼 투자한다. (분산 투자 개념)
             self.invest_unit = 100000
 
             # 자산 중 최소로 남겨 둘 금액
@@ -374,9 +375,9 @@ class simulator_func_mysql:
                         # 매도 리스트 설정 알고리즘 번호 (Absolute Momentum query ver + losscut point 추가)
                         self.sell_list_num = 7
 
-                        # # AI알고리즘 사용 여부 
-                        # self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
-                        # self.ai_filter_num = 1  # ai 알고리즘 선택
+                        # AI알고리즘 사용 여부 
+                        self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                        self.ai_filter_num = 1  # ai 알고리즘 선택
 
         # 2022-10-08 Written by SEONGJAE-YOO (Commits on Oct 8, 2022)
         # 실시간 조건 매수 (realtime_daily_buy_list 데이터 에서 trade_check_num 알고리즘에 따라 매수하는 전략)
