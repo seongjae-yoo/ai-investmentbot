@@ -384,7 +384,7 @@ class simulator_func_mysql:
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함 (실시간 조건 매수 조건)
         # self.use_min 옵션이 반드시 True로 설정이 되어야함 (실시간 조건 매수 조건)
         # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다.
-        elif self.simul_num in (12,13,14):
+        elif self.simul_num in (12,13,14,15):
             
             self.simul_start_date = "20220502"
 
@@ -421,11 +421,11 @@ class simulator_func_mysql:
             # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
             self.day_before = 60 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
             # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
-            self.diff_point = 5 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+            self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
             
             # volume * close (총 거래대금 금액) 의 변수: total_transaction_price
             self.total_transaction_price = 100000
-            self.vol_mul = 3 
+            self.vol_mul = 2
             self.d1_diff = 2 
             self.interval_month = 3
             # self.only_nine_buy 옵션을 반드시 False로 설정해야함
@@ -434,6 +434,15 @@ class simulator_func_mysql:
             self.only_nine_buy = False
             self.trade_check_num = 1 # 실시간 조건 매수 알고리즘 선택 
             self.volume_up = 2  # 특정 거래대금 보다 x배 이상 증가 할 경우 매수
+
+            self.majorenterprise = str("우량기업")
+            self.newenterprise = str("신성장기업") 
+            self.audit = str("정상")
+            self.margin = 40
+            self.remarks_manage = str("관리종목")
+            self.remarks_stop = str("거래정지")
+            self.stock_market_a = str("거래소")
+            self.stock_market_b = str("코스닥")  #           info.stock_market IN ("거래소", "코스닥")
 
             if self.simul_num == 13:
                 
@@ -454,6 +463,14 @@ class simulator_func_mysql:
                 self.rarry_k = 0.6
                 self.use_min = True
                 self.only_nine_buy = False
+
+            elif self.simul_num == 15:
+                 # 매수 리스트 설정 알고리즘 번호 
+                self.db_to_realtime_daily_buy_list_num = 12
+                 # 매도 리스트 설정 알고리즘 번호
+                self.sell_list_num = 7
+
+
 
 
         else:
@@ -983,6 +1000,53 @@ class simulator_func_mysql:
                     "ORDER BY (YES_DAY.close - BEFORE_DAY.close) / BEFORE_DAY.close * 100 DESC"
 
                 realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.total_transaction_price,self.vol_mul, self.d1_diff, date_rows_yesterday, self.interval_month, date_rows_yesterday,date_rows_yesterday ,date_rows_yesterday,date_rows_yesterday,date_rows_yesterday,self.diff_point, self.invest_unit)).fetchall()
+
+
+        elif self.db_to_realtime_daily_buy_list_num == 12:
+                            if i < self.day_before + 1:
+                                realtime_daily_buy_list = []
+                                pass
+                            else:
+                                date_before = self.date_rows[i - 1 - self.day_before][0]
+                                sql = f'''
+                                    SELECT YES_DAY.* FROM `{date_before}` BEFORE_DAY, `{date_rows_yesterday}` YES_DAY, stock_info info 
+                                    WHERE BEFORE_DAY.code = YES_DAY.code
+                                    AND YES_DAY.code = info.code  
+                                    and YES_DAY.yes_clo20 > YES_DAY.yes_clo5 and YES_DAY.clo5 > YES_DAY.clo20  
+                                    and YES_DAY.volume * YES_DAY.close > {self.total_transaction_price}  
+                                    and YES_DAY.vol20 * {self.vol_mul} < YES_DAY.volume  
+                                    and YES_DAY.d1_diff_rate > {self.d1_diff}  
+                                    and info.audit = '{self.audit}'  
+                                    and info.margin <= {self.margin} 
+                                    and info.remarks NOT LIKE '{self.remarks_manage}'  
+                                    and info.remarks NOT LIKE '{self.remarks_stop}'  
+                                    and NOT exists (select null from stock_managing c where YES_DAY.code=c.code and c.code_name != '' group by c.code) 
+                                    and NOT exists (select null from stock_insincerity d where YES_DAY.code=d.code and d.code_name !='' group by d.code) 
+                                    and NOT exists (select null from stock_invest_caution e where YES_DAY.code=e.code and DATE_SUB({date_rows_yesterday}, INTERVAL {self.interval_month} MONTH ) < e.post_date and e.post_date < Date({date_rows_yesterday}) and e.type != '투자경고 지정해제' group by e.code) 
+                                    and NOT exists (select null from stock_invest_warning f where YES_DAY.code=f.code and f.post_date <= DATE({date_rows_yesterday}) and (f.cleared_date > DATE({date_rows_yesterday}) or f.cleared_date is null) group by f.code) 
+                                    and NOT exists (select null from stock_invest_danger g where YES_DAY.code=g.code and g.post_date <= DATE({date_rows_yesterday}) and (g.cleared_date > DATE({date_rows_yesterday}) or g.cleared_date is null) group by g.code) 
+                                    AND (YES_DAY.close - BEFORE_DAY.close) / BEFORE_DAY.close * 100 > {self.diff_point}
+                                    AND NOT exists (SELECT null FROM stock_konex b WHERE YES_DAY.code=b.code) 
+                                    AND YES_DAY.close < {self.invest_unit}
+                                    ORDER BY (YES_DAY.close - BEFORE_DAY.close) / BEFORE_DAY.close * 100 DESC
+                                '''
+                                realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql).fetchall()
+
+        elif self.db_to_realtime_daily_buy_list_num == 11:
+
+                                sql = f'''
+                                    SELECT day.* FROM `{date_rows_yesterday}` day, stock_info info
+                                    WHERE day.code = info.code
+                                    AND info.stock_market IN ("거래소", "코스닥")
+                                    AND info.category0 IN ("우량기업", "신성장기업")
+                                    AND info.audit = '정상'
+                                    AND info.margin <= 40
+                                    AND info.remarks NOT LIKE "%관리종목%"
+                                    AND info.remarks NOT LIKE "%거래정지%"
+                                '''
+                                realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql).fetchall()
+                
+
 
         ######################################################################################################################################################################################
         else:
