@@ -44,9 +44,15 @@ class collector_api():
         # kospi(stock_kospi), kosdaq(stock_kosdaq), konex(stock_konex)
         # 관리종목(stock_managing), 불성실법인종목(stock_insincerity) 업데이트
         if rows[0][0] != self.open_api.today:
-            self.get_code_list()  # 촬영 후 일부 업데이트 되었습니다.
-
-        # 촬영 후 콜렉팅 순서가 일부 업데이트 되었습니다.
+        #    self.open_api.check_balance()
+            self.get_code_list() 
+            self._create_stock_info()
+            sql = "UPDATE setting_data SET code_update='%s' limit 1"
+            self.engine_JB.execute(sql % (self.open_api.today))
+            # 위의 소스와 동일한 소스
+            # check_sql = f"UPDATE setting_data SET code_update='{self.open_api.today}' limit 1"
+            # self.engine_JB.execute(check_sql)
+        
         # 잔고 및 보유종목 현황 db setting  & 당일 종목별 실현 손익
         if rows[0][1] != self.open_api.today or rows[0][2] != self.open_api.today:
             self.open_api.set_invest_unit()
@@ -304,7 +310,6 @@ class collector_api():
         self.code_df_insincerity = pd.DataFrame(columns={'code', 'code_name'})
 
     def get_code_list(self):
-        # 아래 부분은 영상 촬영 후 좀 더 효율적으로 업그레이드 되었으므로 강의 영상속의 코드와 다를 수 있습니다.
 
         # ### KIND 사이트에서 종목 데이터 가져오는 버전 ###
         # <KIND version start------------------------------------------------------------------------------------------>
@@ -370,8 +375,7 @@ class collector_api():
         ).drop_duplicates(subset=['code', 'code_name'])
         self._stock_to_sql(stock_item_all_df, "item_all")
 
-        sql = "UPDATE setting_data SET code_update='%s' limit 1"
-        self.engine_JB.execute(sql % (self.open_api.today))
+      
 
     def _get_code_list_by_market(self, market_num):
         codes = self.open_api.dynamicCall(f'GetCodeListByMarket("{market_num}")')
@@ -1102,12 +1106,13 @@ class collector_api():
         # ex3 에서 사용
         thema_dict = self.open_api.get_theme_info()
 
-        # # ex4 에서 사용
-        # data_map = {
-        #     '시장구분0': [stock_info_data['stock_market'], stock_info_data['category0']],
-        #     '업종구분': [stock_info_data['market_class0'], stock_info_data['market_class1']],
-        #     '시장구분1': [stock_info_data['category1']]
-        # }
+        # ex4 에서 사용
+
+        data_map = {
+            '시장구분0': [stock_info_data['stock_market'], stock_info_data['category0']],
+            '업종구분': [stock_info_data['market_class0'], stock_info_data['market_class1']],
+            '시장구분1': [stock_info_data['category1']]
+        }
 
         for c in stock_info_data['code']:
             # ex1. 감리 구분 컬럼 추가
@@ -1132,25 +1137,25 @@ class collector_api():
                 stock_info_data['thema_code'].append('|'.join(theme_codes))
                 stock_info_data['thema_name'].append('|'.join(theme_names))
 
-            # # ex4. 주식종목 시장구분, 종목분류 등 컬럼 추가
-            # stock_info = {}
-            # for info in self.open_api.KOA_Functions('GetMasterStockInfo', c).split(';'):
-            #     if info:
-            #         split_info = info.split('|')
-            #         k = split_info[0]
-            #         v = split_info[1:]
-            #         stock_info[k] = v
-            #
-            # for k, v in data_map.items():
-            #     if k in stock_info:
-            #         for i, mapped_list in enumerate(v):
-            #             try:
-            #                 mapped_list.append(stock_info[k][i] or None)
-            #             except IndexError:
-            #                 mapped_list.append(None)
-            #     else:
-            #         for mapped_list in v:
-            #             mapped_list.append(None)
+            # ex4. 주식종목 시장구분, 종목분류 등 컬럼 추가
+            stock_info = {}
+            for info in self.open_api.KOA_Functions('GetMasterStockInfo', c).split(';'):
+                if info:
+                    split_info = info.split('|')
+                    k = split_info[0]
+                    v = split_info[1:]
+                    stock_info[k] = v
+            
+            for k, v in data_map.items():
+                if k in stock_info:
+                    for i, mapped_list in enumerate(v):
+                        try:
+                            mapped_list.append(stock_info[k][i] or None)
+                        except IndexError:
+                            mapped_list.append(None)
+                else:
+                    for mapped_list in v:
+                        mapped_list.append(None)
 
         # dictionary 를 dataframe으로 변환하여 to_sql로 daily_buy_list 데이터베이스에 stock_info 테이블 생성
         DataFrame.from_dict(stock_info_data).to_sql(
