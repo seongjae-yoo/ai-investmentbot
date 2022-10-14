@@ -1001,7 +1001,7 @@ class simulator_func_mysql:
 
                 realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.total_transaction_price,self.vol_mul, self.d1_diff, date_rows_yesterday, self.interval_month, date_rows_yesterday,date_rows_yesterday ,date_rows_yesterday,date_rows_yesterday,date_rows_yesterday,self.diff_point, self.invest_unit)).fetchall()
 
-
+        # 2022-10-14 Written by SEONGJAE-YOO (Commits on Oct 14, 2022)
         elif self.db_to_realtime_daily_buy_list_num == 12:
                             if i < self.day_before + 1:
                                 realtime_daily_buy_list = []
