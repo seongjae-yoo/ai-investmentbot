@@ -64,6 +64,7 @@ class OpenTest:
 
         # *테마관련함수(키움 OpenAPI+ 개발가이드 매뉴얼 참고 ** koastudio에는 가이드가 없음)
         # LONG : 정수형으로 인자 값을 보내라(int)
+        # https://download.kiwoom.com/web/openapi/kiwoom_openapi_plus_devguide_ver_1.1.pdf 참고 
         ex6 = self.open_api.dynamicCall('GetThemeGroupList(int)', 1)
         print(f"ex6 -- 테마코드, 테마명 리스트: {ex6}")
 
