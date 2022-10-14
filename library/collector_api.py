@@ -1099,8 +1099,8 @@ class collector_api():
         for row in stock_codes:
             stock_info_data['code'].append(row['code'])
 
-        # # ex3 에서 사용
-        # thema_dict = self.open_api.get_theme_info()
+        # ex3 에서 사용
+        thema_dict = self.open_api.get_theme_info()
 
         # # ex4 에서 사용
         # data_map = {
@@ -1113,23 +1113,24 @@ class collector_api():
             # ex1. 감리 구분 컬럼 추가
             stock_info_data['audit'].append(self.open_api.dynamicCall('GetMasterConstruction(QString)', c))
 
-            # # ex2. 증거금 비율(margin), 비고(remarks, 거래정지여부, 관리종목여부 등) 컬럼 추가
-            # stock_state = self.open_api.dynamicCall('GetMasterStockState(QString)', c).split('|')
-            # stock_info_data['margin'].append(stock_state[0][3:-1]) # 슬라이싱을 사용하여 숫자만 가져온다
-            # stock_info_data['remarks'].append('|'.join(stock_state[1:]))
+            # ex2. 증거금 비율(margin), 비고(remarks, 거래정지여부, 관리종목여부 등) 컬럼 추가
+            stock_state = self.open_api.dynamicCall('GetMasterStockState(QString)', c).split('|')
+            stock_info_data['margin'].append(stock_state[0][3:-1]) # 슬라이싱을 사용하여 숫자만 가져온다
+            stock_info_data['remarks'].append('|'.join(stock_state[1:]))
 
-            # # ex3. 종목별 테마코드, 테마명 컬럼 추가
-            # if c not in thema_dict and not thema_dict[c]: #
-            #     stock_info_data['thema_code'].append(None)
-            #     stock_info_data['thema_name'].append(None)
-            # else:
-            #     theme_codes = []
-            #     theme_names = []
-            #     for theme_code, theme_name in thema_dict[c]:
-            #         theme_codes.append(theme_code)
-            #         theme_names.append(theme_name)
-            #     stock_info_data['thema_code'].append('|'.join(theme_codes))
-            #     stock_info_data['thema_name'].append('|'.join(theme_names))
+            # ex3. 종목별 테마코드, 테마명 컬럼 추가
+            # 2022-10-14 Written by SEONGJAE-YOO (Commits on Oct 14, 2022)
+            if c not in thema_dict and not thema_dict[c]: #
+                stock_info_data['thema_code'].append(None)
+                stock_info_data['thema_name'].append(None)
+            else:
+                theme_codes = []
+                theme_names = []
+                for theme_code, theme_name in thema_dict[c]:
+                    theme_codes.append(theme_code)
+                    theme_names.append(theme_name)
+                stock_info_data['thema_code'].append('|'.join(theme_codes))
+                stock_info_data['thema_name'].append('|'.join(theme_names))
 
             # # ex4. 주식종목 시장구분, 종목분류 등 컬럼 추가
             # stock_info = {}
@@ -1159,5 +1160,5 @@ class collector_api():
                 'margin': Integer
             },
             if_exists='replace'
-        )
+        ) # margin 컬럼은 숫자로 되어있어 Integer 타입으로 넣어준다.
          

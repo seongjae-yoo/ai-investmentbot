@@ -1794,5 +1794,5 @@ print(abs(d3))
         data = self.dynamicCall("GetThemeGroupCode(QString)", theme_code)
         temp = []
         for x in data.split(';'):
-            temp.append(x[1:])
+            temp.append(x[1:])  # 맨앞 'A'문자빼고 숫자만 가져온다.
         return temp
