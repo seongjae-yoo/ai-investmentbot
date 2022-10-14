@@ -94,23 +94,23 @@ class OpenTest:
 
 
 
-        # # Part2. TR을 활용한 데이터 수집 -----------------------------------------------------
-        # # => CommRqData OpenAPI 메소드 활용
-        # # TR(Transaction) :  어떤 일을 하기위한 작업들의 모음. (서버에 데이터를 요청 -> 수신)
-        # print("ex11 -- 예수금 출력 ")
-        # # koastudio 좌측 하단 TR목록 / 'opw00001:예수금상세현황조회' 클릭 후 샘플 참고
-        # self.open_api.get_d2_deposit()
+        # Part2. TR을 활용한 데이터 수집 -----------------------------------------------------
+        # => CommRqData OpenAPI 메소드 활용
+        # TR(Transaction) :  어떤 일을 하기위한 작업들의 모음. (서버에 데이터를 요청 -> 수신)
+        print("ex11 -- 예수금 출력 ")
+        # koastudio 좌측 하단 TR목록 / 'opw00001:예수금상세현황조회' 클릭 후 샘플 참고
+        self.open_api.get_d2_deposit()
         #
-        # print("ex12 -- 삼성전자 주가 데이터 ")
-        # # koastudio 좌측 하단 TR목록 / 'opt10081:주식일봉차트조회요청' 클릭 후 샘플 참고
-        # # get_total_data : 특정 종목의 1985년 이후 특정 날짜까지의 주가 데이터를 모두 가져오는 함수
-        # data = self.open_api.get_total_data('005930', '삼성전자', '20200424')
-        # print(data)
+        print("ex12 -- 삼성전자 주가 데이터 ")
+        # koastudio 좌측 하단 TR목록 / 'opt10081:주식일봉차트조회요청' 클릭 후 샘플 참고
+        # get_total_data : 특정 종목의 1985년 이후 특정 날짜까지의 주가 데이터를 모두 가져오는 함수
+        data = self.open_api.get_total_data('005930', '삼성전자', '20200424')
+        print(data)
         #
-        # print("ex13 -- 삼성전자 재정 데이터 ")
-        # # koastudio 좌측 하단 TR목록 / 'opt10001:주식기본정보요청' 클릭 후 샘플 참고
-        # data2 = self.open_api.get_stock_finance('005930')
-        # print(data2)
+        print("ex13 -- 삼성전자 재정 데이터 ")
+        # koastudio 좌측 하단 TR목록 / 'opt10001:주식기본정보요청' 클릭 후 샘플 참고
+        data2 = self.open_api.get_stock_finance('005930')
+        print(data2)
         # # -----------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
