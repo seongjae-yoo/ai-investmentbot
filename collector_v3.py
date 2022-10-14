@@ -11,7 +11,8 @@ class Collector:
         self.collector_api = collector_api()
 
     def collecting(self):
-        self.collector_api.code_update_check()
+     #   self.collector_api.code_update_check()
+        self.collector_api._create_stock_info()
  
 if __name__ == "__main__":
     print("__main__에 들어왔습니다.")
