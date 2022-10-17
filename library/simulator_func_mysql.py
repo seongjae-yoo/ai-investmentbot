@@ -451,24 +451,22 @@ class simulator_func_mysql:
                 self.invest_limit_rate = 1.01
                 # 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
                 self.invest_min_limit_rate = 0.98
-                # self.only_nine_buy 옵션을 반드시 False로 설정해야함
-                # self.use_min 옵션이 반드시 True로 설정이 되어야함
-                self.use_min = True
-                self.only_nine_buy = False
-
+               
             # 래리윌리엄스 변동성 돌파 전략
             # 2022-10-08 Written by SEONGJAE-YOO (Commits on Oct 8, 2022)
             elif self.simul_num == 14:
                 self.trade_check_num = 3
                 self.rarry_k = 0.6
-                self.use_min = True
-                self.only_nine_buy = False
-
+             
+            # 2022-10-17 Written by SEONGJAE-YOO (Commits on Oct 17, 2022)
             elif self.simul_num == 15:
                  # 매수 리스트 설정 알고리즘 번호 
                 self.db_to_realtime_daily_buy_list_num = 12
                  # 매도 리스트 설정 알고리즘 번호
                 self.sell_list_num = 7
+                self.trade_check_num = 3
+                self.rarry_k = 0.6
+                
 
 
 
