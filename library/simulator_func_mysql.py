@@ -387,7 +387,7 @@ class simulator_func_mysql:
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함 (실시간 조건 매수 조건)
         # self.use_min 옵션이 반드시 True로 설정이 되어야함 (실시간 조건 매수 조건)
         # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다.
-        elif self.simul_num in (12,13,14,15,16,17,18,19):
+        elif self.simul_num in (12,13,14,15,16,17,18,19,20):
             
             self.simul_start_date = "20220502"
 
