@@ -387,7 +387,7 @@ class simulator_func_mysql:
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함 (실시간 조건 매수 조건)
         # self.use_min 옵션이 반드시 True로 설정이 되어야함 (실시간 조건 매수 조건)
         # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다.
-        elif self.simul_num in (12,13,14,15,16,17,18,19,20):
+        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21):
             
             self.simul_start_date = "20220502"
 
@@ -516,10 +516,30 @@ class simulator_func_mysql:
                 self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
                 
                 self.margin = 40    
+
+
+
+            # 1달전 , 6달전 평균 모멘텀 전략 + 볼린저밴드 전략
+            # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)
+            elif self.simul_num == 20:       
+                self.db_to_realtime_daily_buy_list_num = 16
+                self.sell_list_num = 11
+                self.trade_check_num = 3
+                self.simul_start_date = "20210713"
+                # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
+                self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
+                self.date_before_b = 120 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+                
+                self.margin = 40  
+                # AI알고리즘 사용 여부 
+                self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                self.ai_filter_num = 2  # ai 알고리즘 선택
                 
         # 1달전 ,3달전, 6달전 ,12달전 평균 모멘텀 전략 + 볼린저밴드 전략
         # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)
-            elif self.simul_num == 20:       
+            elif self.simul_num == 21:       
 
                 self.db_to_realtime_daily_buy_list_num = 17
                 self.sell_list_num = 12

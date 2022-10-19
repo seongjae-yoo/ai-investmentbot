@@ -12,11 +12,15 @@ from collections import deque
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn import preprocessing
+from sklearn.preprocessing import *
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.layers import LSTM, Dense, Dropout 
+from tensorflow.keras import *
 from tensorflow.keras.models import Sequential
 from tensorflow.python.keras.callbacks import EarlyStopping
+
+
+import tensorflow as tf
 
 plt.rcParams['font.family'] = 'Malgun Gothic'
 
@@ -25,7 +29,7 @@ class DataNotEnough(BaseException):
     pass
 
 # 학습 함수
-def train(data, model, n_epochs=400, batch_size=64, verbose=0):
+def train(data, model, n_epochs=400, batch_size=64, verbose=1):
     early_stopping = EarlyStopping(monitor='val_loss', patience=50)  # 50번이상 더 좋은 결과가 없으면 학습을 멈춤
 
     # verbose 옵션은 실행 과정을 콘솔에 띄워줄지 말지에 대한 옵션
@@ -41,8 +45,11 @@ def train(data, model, n_epochs=400, batch_size=64, verbose=0):
 
 # 에러 평가 함수
 def evaluate(data, model):
-    mse, mae = model.evaluate(data["X_test"], data["y_test"], verbose=0)
+    
+    mse, mae = model.evaluate(data["X_test"], data["y_test"], verbose=1)
     mean_absolute_error = data["column_scaler"]["close"].inverse_transform([[mae]])[0][0]
+    
+
     return mean_absolute_error
 
 # 예측 주가를 계산 해주는 함수
@@ -68,7 +75,8 @@ def load_data(df, n_steps=100, lookup_step=1, test_size=0.2, shuffle=True):
     column_scaler = {}
     # data를 칼럼별로 0과 1사이의 값으로 scale
     for column in df.columns:
-        scaler = preprocessing.MinMaxScaler()
+        scaler = MinMaxScaler() # scaler = StandardScaler()
+        #scaler = tf.keras.utils.normalize(column_scaler, axis=1)
         df[column] = scaler.fit_transform(np.expand_dims(df[column].to_numpy(), axis=1))
         # 해당 칼럼에 쓰인 scaler를 저장한다
         column_scaler[column] = scaler
@@ -133,11 +141,68 @@ def create_model(units=50, dropout=0.3, n_steps=100, loss='mae', optimizer='adam
 
     return model
 
+#A bidirectional long short-term memory (BiLSTM) network 
+# is a combination of two LSTMs, i.e., forward and backward.
+# Based on LSTM, BiLSTM can extract the feature of forward and backward simultaneously
+
+def create_model_Bidirectional(units=50, dropout=0.25, n_steps=100, loss = 'mae', optimizer= 'RMSprop', n_layers=4, cell=LSTM):
+    #model = Sequential()
+    # for i in range(n_layers):
+    #     if i == 0:
+    #         model.add(cell(units, return_sequences=True, input_shape=(None, n_steps)))
+    #     elif i == n_layers - 1:  # 마지막 layer
+    #         model.add(cell(units))
+    #     else:
+    #         model.add(cell(units, return_sequences=True))
+    #     # 매 layer마다 dropout을 해줌
+    #     model.add(Dropout(dropout))
+    # model.add(Dense(1))
+    # model.compile(loss=loss, metrics=[loss], optimizer=optimizer)
+    
+    # model.add(Bidirectional(LSTM(10, return_sequences=True),
+    #                          input_shape=(5, 10)))
+    # model.add(Bidirectional(LSTM(10)))
+    
+    model = Sequential()
+    #layer = tf.keras.layers.Activation('softmax')
+    for i in range(n_layers):
+            if i ==0:
+                model.add(tf.keras.layers.Bidirectional(cell(units, return_sequences=True), input_shape=(None, n_steps)))          
+            elif i == n_layers - 1:  # 마지막 layer
+                model.add(tf.keras.layers.Bidirectional(cell(units)))
+            else:
+                model.add(tf.keras.layers.Bidirectional(cell(units, return_sequences=True)))
+            # 매 layer마다 dropout을 해줌
+            model.add(Dropout(dropout))
+    model.add(Dense(5)) # tf.keras.layers.Activation(tf.nn.relu)
+    model.add(layers.Dense(1, activation ='softmax'))  # model.add(layers.Dense(64, activation='relu'))
+    #model.compile(loss = tf.keras.losses.CategoricalCrossentropy() , optimizer= tf.keras.optimizers.RMSprop(learning_rate=1e-3))
+    model.compile(loss=loss, metrics=[loss], optimizer=optimizer)
+
+         
+#To prevent overfitting,
+#the dropout technique was used. The dropout technology stops the hidden layer neurons with
+#self-defined probability numbers from working in the forward propagation of the training process 
+  
+        # # With custom backward layer
+        # model = Sequential()
+        # forward_layer = LSTM(10, return_sequences=True)
+        # backward_layer = LSTM(10, activation='relu', return_sequences=True,
+        #                     go_backwards=True)
+        # model.add(Bidirectional(forward_layer, backward_layer=backward_layer,
+        #                         input_shape=(5, 10)))
+        # model.add(Dense(5))
+        # model.add(Activation('softmax'))
+        # model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+
+
+    return model    
+
 # 그래프 출력 함수
 def plot_graph(model, data):
     y_test = data["y_test"]
     X_test = data["X_test"]
-    y_pred = model.predict(X_test)
+    y_test = model.predict(X_test)
     y_test = np.squeeze(data["column_scaler"]["close"].inverse_transform(np.expand_dims(y_test, axis=0)))
     y_pred = np.squeeze(data["column_scaler"]["close"].inverse_transform(y_pred))
     # 마지막 200개의 데이터를 보여줌. 기간 수정을 원하시면 이 숫자를 바꿔주세요.

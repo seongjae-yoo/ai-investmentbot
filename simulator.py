@@ -3,7 +3,7 @@ from library.simulator_func_mysql import *
 
 class Simulator:
     def __init__(self):
-        self.print_info()
+        self.print_info()  
         self.input_value()
 
     def print_info(self):
