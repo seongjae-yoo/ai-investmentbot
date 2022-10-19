@@ -144,7 +144,7 @@ def create_model(units=50, dropout=0.3, n_steps=100, loss='mae', optimizer='adam
 #A bidirectional long short-term memory (BiLSTM) network 
 # is a combination of two LSTMs, i.e., forward and backward.
 # Based on LSTM, BiLSTM can extract the feature of forward and backward simultaneously
-
+# 2022-10-19 Written by SEONGJAE-YOO (Commits on Oct 19, 2022)
 def create_model_Bidirectional(units=50, dropout=0.25, n_steps=100, loss = 'mae', optimizer= 'RMSprop', n_layers=4, cell=LSTM):
     #model = Sequential()
     # for i in range(n_layers):
