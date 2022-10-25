@@ -298,6 +298,7 @@ def create_model_Bidirectional(units=32, dropout=0.3, n_steps=20, loss = 'mse', 
 
 ####
 # LSTM + conv
+# # 2022-10-25 Written by SEONGJAE-YOO (Commits on Oct 25, 2022)
 def create_lstm_cnn(maxlen, embed_size, recurrent_units, dropout_rate, recurrent_dropout_rate, dense_size, nb_classes):
     input_layer = Input(shape=(maxlen,embed_size ))
     #input_layer = Input(shape=(maxlen, embed_size), )

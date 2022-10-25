@@ -81,8 +81,6 @@ is_used_predicted_close = False
 max_features = 200000
 maxlen = None
 embed_size = 100
-epoch = 10
-batch_size = 164  
 dropout_rate =  0.3
 recurrent_dropout_rate = 0.3
 recurrent_units = 64
@@ -97,9 +95,9 @@ except DataNotEnough:
     print('데이터가 충분하지 않습니다. ')
     exit(1)
 #model = create_model(n_steps=N_STEPS, loss=LOSS, units=UNITS, cell=CELL, n_layers=N_LAYERS, dropout=DROPOUT)
-model = create_model_Bidirectional(n_steps=N_STEPS, loss=LOSS, units=UNITS, cell=CELL, n_layers=N_LAYERS, dropout=DROPOUT)
+#model = create_model_Bidirectional(n_steps=N_STEPS, loss=LOSS, units=UNITS, cell=CELL, n_layers=N_LAYERS, dropout=DROPOUT)
  
-#model = create_lstm_cnn(maxlen = maxlen, embed_size = embed_size, recurrent_units =recurrent_units, dropout_rate = dropout_rate, recurrent_dropout_rate = recurrent_dropout_rate, dense_size = dense_size, nb_classes = nb_classes) 
+model = create_lstm_cnn(maxlen = maxlen, embed_size = embed_size, recurrent_units =recurrent_units, dropout_rate = dropout_rate, recurrent_dropout_rate = recurrent_dropout_rate, dense_size = dense_size, nb_classes = nb_classes) 
      
   
     
