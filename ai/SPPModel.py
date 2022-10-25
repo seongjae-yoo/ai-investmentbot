@@ -52,12 +52,12 @@ def train(data, model, n_epochs=400, batch_size=64, verbose=1):
 # 에러 평가 함수
 def evaluate(data, model):
     
-    mse, mae = model.evaluate(data["X_test"], data["y_test"], verbose=1)
+    mse_mae = model.evaluate(data["X_test"], data["y_test"], verbose=1)
     
     #mean_absolute_error = data["column_scaler"]["close"].inverse_transform([[mae]])[0][0]
     
 
-    return mse, mae 
+    return mse_mae 
 
 # 예측 주가를 계산 해주는 함수
 def predict(data, model, n_steps=100):
@@ -152,7 +152,7 @@ def create_model(units=50, dropout=0.3, n_steps=100, loss='mae', optimizer='adam
 #A bidirectional long short-term memory (BiLSTM) network 
 # is a combination of two LSTMs, i.e., forward and backward.
 # Based on LSTM, BiLSTM can extract the feature of forward and backward simultaneously
-# 2022-10-19 Written by SEONGJAE-YOO (Commits on Oct 19, 2022)
+# 2022-10-25 Written by SEONGJAE-YOO (Commits on Oct 25, 2022)
 def create_model_Bidirectional(units=32, dropout=0.3, n_steps=20, loss = 'mse', optimizer= 'RMSprop', n_layers=4, cell=LSTM):
     #model = Sequential()
     # for i in range(n_layers):

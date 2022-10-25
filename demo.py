@@ -9,7 +9,7 @@ from tensorflow.keras.callbacks import EarlyStopping #모델을 더 이상 학�
 from tensorflow.keras.layers import LSTM,GRU
 
 
-from ai.SPPModel import load_data, evaluate, DataNotEnough, create_model, predict, train ,create_model_Bidirectional, create_model_GRU, create_lstm_cnn
+from ai.SPPModel import load_data, evaluate, DataNotEnough, create_model, predict, train ,create_model_Bidirectional, create_lstm_cnn
 from library import cf
 
 ####
@@ -61,7 +61,7 @@ LOSS = "mae"
 
 # 최적화 알고리즘 선택
 # 실험결과 adam 보다 AngularGrad cos 가 더 loss 값이 작음
-OPTIMIZER = "cos"
+OPTIMIZER = "cos"  
 #OPTIMIZER = "adam"
 
 # 각 학습 반복에 사용할 데이터 샘플 수
@@ -111,8 +111,8 @@ new_df = pd.read_sql(sql, conn)
   
 data = load_data(df=new_df, n_steps=N_STEPS, lookup_step=LOOKUP_STEP, test_size=TEST_SIZE, shuffle=False)
  
-mse, mae = evaluate(data, model)   
-print(f"mse, mae: {mse, mae}")
+mse_mae = evaluate(data, model)   
+print(f"mse, mae: {mse_mae}")
 
 future_price = predict(data, model, n_steps=N_STEPS)
 print(f"Future price after {LOOKUP_STEP} days is {future_price:.2f}")
