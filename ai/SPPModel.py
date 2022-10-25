@@ -1,6 +1,7 @@
 import sys
 import logging
 
+
 logger = logging.getLogger(__name__)
 is_64bits = sys.maxsize > 2**32
 if not is_64bits:
@@ -14,13 +15,18 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import *
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.layers import LSTM, Dense, Dropout 
+from tensorflow.keras.layers import LSTM, Dense, Dropout , Activation, GRU
+
 from tensorflow.keras import *
 from tensorflow.keras.models import Sequential
 from tensorflow.python.keras.callbacks import EarlyStopping
-
-
 import tensorflow as tf
+#https://github.com/linewalks/AngularGrad-tf 참고 
+from .angular_grad import AngularGrad
+from matplotlib import pyplot
+####
+from keras.layers import GRU, MaxPooling1D, Conv1D, GlobalMaxPool1D, Activation, Add, Flatten, BatchNormalization , GlobalAveragePooling1D
+from keras.layers import Dense, Embedding, Input, concatenate
 
 plt.rcParams['font.family'] = 'Malgun Gothic'
 
@@ -30,7 +36,7 @@ class DataNotEnough(BaseException):
 
 # 학습 함수
 def train(data, model, n_epochs=400, batch_size=64, verbose=1):
-    early_stopping = EarlyStopping(monitor='val_loss', patience=50)  # 50번이상 더 좋은 결과가 없으면 학습을 멈춤
+    early_stopping = EarlyStopping(monitor='val_loss', patience=80)  # 80번이상 더 좋은 결과가 없으면 학습을 멈춤
 
     # verbose 옵션은 실행 과정을 콘솔에 띄워줄지 말지에 대한 옵션
     # 0 - 끔, 1 - 움직이는 실시간 그래프, 2 - 정적 메시지
@@ -47,10 +53,11 @@ def train(data, model, n_epochs=400, batch_size=64, verbose=1):
 def evaluate(data, model):
     
     mse, mae = model.evaluate(data["X_test"], data["y_test"], verbose=1)
-    mean_absolute_error = data["column_scaler"]["close"].inverse_transform([[mae]])[0][0]
+    
+    #mean_absolute_error = data["column_scaler"]["close"].inverse_transform([[mae]])[0][0]
     
 
-    return mean_absolute_error
+    return mse, mae 
 
 # 예측 주가를 계산 해주는 함수
 def predict(data, model, n_steps=100):
@@ -74,7 +81,7 @@ def load_data(df, n_steps=100, lookup_step=1, test_size=0.2, shuffle=True):
 
     column_scaler = {}
     # data를 칼럼별로 0과 1사이의 값으로 scale
-    for column in df.columns:
+    for column in df.columns:  # close, volume, open, high, low 컬럼들을 모두 MinMaxScaler 해준다.
         scaler = MinMaxScaler() # scaler = StandardScaler()
         #scaler = tf.keras.utils.normalize(column_scaler, axis=1)
         df[column] = scaler.fit_transform(np.expand_dims(df[column].to_numpy(), axis=1))
@@ -116,7 +123,7 @@ def load_data(df, n_steps=100, lookup_step=1, test_size=0.2, shuffle=True):
     y = np.array(y)
     # 신경망에 적용(fit)하기위해 X의 shape을 변경
     X = X.reshape((X.shape[0], X.shape[2], X.shape[1]))
-
+    
     # dataset을 train용도와 test 용도에 맞춰 나누어 줍니다.
     # test_size 가 0.2 이면 X_train, y_train에 80% 데이터로 트레이닝 하고 X_test,y_test에 나머지 20%로 테스트를 하겠다는 의미
     result["X_train"], result["X_test"], result["y_train"], result["y_test"] = \
@@ -138,6 +145,7 @@ def create_model(units=50, dropout=0.3, n_steps=100, loss='mae', optimizer='adam
         model.add(Dropout(dropout))
     model.add(Dense(1))
     model.compile(loss=loss, metrics=[loss], optimizer=optimizer)
+    model.summary()
 
     return model
 
@@ -145,7 +153,7 @@ def create_model(units=50, dropout=0.3, n_steps=100, loss='mae', optimizer='adam
 # is a combination of two LSTMs, i.e., forward and backward.
 # Based on LSTM, BiLSTM can extract the feature of forward and backward simultaneously
 # 2022-10-19 Written by SEONGJAE-YOO (Commits on Oct 19, 2022)
-def create_model_Bidirectional(units=50, dropout=0.25, n_steps=100, loss = 'mae', optimizer= 'RMSprop', n_layers=4, cell=LSTM):
+def create_model_Bidirectional(units=32, dropout=0.3, n_steps=20, loss = 'mse', optimizer= 'RMSprop', n_layers=4, cell=LSTM):
     #model = Sequential()
     # for i in range(n_layers):
     #     if i == 0:
@@ -164,22 +172,41 @@ def create_model_Bidirectional(units=50, dropout=0.25, n_steps=100, loss = 'mae'
     # model.add(Bidirectional(LSTM(10)))
     
     model = Sequential()
-    #layer = tf.keras.layers.Activation('softmax')
     for i in range(n_layers):
             if i ==0:
-                model.add(tf.keras.layers.Bidirectional(cell(units, return_sequences=True), input_shape=(None, n_steps)))          
+                model.add(tf.keras.layers.Bidirectional(cell(128,return_sequences=True, activation="relu") , input_shape=(None, n_steps)))          
             elif i == n_layers - 1:  # 마지막 layer
-                model.add(tf.keras.layers.Bidirectional(cell(units)))
+                model.add(tf.keras.layers.Bidirectional(cell(64, return_sequences=False,activation="relu")))
+            elif i == n_layers - 2:  # 마지막 2번째 layer
+                model.add(tf.keras.layers.Bidirectional(cell(128,return_sequences=True, activation="relu")))    
             else:
-                model.add(tf.keras.layers.Bidirectional(cell(units, return_sequences=True)))
+                model.add(tf.keras.layers.Bidirectional(cell(256,return_sequences=True,activation="relu")))
             # 매 layer마다 dropout을 해줌
             model.add(Dropout(dropout))
-    model.add(Dense(5)) # tf.keras.layers.Activation(tf.nn.relu)
-    model.add(layers.Dense(1, activation ='softmax'))  # model.add(layers.Dense(64, activation='relu'))
+    model.add(tf.keras.layers.Dense(5, activation='relu')) # tf.keras.layers.Activation(tf.nn.relu)
+    #model.add(activation ='softmax')  # model.add(layers.Dense(64, activation='relu'))
     #model.compile(loss = tf.keras.losses.CategoricalCrossentropy() , optimizer= tf.keras.optimizers.RMSprop(learning_rate=1e-3))
-    model.compile(loss=loss, metrics=[loss], optimizer=optimizer)
+    model.compile(loss=loss, metrics=[tf.keras.metrics.MeanSquaredError(), 'accuracy'], optimizer=AngularGrad(optimizer))
+  #  model.compile(loss=loss, metrics=[tf.keras.metrics.MeanSquaredError()], optimizer=optimizer)
+    model.summary()
 
-         
+    # model = Sequential()
+    # #layer = tf.keras.layers.Activation('softmax')
+    # for i in range(n_layers):
+    #         if i ==0:
+    #             model.add(tf.keras.layers.Bidirectional(cell(units, return_sequences=True, activation="relu") , input_shape=(7 , n_steps)))          
+    #         elif i == n_layers - 1:  # 마지막 layer
+    #             model.add(tf.keras.layers.Bidirectional(cell(units, return_sequences=False, activation="relu")))
+    #         else:
+    #             model.add(tf.keras.layers.Bidirectional(cell(units, return_sequences=True, activation="relu")))
+    #         # 매 layer마다 dropout을 해줌
+    #         model.add(Dropout(dropout))
+    # model.add(tf.keras.layers.Dense(1)) # tf.keras.layers.Activation(tf.nn.relu)
+    # #model.add(activation ='softmax')  # model.add(layers.Dense(64, activation='relu'))
+    # #model.compile(loss = tf.keras.losses.CategoricalCrossentropy() , optimizer= tf.keras.optimizers.RMSprop(learning_rate=1e-3))
+    # model.compile(loss=loss, metrics=[loss], optimizer=optimizer)
+    # model.summary()
+      
 #To prevent overfitting,
 #the dropout technique was used. The dropout technology stops the hidden layer neurons with
 #self-defined probability numbers from working in the forward propagation of the training process 
@@ -198,17 +225,148 @@ def create_model_Bidirectional(units=50, dropout=0.25, n_steps=100, loss = 'mae'
 
     return model    
 
+# ####
+# def create_model_Bidirectional_2(units=32, dropout=0.3, n_steps=20, loss = 'mse', optimizer= 'RMSprop', n_layers=4, cell=LSTM):
+#     maxlen = None
+#     embed_size =100 
+#     recurrent_units = 64
+#     recurrent_dropout_rate = 0.5 # dropout 비율과 같이 설정 
+#     dense_size =  32
+    
+#     model = Sequential()
+    
+           
+#     x , input_layer = tf.keras.layers.Bidirectional(GRU(128,return_sequences=True, activation="relu") , input_shape=(None, n_steps))          
+#     x = Dropout(dropout)(x)
+#     x = tf.keras.layers.Bidirectional(GRU(recurrent_units, return_sequences=True, dropout=dropout,
+#                            recurrent_dropout=recurrent_dropout_rate))(x)
+#     #x = AttentionWeightedAverage(maxlen)(x)
+#     x_a = GlobalMaxPool1D()(x)
+#     x_b = GlobalAveragePooling1D()(x)
+#     #x_c = AttentionWeightedAverage()(x)
+#     #x_a = MaxPooling1D(pool_size=2)(x)
+#     #x_b = AveragePooling1D(pool_size=2)(x)
+#     x = concatenate([x_a,x_b], axis=1)
+#     #x = Dense(dense_size, activation="relu")(x)
+#     #x = Dropout(dropout_rate)(x)
+#     x = Dense(dense_size, activation="relu")(x)
+#     output_layer = Dense(5, activation="sigmoid")(x)
+
+#     model = Model(inputs=input_layer, outputs=output_layer)            
+    
+#     model.compile(loss=loss, metrics=[tf.keras.metrics.MeanSquaredError(), 'accuracy'], optimizer=AngularGrad(optimizer))
+#     model.summary()
+
+
+#     return model   
+
+
+####
+
+# def create_model_GRU(units=128, dropout=0.3, n_steps=20, loss = 'mse', optimizer= 'RMSprop', n_layers=4, cell=GRU):
+#     maxlen = None
+#     embed_size =100 
+#     recurrent_units = 64
+#     recurrent_dropout_rate = 0.5 # dropout 비율과 같이 설정 
+#     dense_size =  32
+#     #input_layer = Input(shape=(maxlen,))
+#     input_layer = Input(shape=(maxlen, embed_size), )
+#     #embedding_layer = Embedding(max_features, embed_size, 
+#     #                            weights=[embedding_matrix], trainable=False)(input_layer)
+#     x = tf.keras.layers.Bidirectional(GRU(recurrent_units, return_sequences=True, dropout=dropout,
+#                            recurrent_dropout=recurrent_dropout_rate))(input_layer)
+#     x = Dropout(dropout)(x)
+#     x = tf.keras.layers.Bidirectional(GRU(recurrent_units, return_sequences=True, dropout=dropout,
+#                            recurrent_dropout=recurrent_dropout_rate))(x)
+#     #x = AttentionWeightedAverage(maxlen)(x)
+#     x_a = GlobalMaxPool1D()(x)
+#     x_b = GlobalAveragePooling1D()(x)
+#     #x_c = AttentionWeightedAverage()(x)
+#     #x_a = MaxPooling1D(pool_size=2)(x)
+#     #x_b = AveragePooling1D(pool_size=2)(x)
+#     x = concatenate([x_a,x_b], axis=1)
+#     #x = Dense(dense_size, activation="relu")(x)
+#     #x = Dropout(dropout_rate)(x)
+#     x = Dense(dense_size, activation="relu")(x)
+#     output_layer = Dense(5, activation="sigmoid")(x)
+
+#     model = Model(inputs=input_layer, outputs=output_layer)
+#     model.compile(loss=loss, metrics=[loss], optimizer=AngularGrad(optimizer))
+#   #  model.compile(loss=loss, metrics=[tf.keras.metrics.MeanSquaredError(), 'accuracy'], optimizer=AngularGrad(optimizer))
+#     model.summary()
+
+
+####
+# LSTM + conv
+def create_lstm_cnn(maxlen, embed_size, recurrent_units, dropout_rate, recurrent_dropout_rate, dense_size, nb_classes):
+    input_layer = Input(shape=(maxlen,embed_size ))
+    #input_layer = Input(shape=(maxlen, embed_size), )
+    #x = Embedding(max_features, embed_size, weights=[embedding_matrix],
+    #              trainable=False)(inp)
+    x = LSTM(recurrent_units, return_sequences=True, dropout=dropout_rate,
+                           recurrent_dropout=dropout_rate)(input_layer)
+    x = Dropout(dropout_rate)(x)
+
+    x = Conv1D(filters=recurrent_units, kernel_size=3, padding='same', activation='relu')(x)
+    x = Conv1D(filters=300,
+                       kernel_size=5,
+                       padding='valid',
+                       activation='tanh',
+                       strides=1)(x)
+    x = MaxPooling1D(pool_size=2)(x)
+
+    #x = Conv1D(filters=300,
+    #                   kernel_size=5,
+    #                   padding='valid',
+    #                   activation='tanh',
+    #                   strides=1)(x)
+    #x = MaxPooling1D(pool_size=2)(x)
+
+    #x = Conv1D(filters=300,
+    #                   kernel_size=3,
+    #                   padding='valid',
+    #                   activation='tanh',
+    #                   strides=1)(x)
+
+    x_a = GlobalMaxPool1D()(x)
+    x_b = GlobalAveragePooling1D()(x)
+    x = concatenate([x_a,x_b])
+
+    x = Dense(dense_size, activation="relu")(x)
+    x = Dropout(dropout_rate)(x)
+    x = Dense(nb_classes, activation="sigmoid")(x)
+    model = Model(inputs=input_layer, outputs=x)
+    model.summary()
+    model.compile(loss='mse', 
+                optimizer=AngularGrad('cos'), 
+                metrics=['accuracy'])
+    return model
+
+
+####
+
+
 # 그래프 출력 함수
-def plot_graph(model, data):
-    y_test = data["y_test"]
-    X_test = data["X_test"]
-    y_test = model.predict(X_test)
-    y_test = np.squeeze(data["column_scaler"]["close"].inverse_transform(np.expand_dims(y_test, axis=0)))
-    y_pred = np.squeeze(data["column_scaler"]["close"].inverse_transform(y_pred))
-    # 마지막 200개의 데이터를 보여줌. 기간 수정을 원하시면 이 숫자를 바꿔주세요.
-    plt.plot(y_test[-200:], c='b')
-    plt.plot(y_pred[-200:], c='r')
-    plt.xlabel("Days")
-    plt.ylabel("Price")
-    plt.legend(["Actual Price", "Predicted Price"])
-    plt.show()
+
+# def plot_graph(model, data):
+#     y_test = data["y_test"]
+#     X_test = data["X_test"]
+#     y_test = model.predict(X_test)
+#     y_test = np.squeeze(data["column_scaler"]["close"].inverse_transform(np.expand_dims(y_test, axis=0)))
+#     y_pred = np.squeeze(data["column_scaler"]["close"].inverse_transform(y_pred))
+#     # 마지막 200개의 데이터를 보여줌. 기간 수정을 원하시면 이 숫자를 바꿔주세요.
+#     plt.plot(y_test[-200:], c='b')
+#     plt.plot(y_pred[-200:], c='r')
+#     plt.xlabel("Days")
+#     plt.ylabel("Price")
+#     plt.legend(["Actual Price", "Predicted Price"])
+#     plt.show()
+
+'''
+    #https://github.com/hungchun-lin/Stock-price-prediction-using-GAN/blob/master/Code/3.%20Baseline_GRU.py    
+    pyplot.plot(history['loss'], label='train')
+    pyplot.plot(history['val_loss'], label='validation')
+    pyplot.legend()
+    pyplot.show()
+
+'''
