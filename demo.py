@@ -9,7 +9,7 @@ from tensorflow.keras.callbacks import EarlyStopping #모델을 더 이상 학�
 from tensorflow.keras.layers import LSTM,GRU
 
 
-from ai.SPPModel import load_data, evaluate, DataNotEnough, create_model, predict, train ,create_model_Bidirectional, create_lstm_cnn
+from ai.SPPModel import load_data, evaluate, DataNotEnough, create_model, predict, train ,create_model_Bidirectional, create_lstm_cnn, create_dpcnn, create_cnn3, create_cnn_GRU
 from library import cf
 
 ####
@@ -77,11 +77,15 @@ is_used_predicted_close = False
 
 
 
-# parameters_lstm_cnn 
-max_features = 200000
-maxlen = None
+# parameters_ 
+
+# maxlen을 큰값으로 잡은 이유 - 모델이 알아서 Output Shape size 데이터크기에 맞게 맞춰줌
+# # 다음과 같이 잡아줌 
+# WARNING:tensorflow:Model was constructed with shape (None, 100, 100) for input Tensor("input_1:0", shape=(None, 100, 100), dtype=float32), but it was called on an input with incompatible shape (None, 6, 100).
+
+maxlen = 100
 embed_size = 100
-dropout_rate =  0.3
+dropout_rate =  0.5
 recurrent_dropout_rate = 0.3
 recurrent_units = 64
 dense_size = 32
@@ -94,13 +98,21 @@ try:
 except DataNotEnough:
     print('데이터가 충분하지 않습니다. ')
     exit(1)
+
+# model 선택(원하시는 모델 함수를 선택하여 주석을 풀고 실행해주시면 됩니다.)
+
 #model = create_model(n_steps=N_STEPS, loss=LOSS, units=UNITS, cell=CELL, n_layers=N_LAYERS, dropout=DROPOUT)
 #model = create_model_Bidirectional(n_steps=N_STEPS, loss=LOSS, units=UNITS, cell=CELL, n_layers=N_LAYERS, dropout=DROPOUT)
  
-model = create_lstm_cnn(maxlen = maxlen, embed_size = embed_size, recurrent_units =recurrent_units, dropout_rate = dropout_rate, recurrent_dropout_rate = recurrent_dropout_rate, dense_size = dense_size, nb_classes = nb_classes) 
-     
+#model = create_lstm_cnn(maxlen = maxlen, embed_size = embed_size, recurrent_units =recurrent_units, dropout_rate = dropout_rate, recurrent_dropout_rate = recurrent_dropout_rate, dense_size = dense_size, nb_classes = nb_classes) 
+#model =  create_dpcnn(maxlen = maxlen, embed_size = embed_size, recurrent_units =recurrent_units, dropout_rate = dropout_rate, recurrent_dropout_rate = recurrent_dropout_rate, dense_size = dense_size, nb_classes = nb_classes) 
   
-    
+#model = create_cnn3(maxlen = maxlen, embed_size = embed_size, recurrent_units =recurrent_units, dropout_rate = dropout_rate, recurrent_dropout_rate = recurrent_dropout_rate, dense_size = dense_size, nb_classes = nb_classes) 
+model = create_cnn_GRU(maxlen = maxlen, embed_size = embed_size, recurrent_units =recurrent_units, dropout_rate = dropout_rate, recurrent_dropout_rate = recurrent_dropout_rate, dense_size = dense_size, nb_classes = nb_classes) 
+
+
+
+
 # 학습 시작
 history = train(shuffled_data, model, EPOCHS, BATCH_SIZE, verbose=1)
 
@@ -109,9 +121,10 @@ new_df = pd.read_sql(sql, conn)
   
 data = load_data(df=new_df, n_steps=N_STEPS, lookup_step=LOOKUP_STEP, test_size=TEST_SIZE, shuffle=False)
  
-mse_mae = evaluate(data, model)   
-print(f"mse, mae: {mse_mae}")
+mae = evaluate(data, model)
+print(f"Mean Absolute Error: {mae}")
+
 
 future_price = predict(data, model, n_steps=N_STEPS)
-print(f"Future price after {LOOKUP_STEP} days is {future_price:.2f}")
+print(f"Future price after {LOOKUP_STEP} minutes is {future_price:.2f}")
 #plot_graph(model, data)

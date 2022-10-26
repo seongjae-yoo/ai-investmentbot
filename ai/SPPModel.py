@@ -46,18 +46,15 @@ def train(data, model, n_epochs=400, batch_size=64, verbose=1):
                         validation_data=(data["X_test"], data["y_test"]),
                         callbacks=[early_stopping],
                         verbose=verbose)
-
+    
     return history
 
 # 에러 평가 함수
 def evaluate(data, model):
-    
-    mse_mae = model.evaluate(data["X_test"], data["y_test"], verbose=1)
-    
-    #mean_absolute_error = data["column_scaler"]["close"].inverse_transform([[mae]])[0][0]
-    
+    mse, mae = model.evaluate(data["X_test"], data["y_test"], verbose=0)
+    mean_absolute_error = data["column_scaler"]["close"].inverse_transform([[mae]])[0][0]
+    return mean_absolute_error
 
-    return mse_mae 
 
 # 예측 주가를 계산 해주는 함수
 def predict(data, model, n_steps=100):
@@ -153,7 +150,7 @@ def create_model(units=50, dropout=0.3, n_steps=100, loss='mae', optimizer='adam
 # is a combination of two LSTMs, i.e., forward and backward.
 # Based on LSTM, BiLSTM can extract the feature of forward and backward simultaneously
 # 2022-10-25 Written by SEONGJAE-YOO (Commits on Oct 25, 2022)
-def create_model_Bidirectional(units=32, dropout=0.3, n_steps=20, loss = 'mse', optimizer= 'RMSprop', n_layers=4, cell=LSTM):
+def create_model_Bidirectional(units=128, dropout=0.5, n_steps=100, loss = 'mae', optimizer= 'cos', n_layers=4, cell=LSTM):
     #model = Sequential()
     # for i in range(n_layers):
     #     if i == 0:
@@ -186,7 +183,7 @@ def create_model_Bidirectional(units=32, dropout=0.3, n_steps=20, loss = 'mse', 
     model.add(tf.keras.layers.Dense(5, activation='relu')) # tf.keras.layers.Activation(tf.nn.relu)
     #model.add(activation ='softmax')  # model.add(layers.Dense(64, activation='relu'))
     #model.compile(loss = tf.keras.losses.CategoricalCrossentropy() , optimizer= tf.keras.optimizers.RMSprop(learning_rate=1e-3))
-    model.compile(loss=loss, metrics=[tf.keras.metrics.MeanSquaredError(), 'accuracy'], optimizer=AngularGrad(optimizer))
+    model.compile(loss=loss, metrics=[tf.keras.metrics.MeanSquaredError()], optimizer=AngularGrad(optimizer))
   #  model.compile(loss=loss, metrics=[tf.keras.metrics.MeanSquaredError()], optimizer=optimizer)
     model.summary()
 
@@ -298,9 +295,9 @@ def create_model_Bidirectional(units=32, dropout=0.3, n_steps=20, loss = 'mse', 
 
 ####
 # LSTM + conv
-# # 2022-10-25 Written by SEONGJAE-YOO (Commits on Oct 25, 2022)
+# 2022-10-25 Written by SEONGJAE-YOO (Commits on Oct 25, 2022)
 def create_lstm_cnn(maxlen, embed_size, recurrent_units, dropout_rate, recurrent_dropout_rate, dense_size, nb_classes):
-    input_layer = Input(shape=(maxlen,embed_size ))
+    input_layer = Input(shape=(maxlen,embed_size))
     #input_layer = Input(shape=(maxlen, embed_size), )
     #x = Embedding(max_features, embed_size, weights=[embedding_matrix],
     #              trainable=False)(inp)
@@ -312,18 +309,18 @@ def create_lstm_cnn(maxlen, embed_size, recurrent_units, dropout_rate, recurrent
     x = Conv1D(filters=300,
                        kernel_size=5,
                        padding='valid',
-                       activation='tanh',
+                       activation='relu',
                        strides=1)(x)
     x = MaxPooling1D(pool_size=2)(x)
 
-    #x = Conv1D(filters=300,
+    # x = Conv1D(filters=300,
     #                   kernel_size=5,
     #                   padding='valid',
-    #                   activation='tanh',
+    #                   activation='relu',
     #                   strides=1)(x)
-    #x = MaxPooling1D(pool_size=2)(x)
+    # x = MaxPooling1D(pool_size=2)(x)
 
-    #x = Conv1D(filters=300,
+    # x = Conv1D(filters=300,
     #                   kernel_size=3,
     #                   padding='valid',
     #                   activation='tanh',
@@ -336,16 +333,163 @@ def create_lstm_cnn(maxlen, embed_size, recurrent_units, dropout_rate, recurrent
     x = Dense(dense_size, activation="relu")(x)
     x = Dropout(dropout_rate)(x)
     x = Dense(nb_classes, activation="sigmoid")(x)
-    model = Model(inputs=input_layer, outputs=x)
+    model = Model(inputs=input_layer, outputs=x, name='lstm_cnn')
     model.summary()
-    model.compile(loss='mse', 
+    model.compile(loss='mae', 
                 optimizer=AngularGrad('cos'), 
-                metrics=['accuracy'])
+                metrics=[tf.keras.metrics.MeanSquaredError()])
     return model
 
 
 ####
 
+# 2022-10-26 Written by SEONGJAE-YOO (Commits on Oct 26, 2022)
+# LSTM-CNN-version2
+def create_dpcnn(maxlen, embed_size, recurrent_units, dropout_rate, recurrent_dropout_rate, dense_size, nb_classes):
+    input_layer = Input(shape=(maxlen,embed_size))
+    #input_layer = Input(shape=(maxlen, embed_size), )
+    #x = Embedding(max_features, embed_size, weights=[embedding_matrix],
+    #              trainable=False)(inp)
+    X_shortcut1 = LSTM(recurrent_units, return_sequences=True, dropout=dropout_rate,
+                           recurrent_dropout=dropout_rate)(input_layer)
+    X_shortcut1 = Dropout(dropout_rate)(X_shortcut1)
+    # first block
+    X_shortcut1 = Conv1D(filters=recurrent_units, kernel_size=1, padding='same',strides=3)(X_shortcut1)
+    X_shortcut1 = Activation('relu')(X_shortcut1)
+    X_shortcut1 = Conv1D(filters=300, kernel_size=1, padding='valid',strides=3)(X_shortcut1)
+    X_shortcut1 = Activation('relu')(X_shortcut1)
+
+
+    # # connect shortcut to the main path
+    # X = Activation('relu')(input_layer)  # pre activation
+    # X = Add()([X,X_shortcut1])
+    X_shortcut1 = MaxPooling1D(pool_size=1, strides=2, padding='valid')(X_shortcut1)
+
+
+    # second block
+    X_shortcut2 = X_shortcut1
+    X_shortcut2 = Conv1D(filters=recurrent_units, kernel_size=1, strides=3)(X_shortcut2)
+    X_shortcut2 = Activation('relu')(X_shortcut2)
+    X_shortcut2 = Conv1D(filters=recurrent_units, kernel_size=1, strides=3)(X_shortcut2)
+    X_shortcut2 = Activation('relu')(X_shortcut2)
+
+    # connect shortcut to the main path
+    X_shortcut2 = MaxPooling1D(pool_size=1, strides=2, padding='valid')(X_shortcut2)
+
+    # Output
+    #X = Flatten()(X)
+
+    x_a = GlobalMaxPool1D()(X_shortcut2)
+    x_b = GlobalAveragePooling1D()(X_shortcut2)
+    X  = concatenate([x_a,x_b])
+
+    X = Dense(nb_classes,kernel_initializer="uniform",activation='sigmoid')(X)
+
+    model = Model(inputs = input_layer, outputs = X, name='dpcnn')
+    model.summary()
+    model.compile(loss='mae', 
+                optimizer=AngularGrad('cos'), 
+                metrics=[tf.keras.metrics.MeanSquaredError()])
+    return model
+
+# 2022-10-26 Written by SEONGJAE-YOO (Commits on Oct 26, 2022)
+#####GRU-CNN
+
+def create_cnn3(maxlen, embed_size, recurrent_units, dropout_rate, recurrent_dropout_rate, dense_size, nb_classes):
+    #inp = Input(shape=(maxlen, ))
+    input_layer = Input(shape=(maxlen, embed_size), )
+    #x = Embedding(max_features, embed_size, weights=[embedding_matrix], trainable=False)(inp)
+    x = GRU(recurrent_units, return_sequences=True, dropout=dropout_rate,
+                           recurrent_dropout=dropout_rate)(input_layer)
+    #x = Dropout(dropout_rate)(x) 
+
+    x = Conv1D(filters=recurrent_units, kernel_size=1, padding='same', activation='relu')(x)
+    x = MaxPooling1D(pool_size=1)(x)
+    x = Conv1D(filters=recurrent_units, kernel_size=1, padding='same', activation='relu')(x)
+    x = MaxPooling1D(pool_size=1)(x)
+    x = Conv1D(filters=recurrent_units, kernel_size=1, padding='same', activation='relu')(x)
+    x = MaxPooling1D(pool_size=1)(x)
+    x_a = GlobalMaxPool1D()(x)
+    x_b = GlobalAveragePooling1D()(x)
+    #x_c = AttentionWeightedAverage()(x)
+    #x_a = MaxPooling1D(pool_size=2)(x)
+    #x_b = AveragePooling1D(pool_size=2)(x)
+    x = concatenate([x_a,x_b])
+    #x = Dropout(dropout_rate)(x)
+    x = Dense(dense_size, activation="relu")(x)
+    x = Dense(nb_classes, activation="sigmoid")(x)
+    model = Model(inputs=input_layer, outputs=x,name='GRU-CNN')
+    model.summary()  
+    model.compile(loss='mae', 
+                optimizer=AngularGrad('cos'), 
+                metrics=[tf.keras.metrics.MeanSquaredError()])
+
+    return model
+
+#####
+# 2022-10-26 Written by SEONGJAE-YOO (Commits on Oct 26, 2022)
+# CNN_GRU 
+def create_cnn_GRU(maxlen, embed_size, recurrent_units, dropout_rate, recurrent_dropout_rate, dense_size, nb_classes):
+    #inp = Input(shape=(maxlen, ))
+    input_layer = Input(shape=(maxlen, embed_size), )
+    #x = Embedding(max_features, embed_size, weights=[embedding_matrix], trainable=False)(inp)
+    x = Dropout(dropout_rate)(input_layer) 
+    x = Conv1D(filters=recurrent_units, kernel_size=1, padding='same', activation='relu')(x)
+    x = MaxPooling1D(pool_size=1)(x)
+    x = Conv1D(filters=recurrent_units, kernel_size=1, padding='same', activation='relu')(x)
+    x = MaxPooling1D(pool_size=1)(x)
+    x = Conv1D(filters=recurrent_units, kernel_size=1, padding='same', activation='relu')(x)
+    x = MaxPooling1D(pool_size=1)(x)
+    x = GRU(recurrent_units)(x)
+    x = Dropout(dropout_rate)(x)
+    x = Dense(dense_size, activation="relu")(x)
+    x = Dense(nb_classes, activation="sigmoid")(x)
+    model = Model(inputs=input_layer, outputs=x, name ='CNN_GRU')
+    model.summary()  
+    model.compile(loss='mae', 
+                    optimizer=AngularGrad('cos'), 
+                    metrics=[tf.keras.metrics.MeanSquaredError()])
+    return model
+
+
+
+# #####
+# def create_conv1(units=50, dropout=0.3, n_steps=100, loss='mae', optimizer='adam', n_layers=4, cell='conv1'):
+
+#     model = Sequential()
+
+#     model.add(Conv1D(256, kernel_size=1,padding='same', activation='relu', input_shape=(None, n_steps)))
+#     model.add(BatchNormalization())
+#     model.add(MaxPooling1D(pool_size=1, strides=2, padding='same'))
+
+#     model.add(Conv1D(128, kernel_size=1, padding='same',activation='relu'))
+#     model.add(BatchNormalization())
+#     model.add(MaxPooling1D(pool_size=1, strides=2, padding='same'))
+
+#     model.add(Conv1D(64, kernel_size=1, padding='same',activation='relu'))
+#     model.add(BatchNormalization())
+#     model.add(MaxPooling1D(pool_size=1, strides=2, padding='same'))
+
+#     model.add(Conv1D(32, kernel_size=1, padding='same', activation='relu'))
+#     model.add(BatchNormalization())
+#     model.add(MaxPooling1D(pool_size=1, strides=2, padding='same'))
+
+#     x_a = GlobalMaxPool1D()(model)
+#     x_b = GlobalAveragePooling1D()(model)
+#     model = concatenate([x_a,x_b])
+    
+#     #model.add(Flatten())
+
+#     #model.add(Dense(1,kernel_initializer="uniform",activation='relu'))
+#     model.add(Dense(1,activation='relu'))
+#     model.add(Dense(1,activation='sigmoid'))
+
+#     model.compile(loss='mae', 
+#                 optimizer=AngularGrad('cos'), 
+#                 metrics=[tf.keras.metrics.MeanSquaredError()])
+#     model.summary()
+
+#     return model
 
 # 그래프 출력 함수
 
@@ -369,5 +513,10 @@ def create_lstm_cnn(maxlen, embed_size, recurrent_units, dropout_rate, recurrent
     pyplot.plot(history['val_loss'], label='validation')
     pyplot.legend()
     pyplot.show()
+
+    ____________
+     plt.plot(pd.DataFrame(history.history()))
+    plt.grid(True)
+    plt.show()
 
 '''
