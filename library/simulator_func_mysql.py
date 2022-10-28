@@ -151,13 +151,17 @@ class simulator_func_mysql:
             self.losscut_point = -5
 
             self.invest_limit_rate = 1.02
-            self.invest_min_limit_rate = 0.97           
+            self.invest_min_limit_rate = 0.97       
+  
+            
             
             # 분별 시뮬레이션을 사용하고 싶을 경우 (simul_num을 4로 입력)
             if self.simul_num ==4:
-                self.simul_start_date = '20220802'
+                self.simul_start_date = '20210902'
                 self.use_min = True
                 self.only_nine_buy = False
+                self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                self.ai_filter_num = 3  # ai 알고리즘 선택
 
         elif self.simul_num == 2:
             # 시뮬레이팅 시작 일자
@@ -227,6 +231,7 @@ class simulator_func_mysql:
             self.invest_limit_rate = 1.02
             # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -3% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
             self.invest_min_limit_rate = 0.97
+              
 
         elif self.simul_num in (5,6):    
             self.simul_start_date = "20220802"
@@ -338,9 +343,7 @@ class simulator_func_mysql:
                     self.day_before = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                     # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
                     self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
-                    # # 분별 시뮬레이션 옵션
-                    # self.use_min = True
-                    # self.only_nine_buy = False  
+                  
                     self.invest_unit = 100000
                     self.start_invest_price = 9448076
 
@@ -377,16 +380,17 @@ class simulator_func_mysql:
 
                         # 매도 리스트 설정 알고리즘 번호 (Absolute Momentum query ver + losscut point 추가)
                         self.sell_list_num = 7
-
-                        # AI알고리즘 사용 여부 
-                        self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
-                        self.ai_filter_num = 1  # ai 알고리즘 선택
+   
+                        
+                          # # 분별 시뮬레이션 옵션
+                        self.use_min = True
+                        self.only_nine_buy = False  
 
         # 2022-10-08 Written by SEONGJAE-YOO (Commits on Oct 8, 2022)
         # 실시간 조건 매수 (realtime_daily_buy_list 데이터 에서 trade_check_num 알고리즘에 따라 매수하는 전략)
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함 (실시간 조건 매수 조건)
         # self.use_min 옵션이 반드시 True로 설정이 되어야함 (실시간 조건 매수 조건)
-        # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다.
+        # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다. !@
         elif self.simul_num in (12,13,14,15,16,17,18,19,20,21):
             
             self.simul_start_date = "20220502"
@@ -518,14 +522,14 @@ class simulator_func_mysql:
                 self.margin = 40    
 
 
-
+            #!@
             # 1달전 , 6달전 평균 모멘텀 전략 + 볼린저밴드 전략
             # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)
             elif self.simul_num == 20:       
                 self.db_to_realtime_daily_buy_list_num = 16
                 self.sell_list_num = 11
                 self.trade_check_num = 3
-                self.simul_start_date = "20210713"
+                self.simul_start_date = "20211001"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
                 self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                 # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
@@ -535,7 +539,7 @@ class simulator_func_mysql:
                 self.margin = 40  
                 # AI알고리즘 사용 여부 
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
-                self.ai_filter_num = 2  # ai 알고리즘 선택
+                self.ai_filter_num = 3  # ai 알고리즘 선택
                 
         # 1달전 ,3달전, 6달전 ,12달전 평균 모멘텀 전략 + 볼린저밴드 전략
         # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)
@@ -1290,7 +1294,7 @@ class simulator_func_mysql:
                         
                         if i > ma_period:
                                 sql = f'''
-                                    SELECT YES_DAY.* FROM `{date_before_a}` BEFORE_DAY_A, `{date_before_b}` BEFORE_DAY_B, `{date_rows_yesterday}` YES_DAY, stock_info info 
+                                    SELECT YES_DAY.* FROM daily_buy_list.`{date_before_a}` BEFORE_DAY_A, daily_buy_list.`{date_before_b}` BEFORE_DAY_B, `{date_rows_yesterday}` YES_DAY, stock_info info 
                                     WHERE BEFORE_DAY_A.code = BEFORE_DAY_B.code
                                     AND BEFORE_DAY_B.code = YES_DAY.code
                                     AND YES_DAY.code = info.code  

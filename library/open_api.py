@@ -64,7 +64,7 @@ def timedout_exit(widget):
 class open_api(QAxWidget): # 키움증권의 OpenAPI+가 제공하는 메서드를 호출하려면 QAxWidget 클래스의 인스턴스가 필요함
     def __init__(self):
         super().__init__()
-
+        
         # openapi 호출 횟수를 저장하는 변수
         self.rq_count = 0
         self.date_setting()

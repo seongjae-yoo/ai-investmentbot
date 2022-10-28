@@ -23,9 +23,9 @@ class Simulator:
             self.simul_reset = 'continue'
         else:
             print("y or n (소문자) 만 입력 가능 합니다.")
-            exit(1)
-
-    def input_value(self):
+            exit(1)  
+  
+    def input_value(self):     
         # simulator_func_mysql 라이브러리 클래스 호출
         simulator_func_mysql(self.simul_num, self.simul_reset, 0)
 
