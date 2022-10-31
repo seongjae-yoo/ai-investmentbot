@@ -150,7 +150,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                     }
 
             tr_engine = create_training_engine(ai_settings['table'])
-    # 2022-10-28 Written by SEONGJAE-YOO (Commits on Oct 28, 2022)
+    # 2022-10-31 Written by SEONGJAE-YOO (Commits on Oct 31, 2022)
     #### 함수로 모델 사용 !@ 
     # model 함수 부분만 바꾸어서 다른 모델 실험할 수 있습니다.
         elif ai_filter_num == 3:

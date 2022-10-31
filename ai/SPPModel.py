@@ -579,6 +579,7 @@ def attention_model(maxlen=5, units=64, dropout=0.3, n_steps=100, loss = 'mae', 
 
 
 # Bidirectional LSTM + GRU + LSTM + cnn +BiLSTM_attention_model
+# 2022-10-31 Written by SEONGJAE-YOO (Commits on Oct 31, 2022)
 def Create_BiLSTM_GRU_LSTM_cnn_BiLSTM_attention_model(maxlen=5, units=200, dropout=0.2, n_steps=100, loss = "mae", optimizer= 'cos'):
     
     input_layer = Input(shape=(maxlen, n_steps), )
