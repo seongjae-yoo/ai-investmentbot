@@ -28,6 +28,8 @@ from matplotlib import pyplot
 from keras.layers import GRU, MaxPooling1D, Conv1D, GlobalMaxPool1D, Activation, Add, Flatten, BatchNormalization , GlobalAveragePooling1D
 from keras.layers import Dense, Embedding, Input, concatenate
 
+from .attention_3d_block.attention_3d_block import attention_3d_block2
+
 plt.rcParams['font.family'] = 'Malgun Gothic'
 
 
@@ -36,7 +38,7 @@ class DataNotEnough(BaseException):
 
 # 학습 함수
 def train(data, model, n_epochs=400, batch_size=64, verbose=1):
-    early_stopping = EarlyStopping(monitor='val_loss', patience=100)  # 100번이상 더 좋은 결과가 없으면 학습을 멈춤
+    early_stopping = EarlyStopping(monitor='val_loss', patience=200)  # 200번이상 더 좋은 결과가 없으면 학습을 멈춤
 
     # verbose 옵션은 실행 과정을 콘솔에 띄워줄지 말지에 대한 옵션
     # 0 - 끔, 1 - 움직이는 실시간 그래프, 2 - 정적 메시지
@@ -549,8 +551,83 @@ def create_filter_kernels_conv(maxlen=5, units=256, dropout=0.5, n_steps=100, lo
                     metrics=[tf.keras.metrics.MeanSquaredError()])
     return model
 
+#### CNN-BiLSTM-Attention model
 
 
+def attention_model(maxlen=5, units=64, dropout=0.3, n_steps=100, loss = 'mae', optimizer= 'cos'):
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = 64, kernel_size = 1, activation = 'relu')(input_layer)  #, padding = 'same'
+    x = Dropout(dropout)(x)
+
+    #lstm_out = Bidirectional(LSTM(lstm_units, activation='relu'), name='bilstm')(x)
+    #对于GPU可以使用CuDNNLSTM
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True),name='bilstm')(x)
+    lstm_out = Dropout(0.3)(lstm_out)
+    attention_mul = attention_3d_block2(lstm_out)
+    attention_mul = Flatten()(attention_mul)
+
+    output = Dense(1, activation='sigmoid')(attention_mul)
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    model.compile(loss=loss, 
+                    optimizer=AngularGrad(optimizer), 
+                    metrics=[tf.keras.metrics.MeanSquaredError()])
+    return model
+
+
+
+
+# Bidirectional LSTM + GRU + LSTM + cnn +BiLSTM_attention_model
+def Create_BiLSTM_GRU_LSTM_cnn_BiLSTM_attention_model(maxlen=5, units=200, dropout=0.2, n_steps=100, loss = "mae", optimizer= 'cos'):
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+   
+    x = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True, dropout=dropout,
+                           recurrent_dropout=dropout))(input_layer)
+    x = Dropout(dropout)(x)
+
+    x = GRU(units, return_sequences=True, dropout=dropout,
+                           recurrent_dropout=dropout)(x)
+
+    x = Dropout(dropout)(x)
+
+    x = LSTM(units, return_sequences=True, dropout=dropout,
+                           recurrent_dropout=dropout)(x)  
+
+    x = Dropout(dropout)(x)      
+
+    x = Conv1D(filters=units, kernel_size=1, padding='same', activation='relu')(x)
+    x = MaxPooling1D(pool_size=1)(x)
+    x = Conv1D(filters=units, kernel_size=1, padding='same', activation='relu')(x)
+    x = MaxPooling1D(pool_size=1)(x)
+    x = Conv1D(filters=units, kernel_size=1, padding='same', activation='relu')(x)
+    x = MaxPooling1D(pool_size=1)(x)
+
+
+
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True),name='bilstm')(x)
+    lstm_out = Dropout(0.3)(lstm_out)
+    attention_mul = attention_3d_block2(lstm_out)
+    #attention_mul = Flatten()(attention_mul)
+
+
+    x_a = GlobalMaxPool1D()(attention_mul)
+    x_b = GlobalAveragePooling1D()(attention_mul)
+    #x_c = AttentionWeightedAverage()(x)
+    #x_a = MaxPooling1D(pool_size=2)(x)
+    #x_b = AveragePooling1D(pool_size=2)(x)
+    x = concatenate([x_a,x_b])
+    #x = Dropout(dropout_rate)(x)
+    #x = Dense(32, activation="relu")(x)
+    x = Dense(1, activation="relu")(x) # softmax를 사용하면 어떨까?
+    model = Model(inputs=input_layer, outputs=x,name='BidirectionalLSTM_GRU_LSTM_cnn_BiLSTM_attention_model')
+    model.summary()  
+    model.compile(loss=loss, 
+                    optimizer=AngularGrad(optimizer), 
+                    metrics=[loss])
+
+    return model   
 # #####
 # def create_conv1(units=50, dropout=0.3, n_steps=100, loss='mae', optimizer='adam', n_layers=4, cell='conv1'):
 

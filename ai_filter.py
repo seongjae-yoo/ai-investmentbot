@@ -10,7 +10,7 @@ from sqlalchemy.pool import Pool
 from sqlalchemy.exc import InternalError, ProgrammingError
 from tensorflow.keras.callbacks import EarlyStopping
 
-from ai.SPPModel import load_data, create_model, evaluate, predict, DataNotEnough, create_model_Bidirectional, create_lstm_cnn, create_dpcnn, create_GRU_CNN, create_cnn_GRU, Create_Bidirectional_GRU_LSTM, Create_BidirectionalLSTM_GRU_LSTM , create_filter_kernels_conv
+from ai.SPPModel import load_data, create_model, evaluate, predict, DataNotEnough, create_model_Bidirectional, create_lstm_cnn, create_dpcnn, create_GRU_CNN, create_cnn_GRU, Create_Bidirectional_GRU_LSTM, Create_BidirectionalLSTM_GRU_LSTM , create_filter_kernels_conv, attention_model, Create_BiLSTM_GRU_LSTM_cnn_BiLSTM_attention_model
 from library import cf
 from library.open_api import setup_sql_mod
 from sklearn.metrics import mean_absolute_error
@@ -54,7 +54,7 @@ def filtered_by_basic_lstm(dataset, ai_settings):
         
     model = ai_settings['model']                        
 
-    early_stopping = EarlyStopping(monitor='val_loss', patience=100)  # 100번이상 더 좋은 결과가 없으면 학습을 멈춤
+    early_stopping = EarlyStopping(monitor='val_loss', patience=200)  # 200번이상 더 좋은 결과가 없으면 학습을 멈춤
 
     model.fit(shuffled_data["X_train"], shuffled_data["y_train"],
                         batch_size=ai_settings['batch_size'],
@@ -155,15 +155,15 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
     # model 함수 부분만 바꾸어서 다른 모델 실험할 수 있습니다.
         elif ai_filter_num == 3:
             ai_settings = {
-                        "model": Create_BidirectionalLSTM_GRU_LSTM(),   
+                        "model": Create_BiLSTM_GRU_LSTM_cnn_BiLSTM_attention_model(),   
                         "n_steps": 100, # 시퀀스 데이터를 몇개씩 담을지 설정       
-                        "lookup_step": 10, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
+                        "lookup_step": 15, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
                         "test_size": 0.3,
                         "batch_size": 264,
-                        "epochs": 10,
+                        "epochs": 200,
                         "ratio_cut": 3,
-                        "table": "min_craw",
-                        "is_used_predicted_close" : True 
+                        "table": "daily_craw",
+                        "is_used_predicted_close" : False 
                     }
 
             tr_engine = create_training_engine(ai_settings['table'])
@@ -211,7 +211,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 # pandas(pd) read_sql 을 사용하면 sql, engine을 넘겼을 때 return 값을 바로 데이터프레임으로 받을 수 있음
                 df = pd.read_sql(sql, tr_engine)
 
-                # 데이터가 1000개(1000일 or 1000분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
+                # 데이터가 10개(10일 or 10분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
                 if len(df) < 10:
                     filtered_list.append(code_name)
                     print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")
