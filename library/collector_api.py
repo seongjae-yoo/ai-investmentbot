@@ -103,7 +103,7 @@ class collector_api():
     # 실전 봇, 모의 봇 매수 종목 세팅 + all_item_db 업데이트 함수
     def realtime_daily_buy_list_check(self):
         if self.open_api.sf.is_date_exist(self.open_api.today):
-            logger.debug("daily_buy_list DB에 {} 테이블이 있습니다. jackbot DB에 realtime_daily_buy_list 테이블을 생성합니다".format(self.open_api.today))
+            logger.debug("daily_buy_list DB에 {} 테이블이 있습니다. DB에 realtime_daily_buy_list 테이블을 생성합니다".format(self.open_api.today))
 
             self.open_api.sf.get_date_for_simul()
             # 첫 번째 파라미터는 여기서는 의미가 없다.
@@ -119,7 +119,7 @@ class collector_api():
             self.engine_JB.execute(sql % (self.open_api.today))
         else:
             logger.debug(
-                """daily_buy_list DB에 {} 테이블이 없습니다. jackbot DB에 realtime_daily_buy_list 테이블을 생성 할 수 없습니다.
+                """daily_buy_list DB에 {} 테이블이 없습니다. DB에 realtime_daily_buy_list 테이블을 생성 할 수 없습니다.
                 realtime_daily_buy_list는 daily_buy_list DB 안에 오늘 날짜 테이블이 만들어져야 생성이 됩니다.
                 realtime_daily_buy_list 테이블을 생성할 수 없는 이유는 아래와 같습니다.
                 1. 장이 열리지 않은 날 혹은 15시 30분 ~ 23시 59분 사이에 콜렉터를 돌리지 않은 경우 
