@@ -43,8 +43,10 @@ def attention_3d_block2(inputs, single_attention_vector=False):
     # inputs.shape = (batch_size, time_steps, input_dim)
     time_steps = K.int_shape(inputs)[1]
     input_dim = K.int_shape(inputs)[2]
+   
     a = Permute((2, 1))(inputs)
-    a = Dense(time_steps, activation='softmax')(a)
+    a = Dense(time_steps, activation='softmax')(a) # 원본
+   
     if single_attention_vector:
         a = Lambda(lambda x: K.mean(x, axis=1))(a)
         a = RepeatVector(input_dim)(a)
