@@ -391,7 +391,7 @@ class simulator_func_mysql:
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함 (실시간 조건 매수 조건)
         # self.use_min 옵션이 반드시 True로 설정이 되어야함 (실시간 조건 매수 조건)
         # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다. !@
-        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21):
+        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21,22):
             
             self.simul_start_date = "20220502"
 
@@ -415,10 +415,10 @@ class simulator_func_mysql:
             self.limit_money = 0
 
             # 익절 수익률 기준치
-            self.sell_point = 3
+            self.sell_point = 5
 
             # 손절 수익률 기준치
-            self.losscut_point = -3
+            self.losscut_point = -5
 
             # 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
             self.invest_limit_rate = 1.01
@@ -434,11 +434,12 @@ class simulator_func_mysql:
             self.total_transaction_price = 100000
             self.vol_mul = 2
             self.d1_diff = 2 
-            self.interval_month = 12
-            # self.only_nine_buy 옵션을 반드시 False로 설정해야함
-            # self.use_min 옵션이 반드시 True로 설정이 되어야함
-            self.use_min = True
-            self.only_nine_buy = False
+            self.interval_month = 12                       
+           
+            # 일별 시뮬레이션을 사용하고 싶을 경우 False 
+            self.use_min = False
+            # 아침 9시에만 매수를 하고 싶은 경우 True, 9시가 아니어도 매수를 하고 싶은 경우 False(분별 시뮬레이션 적용 가능 / 일별 시뮬레이션은 9시에만 매수, 매도)
+            self.only_nine_buy = True
             self.trade_check_num = 1 # 실시간 조건 매수 알고리즘 선택 
             self.volume_up = 2  # 특정 거래대금 보다 x배 이상 증가 할 경우 매수
             self.rarry_k = 0.6
@@ -501,12 +502,15 @@ class simulator_func_mysql:
                 self.trade_check_num = 3
                 self.simul_start_date = "20210813"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
-                self.day_before = 250 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                self.day_before = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                 # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
                 self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
                 self.margin = 40
-
-            # 1달전 , 6달전 평균 모멘텀 전략 + 볼린저밴드 전략
+                # AI알고리즘 사용 여부 
+                self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                self.ai_filter_num = 3  # ai 알고리즘 선택
+                
+            # 1달전 , 6달전 모멘텀 전략 + 볼린저밴드 전략
             # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)
             elif self.simul_num == 19:       
                 self.db_to_realtime_daily_buy_list_num = 16
@@ -522,10 +526,12 @@ class simulator_func_mysql:
                 self.margin = 40    
 
 
-            #!@
-            # 1달전 , 6달전 평균 모멘텀 전략 + 볼린저밴드 전략
+            
+            # 매수 전략    
+            #  래리 윌리엄스 변동성 돌파 알고리즘(매수) + 1달전 , 6달전 모멘텀 전략 + 볼린저밴드 전략
             # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)
-            elif self.simul_num == 20:       
+            #ai 적용시 20211228 일 부터 realtime_daily_buy_list 테이블에 들어감
+            elif self.simul_num == 20:        
                 self.db_to_realtime_daily_buy_list_num = 16
                 self.sell_list_num = 11
                 self.trade_check_num = 3
@@ -540,13 +546,14 @@ class simulator_func_mysql:
                 # AI알고리즘 사용 여부 
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 3  # ai 알고리즘 선택
-                
-        # 1달전 ,3달전, 6달전 ,12달전 평균 모멘텀 전략 + 볼린저밴드 전략
+                  
+        # 1달전 ,3달전, 6달전 ,12달전  모멘텀 전략 + 볼린저밴드 전략
         # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)
             elif self.simul_num == 21:       
 
                 self.db_to_realtime_daily_buy_list_num = 17
-                self.sell_list_num = 12
+                self.sell_list_num = 12 
+                #self.sell_list_num = 8
                 self.trade_check_num = 3
                 self.simul_start_date = "20210713"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
@@ -559,7 +566,32 @@ class simulator_func_mysql:
                 self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
                 
                 self.margin = 40         
-    
+                # AI알고리즘 사용 여부 
+                # self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                # self.ai_filter_num = 3  # ai 알고리즘 선택
+        #!@
+        # 1달전 ,3달전, 6달전 ,12달전  모멘텀 전략 + 볼린저밴드 전략
+        # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)
+            elif self.simul_num == 22:       
+
+                self.db_to_realtime_daily_buy_list_num = 17
+                self.sell_list_num = 12 
+                #self.sell_list_num = 8
+                self.trade_check_num = 3
+                self.simul_start_date = "20210713"
+                # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
+                self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
+                self.date_before_b = 60 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                self.date_before_c = 120
+                self.date_before_d = 250
+
+                self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+                
+                self.margin = 40         
+                # AI알고리즘 사용 여부 
+                self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                self.ai_filter_num = 3  # ai 알고리즘 선택
 
                
                 
@@ -1285,7 +1317,7 @@ class simulator_func_mysql:
         elif self.db_to_realtime_daily_buy_list_num == 16:
                             
                     ma_period = 20
-                    if i < self.day_before + 1:
+                    if i < self.date_before_b + 1:
                         realtime_daily_buy_list = []
                         pass
                     else:
@@ -1346,7 +1378,7 @@ class simulator_func_mysql:
         elif self.db_to_realtime_daily_buy_list_num == 17:
                                 
                         ma_period = 20
-                        if i < self.day_before + 1:
+                        if i < self.date_before_d + 1:
                             realtime_daily_buy_list = []
                             pass
                         else:
@@ -1355,7 +1387,7 @@ class simulator_func_mysql:
                             date_before_c =self.date_rows[i - 1 - self.date_before_c][0]
                             date_before_d =self.date_rows[i - 1 - self.date_before_d][0]
 
-
+                                
 
                             if i > ma_period:
                                     sql = f'''
@@ -1365,13 +1397,9 @@ class simulator_func_mysql:
                                         AND BEFORE_DAY_C.code = BEFORE_DAY_D.code 
                                         AND BEFORE_DAY_D.code = YES_DAY.code
                                         AND YES_DAY.code = info.code  
-                                        and YES_DAY.yes_clo20 > YES_DAY.yes_clo5 and YES_DAY.clo5 > YES_DAY.clo20  
-                                        and YES_DAY.volume * YES_DAY.close > {self.total_transaction_price}  
-                                        and YES_DAY.vol20 * {self.vol_mul} < YES_DAY.volume  
-                                        and info.stock_market IN ('{self.stock_market_a}', '{self.stock_market_b}', '{self.stock_market_c}') 
-                                        and info.category0 IN ('{self.category0_a}', '{self.category0_b}','{self.category0_c}')  
+                                        and YES_DAY.clo5 > YES_DAY.clo20  
+                                        and info.stock_market IN ('{self.stock_market_a}') 
                                         and info.audit = '{self.audit}'  
-                                        and info.margin <= {self.margin} 
                                         and info.remarks NOT LIKE '{self.remarks_manage}'  
                                         and info.remarks NOT LIKE '{self.remarks_stop}'  
                                         and NOT exists (select null from stock_managing c where YES_DAY.code=c.code and c.code_name != '' group by c.code) 
@@ -1385,7 +1413,10 @@ class simulator_func_mysql:
                                         ORDER BY (((YES_DAY.close - BEFORE_DAY_A.close) / BEFORE_DAY_A.close * 100) + ((YES_DAY.close - BEFORE_DAY_B.close) / BEFORE_DAY_B.close * 100) + ((YES_DAY.close - BEFORE_DAY_C.close) / BEFORE_DAY_C.close * 100) + ((YES_DAY.close - BEFORE_DAY_D.close) / BEFORE_DAY_D.close * 100)) / 4 DESC
                                     '''
                                     realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql).fetchall()
-
+                                    #and info.category0 IN ('{self.category0_a}', '{self.category0_b}','{self.category0_c}')  
+                                    # and YES_DAY.volume * YES_DAY.close > {self.total_transaction_price}  
+                                    # and YES_DAY.vol20 * {self.vol_mul} < YES_DAY.volume  
+                                    #and info.margin <= {self.margin} 
                                     # 과매도 포지션 포착
                                     for item in realtime_daily_buy_list:
                                         code_name = item.code_name
@@ -2115,17 +2146,18 @@ class simulator_func_mysql:
                         if i > ma_period:
 
                             sql = f''' 
-                                SELECT ALLDB.code, ALLDB.rate, ALLDB.present_price, ALLDB.valuation_profit, ALLDB.code_name 
+                                SELECT ALLDB.*
                                 FROM all_item_db ALLDB, daily_buy_list.`{date_before_a}` BEFORE_DAY_A, daily_buy_list.`{date_before_b}` BEFORE_DAY_B ,daily_buy_list.`{date_before_c}` BEFORE_DAY_C, daily_buy_list.`{date_before_d}` BEFORE_DAY_D
                                 WHERE ALLDB.code = BEFORE_DAY_A.code
                                 AND BEFORE_DAY_A.code = BEFORE_DAY_B.code
                                 AND BEFORE_DAY_B.code = BEFORE_DAY_C.code
                                 AND BEFORE_DAY_C.code = BEFORE_DAY_D.code    
                                 AND ALLDB.sell_date = 0 
-                                AND ((((ALLDB.present_price - BEFORE_DAY_A.close) / BEFORE_DAY_A.close * 100) + ((ALLDB.present_price - BEFORE_DAY_B.close) / BEFORE_DAY_B.close * 100) + ((ALLDB.present_price - BEFORE_DAY_C.close) / BEFORE_DAY_C.close * 100) + ((ALLDB.present_price - BEFORE_DAY_D.close) / BEFORE_DAY_D.close * 100)) / 4 < {self.diff_point * (-1)}
+                                ORDER BY ((((ALLDB.close - BEFORE_DAY_A.close) / BEFORE_DAY_A.close * 100) + ((ALLDB.close - BEFORE_DAY_B.close) / BEFORE_DAY_B.close * 100) + ((ALLDB.close - BEFORE_DAY_C.close) / BEFORE_DAY_C.close * 100) + ((ALLDB.close - BEFORE_DAY_D.close) / BEFORE_DAY_D.close * 100)) / 4 < {self.diff_point * (-1)}                                  
+                                OR (ALLDB.clo5 < ALLDB.clo20) or (ALLDB.clo5 < ALLDB.clo40) or (ALLDB.clo5 < ALLDB.clo60)
                                 OR (ALLDB.rate >= {self.sell_point} or ALLDB.rate <= {self.losscut_point})) 
                                 '''
-
+                            # (ALLDB.rate >= {self.sell_point} or ALLDB.rate <= {self.losscut_point})) 
                             sell_list_temp = self.engine_simulator.execute(sql).fetchall()
 
                             # 과매수 포지션 포착
