@@ -34,20 +34,17 @@ def BBands(df_close, w=20, k=2):
         lbb = 하한선 = 중심선 – 주가의 20기간 표준편차 * 2  
         perb = %b = (주가 – 하한선) / (상한선 – 하한선) = (close - lbb) / (ubb - lbb)
         bw = 밴드폭 (Bandwidth) = (상한선 – 하한선) / 중심선 = (ubb - lbb) / mbb
+        
     '''
-
-    ### blank ###########################
+    # 볼린저 밴드의 상한선: 20일 이평선 값 + ( 20일 동안의 주가 표준편차 값 ) * 2
+    # 볼린저 밴드의 하한선: 20일 이평선 값 - ( 20일 동안의 주가 표준편차 값 ) * 2
     ubb = mbb + std * 2
     lbb =  mbb - std * 2
-    perb = (close - lbb) / (ubb - lbb)
-    bw =  (ubb - lbb) / mbb
-    #####################################
+    
 
     if ubb > lbb:
-        ### blank ###########################
-        # perb =
-        # bw =
-        #####################################
+        perb = (close - lbb) / (ubb - lbb)
+        bw =  (ubb - lbb) / mbb
         return mbb, ubb, lbb, perb, bw
     else:
         return False
