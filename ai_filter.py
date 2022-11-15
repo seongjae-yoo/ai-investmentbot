@@ -9,12 +9,15 @@ from sqlalchemy.event import listen
 from sqlalchemy.pool import Pool
 from sqlalchemy.exc import InternalError, ProgrammingError
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, ReduceLROnPlateau
 
-from ai.SPPModel import load_data, create_model, evaluate, predict, DataNotEnough, create_model_Bidirectional, create_lstm_cnn, create_dpcnn, create_GRU_CNN, create_cnn_GRU, Create_Bidirectional_GRU_LSTM, Create_BidirectionalLSTM_GRU_LSTM , create_filter_kernels_conv, attention_model, Create_BiLSTM_GRU_LSTM_cnn_BiLSTM_attention_model
+from ai.SPPModel import load_data, create_model, evaluate, predict, DataNotEnough, create_model_Bidirectional, create_lstm_cnn, create_dpcnn, create_GRU_CNN, create_cnn_GRU, Create_Bidirectional_GRU_LSTM, Create_BidirectionalLSTM_GRU_LSTM , create_filter_kernels_conv, attention_model, Create_BiLSTM_GRU_LSTM_cnn_BiLSTM_attention_model, Create_Bidirectional_GRU_LSTM_v2, create_model_bidirectional_v4,attention_model_1114_v3
 from library import cf
 from library.open_api import setup_sql_mod
 from sklearn.metrics import mean_absolute_error
 
+import time
+import os
 # 2022-10-19 Add
 import tensorflow as tf  
 
@@ -54,20 +57,36 @@ def filtered_by_basic_lstm(dataset, ai_settings):
         
     model = ai_settings['model']                        
 
-    early_stopping = EarlyStopping(monitor='val_loss', patience=200)  # 200번이상 더 좋은 결과가 없으면 학습을 멈춤
+    #
+    # early_stopping = EarlyStopping(monitor='val_loss', patience=500)  # 200번이상 더 좋은 결과가 없으면 학습을 멈춤
+    date_now = time.strftime("%Y-%m-%d")
+    model_function_name= "attention_model_1114_v3"
 
+    model_name = f"{date_now}_{model_function_name}"
+    checkpoint_filepath = 'ModelCheckpoint/attention_model_1114_v3/Checkpoint'
+
+    early_stopping = EarlyStopping(monitor='val_loss', patience=1000)  # patience 번이상 더 좋은 결과가 없으면 학습을 멈춤
+    #callback = tf.keras.callbacks.ModelCheckpoint('Transformer+TimeEmbedding.hdf5', 
+    #                                          monitor='val_loss', 
+    #                                          save_best_only=True, verbose=1)
+    tensorboard = TensorBoard(log_dir=os.path.join("logs", model_name))
+    ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, save_best_only=True, verbose=1, mode='min',monitor='val_loss')
+    # reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+    #                           patience=5, min_lr=0.001, mode='min',verbose=1)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+                              patience=1, min_lr=0.0001, mode='min',verbose=1)
     model.fit(shuffled_data["X_train"], shuffled_data["y_train"],
                         batch_size=ai_settings['batch_size'],
                         epochs=ai_settings['epochs'],
                         validation_data=(shuffled_data["X_test"], shuffled_data["y_test"]),
-                        callbacks=[early_stopping],
+                        callbacks=[tensorboard,early_stopping,ModelCheckpoint,reduce_lr],
                         verbose=1)
 
     scaled_data = load_data(df=dataset.copy(), n_steps=ai_settings['n_steps'], test_size=ai_settings['test_size'],
                             shuffle=False)
 
-    mae = evaluate(scaled_data, model)
-    print(f"Mean Absolute Error: {mae}")
+    result = evaluate(scaled_data, model)
+    print(f"result: {result}")
 
     # mse = evaluate(scaled_data, model)
     # print(f"Mean Squared Error: {mse}")
@@ -153,17 +172,18 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
     # 2022-10-31 Written by SEONGJAE-YOO (Commits on Oct 31, 2022)
     #### 함수로 모델 사용 !@ 
     # model 함수 부분만 바꾸어서 다른 모델 실험할 수 있습니다.
+    #maxlen=21, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos')
         elif ai_filter_num == 3:
             ai_settings = {
-                        "model": Create_BiLSTM_GRU_LSTM_cnn_BiLSTM_attention_model(),   
-                        "n_steps": 100, # 시퀀스 데이터를 몇개씩 담을지 설정       
-                        "lookup_step": 15, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
+                        "model": attention_model_1114_v3(),   
+                        "n_steps": 1, # 시퀀스 데이터를 몇개씩 담을지 설정       
+                        "lookup_step": 5, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
                         "test_size": 0.3,
-                        "batch_size": 264,
-                        "epochs": 200,
-                        "ratio_cut": 3,
+                        "batch_size": 32,
+                        "epochs": 10,
+                        "ratio_cut": 5,
                         "table": "daily_craw",
-                        "is_used_predicted_close" : False 
+                        "is_used_predicted_close" : True #false는 단한종목도 사지 않는다.
                     }
 
             tr_engine = create_training_engine(ai_settings['table'])
@@ -199,7 +219,10 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 exit(1)
 
             #feature_columns = ["close", "volume", "open", "high", "low", "clo5" , "clo20"]
-            feature_columns = ["close", "volume", "open", "high", "low"]
+            feature_columns   = [ 'close', 'open', 'high', 'low',
+                    'volume', 'clo5', 'clo10', 'clo20', 'clo40', 'clo60', 'clo80',
+                    'clo100', 'clo120','yes_clo5', 'yes_clo10', 'yes_clo20', 'yes_clo40', 'yes_clo60','yes_clo80','yes_clo100', 'yes_clo120'
+                    ] 
             filtered_list = []
             for code_name, in buy_list:
                 print(f"{code_name} 종목 분석 중....")
