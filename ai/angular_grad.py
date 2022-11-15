@@ -5,7 +5,7 @@ class AngularGrad(tf.keras.optimizers.Optimizer):
   def __init__(
       self,
       method_angle: str = "cos",
-      learning_rate=1e-3,
+      learning_rate=1e-4,  #default: 1e-3
       beta_1=0.9,
       beta_2=0.999,
       eps=1e-7,
