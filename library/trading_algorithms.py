@@ -34,13 +34,26 @@ def BBands(df_close, w=20, k=2):
         lbb = 하한선 = 중심선 – 주가의 20기간 표준편차 * 2  
         perb = %b = (주가 – 하한선) / (상한선 – 하한선) = (close - lbb) / (ubb - lbb)
         bw = 밴드폭 (Bandwidth) = (상한선 – 하한선) / 중심선 = (ubb - lbb) / mbb
-        
+
+        *  참고 사이트 - https://humankind.tistory.com/33            
+        %B quantifies a security's price relative to the upper and lower Bollinger Band. There are six basic relationship levels:
+        %B is below 0 when price is below the lower band
+        %B equals 0 when price is at the lower band
+        %B is between 0 and .50 when price is between the lower and middle band (20-day SMA)
+        %B is between .50 and 1 when price is between the upper and middle band (20-day SMA)
+        %B equals 1 when price is at the upper band
+        %B is above 1 when price is above the upper band
+
+
+
     '''
     # 볼린저 밴드의 상한선: 20일 이평선 값 + ( 20일 동안의 주가 표준편차 값 ) * 2
     # 볼린저 밴드의 하한선: 20일 이평선 값 - ( 20일 동안의 주가 표준편차 값 ) * 2
-    ubb = mbb + std * 2
-    lbb =  mbb - std * 2
-    
+    # ubb = mbb + (std * 2)
+    # lbb =  mbb - (std * 2)
+    #1.8 
+    ubb = mbb + (std * 3.0)
+    lbb =  mbb - (std * 3.0)
 
     if ubb > lbb:
         perb = (close - lbb) / (ubb - lbb)
