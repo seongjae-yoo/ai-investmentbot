@@ -6,7 +6,7 @@ class Simulator:
         self.print_info()  
         self.input_value()
 
-    def print_info(self):
+    def print_info(self):  
         # 시뮬레이터 번호 설정
         self.simul_num = int(input("시뮬레이팅 할 알고리즘 번호를 입력 하세요: "))
 
@@ -18,7 +18,7 @@ class Simulator:
         option = str(input("시뮬레이팅 데이터베이스 초기화 여부 : (y or n) "))
        
         if option == 'y':
-            self.simul_reset = 'reset'
+            self.simul_reset = 'reset'  
         elif option == 'n':
             self.simul_reset = 'continue'
         else:
