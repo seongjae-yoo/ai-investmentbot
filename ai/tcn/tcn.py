@@ -103,14 +103,14 @@ class TCN:
         """
 
     def __init__(self,
-                 nb_filters=64,
-                 kernel_size=2,
+                 nb_filters=21,
+                 kernel_size=1,
                  nb_stacks=1,
                  dilations=None,
                  activation='norm_relu',
                  padding='causal',
                  use_skip_connections=True,
-                 dropout_rate=0.2,
+                 dropout_rate=0.3,
                  return_sequences=True,
                  name='tcn'):
         self.name = name
