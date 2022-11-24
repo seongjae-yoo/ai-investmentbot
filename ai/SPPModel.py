@@ -100,7 +100,7 @@ def train(data, model, n_epochs=100, batch_size=70, verbose=1):
     # model_function_name= "attention_model_1114_v3_20120901"
 
     #model_name = f"{date_now}_{model_function_name}"
-    checkpoint_filepath = 'ModelCheckpoint/BiGRU_CNN_BiLSTM_Attention/Checkpoint'
+    checkpoint_filepath = 'ModelCheckpoint/CNN_Attention_BiLSTM_Attention/Checkpoint'
 
     early_stopping = EarlyStopping(monitor='val_loss', patience=1000)  # patience 번이상 더 좋은 결과가 없으면 학습을 멈춤
     #callback = tf.keras.callbacks.ModelCheckpoint('Transformer+TimeEmbedding.hdf5', 
@@ -129,7 +129,7 @@ def train(data, model, n_epochs=100, batch_size=70, verbose=1):
 # wandb:  View project at https://wandb.ai/aiinvestmentbot/test-project
 # wandb:  View run at https://wandb.ai/aiinvestmentbot/test-project/runs/1mwzy32e
     wandb.init(project="samchully", entity="SeongJae-Yoo")
-    wandb.run.name = 'BiGRU_CNN_BiLSTM_Attention'
+    wandb.run.name = 'CNN_Attention_BiLSTM_Attention'
     
     # generted run ID로 하고 싶다면 다음과 같이 쓴다.
     # wandb.run.name = wandb.run.id
@@ -164,7 +164,7 @@ def train(data, model, n_epochs=100, batch_size=70, verbose=1):
 # https://www.kaggle.com/code/ajax0564/transfromer-timetovector-timeseries
 def evaluate(data, model):
     # 가중치 로드
-    model.load_weights("ModelCheckpoint/BiGRU_CNN_BiLSTM_Attention/Checkpoint")
+    model.load_weights("ModelCheckpoint/CNN_Attention_BiLSTM_Attention/Checkpoint")
     
 
     train_huber_loss, train_mae, train_rmse  =  model.evaluate(data["X_train"], data["y_train"], verbose=1)
@@ -967,6 +967,39 @@ def CNN_Attention_BiLSTM_Version4(maxlen=5, units=21, dropout=0.3, n_steps=1, LO
     model = Model(inputs=[input_layer], outputs=output)
     model.summary()  
     tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version4.png', show_shapes=True, dpi=100 )
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model
+
+
+# cnn-attention-bilstm-attention 
+def CNN_Attention_BiLSTM_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu,strides=30, kernel_initializer="he_uniform")(input_layer)
+    #x = Dropout(dropout)(x)
+    #x = MaxPooling1D(pool_size=1,strides=2)(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = Dropout(dropout)(x)
+   
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(5, return_sequences=True,kernel_regularizer=l2(0.0001),recurrent_regularizer=l2(0.0001)),name='bilstm')(attention_mul)
+    lstm_out = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(lstm_out) 
+    lstm_out = Dropout(dropout)(lstm_out)
+    
+
+    lstm_out = attention_3d_block2(lstm_out)
+    lstm_out = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(lstm_out)
+    lstm_out = Dropout(dropout)(lstm_out)
+    
+    x = Flatten()(lstm_out) # Flatten이 (concatenate([x_a,x_b]))보다 더 좋음
+    x = Dropout(dropout)(x)
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Attention.png', show_shapes=True, dpi=100 )
     model.compile(loss=LOSS, 
                 optimizer=AngularGrad(optimizer),  
                 metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
