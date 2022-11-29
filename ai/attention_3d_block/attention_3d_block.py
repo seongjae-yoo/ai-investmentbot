@@ -44,7 +44,7 @@ def attention_3d_block2(inputs, single_attention_vector=False):
     time_steps = K.int_shape(inputs)[1]
     input_dim = K.int_shape(inputs)[2]
    
-    a = Permute((2, 1))(inputs)
+    a = Permute((2, 1))(inputs) # 주어진 패턴에 따라서 인풋의 차원을 치환합니다
     a = Dense(time_steps, activation='softmax')(a) # 원본
    
     if single_attention_vector:
