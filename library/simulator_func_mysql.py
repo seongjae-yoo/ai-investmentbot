@@ -22,6 +22,7 @@ from sqlalchemy import create_engine
 
 # 볼린저밴드 알고리즘을 위해 추가된 부분 
 from library.trading_algorithms import BBands
+import numpy as np
 
 pymysql.install_as_MySQLdb()
 
@@ -391,7 +392,7 @@ class simulator_func_mysql:
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함 (실시간 조건 매수 조건)
         # self.use_min 옵션이 반드시 True로 설정이 되어야함 (실시간 조건 매수 조건)
         # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다. !@
-        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21,22,23):
+        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21,22,23,24):
             
             self.simul_start_date = "20220502"
 
@@ -406,7 +407,7 @@ class simulator_func_mysql:
             # 초기 투자자금(시뮬레이션에서의 초기 투자 금액. 모의투자는 신청 당시의 금액이 초기 투자 금액이라고 보시면 됩니다)
             # 주의! start_invest_price 는 모의투자 초기 자본금과 별개. 시뮬레이션에서만 적용.
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
-            self.start_invest_price = 9448076
+            self.start_invest_price = 30000000
 
             # 매수 금액
             self.invest_unit = 1000000
@@ -415,15 +416,15 @@ class simulator_func_mysql:
             self.limit_money = 0
 
             # 익절 수익률 기준치
-            self.sell_point = 5
+            self.sell_point = 10
 
             # 손절 수익률 기준치
-            self.losscut_point = -5
+            self.losscut_point = -2
 
-            # 매수하는 순간 종목의 최신 종가 보다 1% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_limit_rate = 1.01
-            # 매수하는 순간 종목의 최신 종가 보다 -2% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_min_limit_rate = 0.98
+            # 매수하는 순간 종목의 최신 종가 보다 10% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
+            self.invest_limit_rate = 1.1
+            # 매수하는 순간 종목의 최신 종가 보다 -10% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
+            self.invest_min_limit_rate = 0.9
 
             # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
             self.day_before = 60 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
@@ -583,28 +584,20 @@ class simulator_func_mysql:
         #!@
         # 1달전 ,3달전, 6달전 ,12달전  상대 모멘텀 전략(Relative Strength Momentum) + 볼린저밴드 전략 + 래리 윌리엄스 변동성 돌파 매수 전략
         # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)1744971
+        # 20210513일 기준
+        # self.sell_list_num = 5  -> -1341002  
+        # self.sell_list_num = 2 -> 825594
+        # 20210113일 기준 self.sell_list_num = 2-> 930471
+        # 20210113일 기준 self.sell_list_num = 5-> -2711579
+        # 고수익 방법 23알고리즘보다 안정적인 수익률 기대 못함
             elif self.simul_num == 22:       
 
                 self.db_to_realtime_daily_buy_list_num = 18
-                # 20210713 기준
-                #self.sell_list_num = 2 # 1744971
-                #self.sell_list_num = 14 #202040
-                #self.sell_list_num = 1 # -251539
-                #self.sell_list_num = 9 #-257408
-                #self.sell_list_num = 3 #151149
-                #self.sell_list_num = 4 # 1571238
-                #self.sell_list_num = 5 # 1392415
-                #self.sell_list_num = 6 #1392415
-                #self.sell_list_num = 7 #-257013
-                #self.sell_list_num = 8 #-820100
-                #self.sell_list_num = 10 # -488224
-                #self.sell_list_num = 11 # 마이너스
-                #self.sell_list_num = 12 # error
-                #self.sell_list_num = 13 #error
-                self.sell_list_num = 2 #1970127
+                
+                self.sell_list_num = 5
                 #self.trade_check_num = 3
-                #self.simul_start_date = "20210713"
-                self.simul_start_date = "20200713"
+                self.simul_start_date = "20210113"
+                #self.simul_start_date = "20200713"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
                 self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                 # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
@@ -612,50 +605,64 @@ class simulator_func_mysql:
                 self.date_before_c = 120
                 self.date_before_d = 240
 
-                self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+                self.diff_point = 15 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
                 
                 self.margin = 40         
                 # AI알고리즘 사용 여부 
                 # self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 # self.ai_filter_num = 3  # ai 알고리즘 선택    
-        # 1달전 ,3달전, 6달전 ,12달전  모멘텀 전략 + 볼린저밴드 전략 +래리 윌리엄스 변동성 돌파 매수 전략
+        
         # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)
+        # 1~11 70만원
+        # sell_list=5 -> 743791
+        # sell_list=2 -> 36183
+        # 안정적인 방법 
+        # 이 방법으로 논문 쓰기
             elif self.simul_num == 23:       
 
                 
-                self.db_to_realtime_daily_buy_list_num = 18
-                # 20210713 기준
-                #self.sell_list_num = 2 # 1744971
-                #self.sell_list_num = 14 #202040
-                #self.sell_list_num = 1 # -251539
-                #self.sell_list_num = 9 #-257408
-                #self.sell_list_num = 3 #151149
-                #self.sell_list_num = 4 # 1571238
-                #self.sell_list_num = 5 # 1392415
-                #self.sell_list_num = 6 #1392415
-                #self.sell_list_num = 7 #-257013
-                #self.sell_list_num = 8 #-820100
-                #self.sell_list_num = 10 # -488224
-                #self.sell_list_num = 11 # 마이너스
-                #self.sell_list_num = 12 # error
-                #self.sell_list_num = 13 #error
-                self.sell_list_num = 2
+                self.db_to_realtime_daily_buy_list_num = 21
+                
+                self.sell_list_num = 5
+                #self.trade_check_num = 3
+                self.simul_start_date = "20210113"
+                #self.simul_start_date = "20200713"
+                # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
+                # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                # # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
+                # self.date_before_b = 59 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                # self.date_before_c = 123
+                # self.date_before_d = 245
+                # self.day_before = 20    
+                self.diff_point = 7 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+                
+                self.margin = 40         
+                # # AI알고리즘 사용 여부 
+                # self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                # self.ai_filter_num = 3  # ai 알고리즘 선택                 
+
+            elif self.simul_num == 24:       
+
+                
+                self.db_to_realtime_daily_buy_list_num = 22
+                
+                self.sell_list_num = 5
                 #self.trade_check_num = 3
                 self.simul_start_date = "20210713"
+                #self.simul_start_date = "20200713"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
-                self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
-                # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
-                self.date_before_b = 60 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
-                self.date_before_c = 120
-                self.date_before_d = 240
-
-                self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+                # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                # # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
+                # self.date_before_b = 59 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                # self.date_before_c = 123
+                # self.date_before_d = 245
+                # self.day_before = 20    
+                self.diff_point = 7 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
                 
-                self.margin = 40       
-               
-                
-
-
+                self.margin = 40         
+                # # AI알고리즘 사용 여부 
+                # self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                # self.ai_filter_num = 3  # ai 알고리즘 선택 
 
 
         else:
@@ -1505,23 +1512,23 @@ class simulator_func_mysql:
         #best
         elif self.db_to_realtime_daily_buy_list_num == 18:
                                 
-                                    ma_period = 70 
+                        ma_period = 70 
                         # 3개월 기준
                         # (60,2.2) -> , 1970127 //  (60,2.3) -> 1970127, (60,1.8)- >1970127,  (70,3.0) 2201207, 
                         
-                                    realtime_daily_buy_list = []
-                        # if i < self.date_before_d + 1:
+                        realtime_daily_buy_list = []
+                        if i < self.date_before_d + 1:
                             
-                        #     pass
-                        # else:
-                                    date_before_a =self.date_rows[i - 1 - self.date_before_a][0]
-                                    date_before_b =self.date_rows[i - 1 - self.date_before_b][0]
-                                    date_before_c =self.date_rows[i - 1 - self.date_before_c][0]
-                                    date_before_d =self.date_rows[i - 1 - self.date_before_d][0]
+                            pass
+                        else:
+                            date_before_a =self.date_rows[i - 1 - self.date_before_a][0]
+                            date_before_b =self.date_rows[i - 1 - self.date_before_b][0]
+                            date_before_c =self.date_rows[i - 1 - self.date_before_c][0]
+                            date_before_d =self.date_rows[i - 1 - self.date_before_d][0]
 
-                                    date_before_e = self.date_rows[i -1 -1][0]      
+                            date_before_e = self.date_rows[i -1 -1][0]      
 
-                            #if i > ma_period:
+                            if i > ma_period:
                                     sql = f'''
                                         SELECT YES_DAY.* FROM `{date_before_a}` BEFORE_DAY_A, `{date_before_b}` BEFORE_DAY_B, `{date_before_c}` BEFORE_DAY_C, `{date_before_d}` BEFORE_DAY_D, `{date_before_e}` BEFORE_DAY_E,`{date_rows_yesterday}` YES_DAY, stock_info info 
                                         WHERE BEFORE_DAY_A.code = BEFORE_DAY_B.code
@@ -1539,13 +1546,13 @@ class simulator_func_mysql:
                                         and NOT exists (select * from stock_invest_caution e where YES_DAY.code=e.code and DATE_SUB({date_rows_yesterday}, INTERVAL {self.interval_month} MONTH ) < e.post_date and e.post_date < Date({date_rows_yesterday}) and e.type != '투자경고 지정해제' group by e.code) 
                                         and NOT exists (select * from stock_invest_warning f where YES_DAY.code=f.code and f.post_date <= DATE({date_rows_yesterday}) and (f.cleared_date > DATE({date_rows_yesterday}) or f.cleared_date is null) group by f.code) 
                                         and NOT exists (select * from stock_invest_danger g where YES_DAY.code=g.code and g.post_date <= DATE({date_rows_yesterday}) and (g.cleared_date > DATE({date_rows_yesterday}) or g.cleared_date is null) group by g.code) 
-                                        AND NOT exists (SELECT * FROM stock_konex b WHERE YES_DAY.code=b.code)
                                         AND YES_DAY.close < {self.invest_unit}
                                         AND (YES_DAY.close + ((BEFORE_DAY_E.high - BEFORE_DAY_E.low) * 0.5)) < BEFORE_DAY_E.open
                                         AND (((YES_DAY.close - BEFORE_DAY_A.close) / BEFORE_DAY_A.close * 100) + ((YES_DAY.close - BEFORE_DAY_B.close) / BEFORE_DAY_B.close * 100) + ((YES_DAY.close - BEFORE_DAY_C.close) / BEFORE_DAY_C.close * 100) + ((YES_DAY.close - BEFORE_DAY_D.close) / BEFORE_DAY_D.close * 100)) / 4 > {self.diff_point}
                                         ORDER BY (((YES_DAY.close - BEFORE_DAY_A.close) / BEFORE_DAY_A.close * 100) + ((YES_DAY.close - BEFORE_DAY_B.close) / BEFORE_DAY_B.close * 100) + ((YES_DAY.close - BEFORE_DAY_C.close) / BEFORE_DAY_C.close * 100) + ((YES_DAY.close - BEFORE_DAY_D.close) / BEFORE_DAY_D.close * 100)) / 4 DESC
                                     '''
                                     realtime_daily_buy_list_1 = self.engine_daily_buy_list.execute(sql).fetchall()
+                                    # AND NOT exists (SELECT * FROM stock_konex b WHERE YES_DAY.code=b.code)
                                     # and info.stock_market IN ('{self.stock_market_a}','{self.stock_market_c}')
                                     #and info.category0 IN ('{self.category0_a}', '{self.category0_b}','{self.category0_c}')  
                                     # and YES_DAY.volume * YES_DAY.close > {self.total_transaction_price}  
@@ -1571,7 +1578,7 @@ class simulator_func_mysql:
                                             # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
                                             if result:
                                                 mbb, ubb, lbb, perb, bw = result
-                                                # # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치 할 경우 매수리스트에 넣는다
+                                                # # perb가 0.5 보다 작을 경우: 종가가 볼린저밴드 하한선보다 아래에 위치 할 경우 매수리스트에 넣는다
                                                  
                                                
                                                 if perb <= 0.5:
@@ -1623,6 +1630,533 @@ class simulator_func_mysql:
                                         ORDER BY (((YES_DAY.close - BEFORE_DAY_A.close) / BEFORE_DAY_A.close * 100) + ((YES_DAY.close - BEFORE_DAY_B.close) / BEFORE_DAY_B.close * 100) + ((YES_DAY.close - BEFORE_DAY_C.close) / BEFORE_DAY_C.close * 100) + ((YES_DAY.close - BEFORE_DAY_D.close) / BEFORE_DAY_D.close * 100)) / 4 DESC
                                     '''
                                     realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql).fetchall()
+
+        elif self.db_to_realtime_daily_buy_list_num == 20:
+                                
+                        ma_period = 70 
+                        realtime_daily_buy_list = []
+                        realtime_daily_buy_list_1 = []
+                        realtime_daily_buy_list_2 = []
+                       # realtime_daily_buy_list_3 = []
+                        if i < self.date_before_d + 1:
+                            
+                            pass
+                        
+                        else:        
+                            # date_before_a =self.date_rows[i - 1 - self.date_before_a][0]
+                            # date_before_b =self.date_rows[i - 1 - self.date_before_b][0]
+                            # date_before_c =self.date_rows[i - 1 - self.date_before_c][0]
+                            # date_before_d =self.date_rows[i - 1 - self.date_before_d][0]
+    
+                            # date_before_e = self.date_rows[i -1 -1][0]      
+                            
+                            #if i > ma_period:
+                                            
+
+                                            sql = f"""
+                                                    SELECT *
+                                                    FROM `{date_rows_yesterday}` YES_DAY ,stock_info info 
+                                                    WHERE YES_DAY.code = info.code 
+                                                    and info.audit = '{self.audit}'  
+                                                    and info.remarks NOT LIKE '{self.remarks_manage}'  
+                                                    and info.remarks NOT LIKE '{self.remarks_stop}'  
+                                                    and info.stock_market IN ('{self.stock_market_a}', '{self.stock_market_c}')   
+                                                    and NOT exists (select * from stock_managing c where YES_DAY.code=c.code and c.code_name != '' group by c.code) 
+                                                    and NOT exists (select * from stock_insincerity d where YES_DAY.code=d.code and d.code_name !='' group by d.code) 
+                                                    and NOT exists (select * from stock_invest_caution e where YES_DAY.code=e.code and DATE_SUB({date_rows_yesterday}, INTERVAL {self.interval_month} MONTH ) < e.post_date and e.post_date < Date({date_rows_yesterday}) and e.type != '투자경고 지정해제' group by e.code) 
+                                                    and NOT exists (select * from stock_invest_warning f where YES_DAY.code=f.code and f.post_date <= DATE({date_rows_yesterday}) and (f.cleared_date > DATE({date_rows_yesterday}) or f.cleared_date is null) group by f.code) 
+                                                    and NOT exists (select * from stock_invest_danger g where YES_DAY.code=g.code and g.post_date <= DATE({date_rows_yesterday}) and (g.cleared_date > DATE({date_rows_yesterday}) or g.cleared_date is null) group by g.code)  
+                                                    AND YES_DAY.volume != 0 
+                                                    AND YES_DAY.close < {self.invest_unit}
+                                                    ORDER BY YES_DAY.volume * YES_DAY.close DESC 
+                                                """
+                                            realtime_daily_buy_list_temp = self.engine_daily_buy_list.execute(sql).fetchall()
+
+                                            # 과매도 포지션 포착
+                                            for item in realtime_daily_buy_list_temp:
+                                                code_name = item.code_name
+                                                # 위의 조건을 충족하는 종목의 종가 데이터들을 가져오는 쿼리
+                                                bb_sql = f"""
+                                                        SELECT close
+                                                        FROM `{code_name}`
+                                                        WHERE date <= '{date_rows_yesterday}'
+                                                        ORDER BY date DESC limit {ma_period}
+                                                    """
+                                                df_close = self.engine_daily_craw.execute(bb_sql).fetchall()
+
+                                                if len(df_close) >= ma_period:
+                                                    # 데이터프레임으로 종가리스트를 담아서 trading_algorithms.py 파일에 존재하는 BBands 함수에 보내주는 코드
+                                                    result = BBands(pd.DataFrame(df_close), w=ma_period)
+                                                    # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
+                                                    if result:
+                                                        mbb, ubb, lbb, perb, bw = result
+                                                        # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치 할 경우 매수리스트에 넣는다
+                                                        if perb < 0.5:
+                                                            items_code_name = item.code_name
+                                                            items = f"""
+                                                                    SELECT *
+                                                                    FROM `{date_rows_yesterday}` 
+                                                                    WHERE  code_name = '{items_code_name}'
+                                                                    """
+                                                            items = self.engine_daily_buy_list.execute(items).fetchall()
+                                            
+                                        
+
+                                                            # 종목코드
+                                                            code = items[0][4]
+                                                            #code_name = row[5]
+                                                            # 어제 종가
+                                                            yes_close = items[0][7]
+
+                                                            yes_open = items[0][8]
+                                                            # date_rows_yesterday 가 self.date_rows[i-1] 값이다.
+                                                            # 어제 일자 기준 n 일전 날짜
+                                                            #date_before = self.date_rows[i-1-self.day_before][0]
+                                                            
+                                                            date_before_a =self.date_rows[i - 1 - self.date_before_a][0]
+                                                            date_before_b =self.date_rows[i - 1 - self.date_before_b][0]
+                                                            date_before_c =self.date_rows[i - 1 - self.date_before_c][0]
+                                                            date_before_d =self.date_rows[i - 1 - self.date_before_d][0]
+                                                            date_before_e =self.date_rows[i - 1 - 5][0]
+                                                            
+                                                            
+                                                            # 어제 일자 기준 n 일전 종가
+                                                            #date_before_close = self.get_now_close_price_by_date_code_name(code_name, date_before)
+
+                                                            date_before_close_a = self.get_now_close_price_by_date(code, date_before_a)
+                                                            date_before_close_b = self.get_now_close_price_by_date(code, date_before_b)
+                                                            date_before_close_c = self.get_now_close_price_by_date(code, date_before_c)
+                                                            date_before_close_d = self.get_now_close_price_by_date(code, date_before_d)
+                                                            date_before_close_e = self.get_now_close_price_by_date(code, date_before_e)
+                                                            
+                                                            # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                                                            # # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
+                                                            # self.date_before_b = 59 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                                                            # self.date_before_c = 123
+                                                            # self.date_before_d = 245
+                                                            # self.day_before = 20        
+                                                            
+
+                                                            # date_before_high_e = self.get_high_price_by_date(code, date_before_e)
+                                                            # date_before_low_e = self.get_low_price_by_date(code, date_before_e)
+                                                            # date_before_open_e = self.get_open_price_by_date(code, date_before_e)
+
+                                                            if date_before_close_a != 0 and date_before_close_a != False and date_before_close_b != 0 and date_before_close_b != False and date_before_close_c != 0 and date_before_close_c != False and date_before_close_d != 0 and date_before_close_d != False: 
+                                                                # 모멘텀 계산 : n일전 종가 대비 수익률
+                                                                diff_point_calc = (((yes_close - date_before_close_a) / date_before_close_a * 100) +
+                                                                                    ((yes_close - date_before_close_b) / date_before_close_b * 100) +
+                                                                                    ((yes_close - date_before_close_c) / date_before_close_c * 100) + 
+                                                                                    ((yes_close - date_before_close_d) / date_before_close_d * 100)) / 4 
+
+                                                                diff_point_calc_2 = (((yes_close - date_before_close_c) / date_before_close_c * 100) +
+                                                                                    ((yes_close - date_before_close_d) / date_before_close_d * 100)) / 2 
+
+                                                                diff_point_calc_3 = (((yes_close - date_before_close_a) / date_before_close_a * 100) + ((yes_close - date_before_close_b) / date_before_close_b * 100) + ((yes_close - date_before_close_c) / date_before_close_c * 100)) / 3                                                                                                  
+
+                                                                
+                                                                diff_point_calc_4 = (((yes_close - date_before_close_a) / date_before_close_a * 100) +
+                                                                                    ((yes_close - date_before_close_b) / date_before_close_b * 100) +
+                                                                                    ((yes_close - date_before_close_c) / date_before_close_c * 100) + 
+                                                                                    ((yes_close - date_before_close_d) / date_before_close_d * 100) +
+                                                                                    ((yes_close - date_before_close_e) / date_before_close_e * 100)) / 5 
+
+                                                                                                  
+
+                                                                # 모멘텀(수익률)이 self.diff_point 보다 높을 경우 realtime_daily_buy_list에 append
+                                                                #if ((diff_point_calc > self.diff_point) and (diff_point_calc_2 > self.diff_point)) or ((diff_point_calc_3 > self.diff_point) and (diff_point_calc_4 >self.diff_point)):                                                           
+                                                                   # realtime_daily_buy_list_2.append(items)
+
+                                                                if   ((diff_point_calc + diff_point_calc_2 + diff_point_calc_3 + diff_point_calc_4) / 4) >  self.diff_point: 
+                                                                    #code_name = str(row.code_name)
+                                                                    #code  =  int(row.code)                                  
+                                                                    sql = f"""
+                                                                        SELECT *
+                                                                        FROM `{date_rows_yesterday}`                                                                    
+                                                                        where code = {code}
+                                                                        """
+                                                                    realtime_daily_buy_list += self.engine_daily_buy_list.execute(sql).fetchall()
+                                                                    # realtime_daily_buy_list.append(realtime_daily_buy_list_2)    
+                                                        # code_name = '{code_name}'
+                                                                
+                                                        
+                                                        
+                                                        # realtime_daily_buy_list_1.append(item)
+                                                        
+                                
+                                                        # code = item.code
+                                                        # sql = f'''
+                                                        #     SELECT YES_DAY.* FROM `{date_before_a}` BEFORE_DAY_A, `{date_before_b}` BEFORE_DAY_B, `{date_before_c}` BEFORE_DAY_C, `{date_before_d}` BEFORE_DAY_D, `{date_before_e}` BEFORE_DAY_E,`{date_rows_yesterday}` YES_DAY
+                                                        #     WHERE BEFORE_DAY_A.code = BEFORE_DAY_B.code
+                                                        #     AND BEFORE_DAY_B.code = BEFORE_DAY_C.code
+                                                        #     AND BEFORE_DAY_C.code = BEFORE_DAY_D.code 
+                                                        #     AND BEFORE_DAY_D.code = BEFORE_DAY_E.code
+                                                        #     AND BEFORE_DAY_E.code = YES_DAY.code
+                                                        #     AND YES_DAY.code = '{code}'
+                                                            #     AND (((YES_DAY.close - BEFORE_DAY_A.close) / BEFORE_DAY_A.close * 100) + ((YES_DAY.close - BEFORE_DAY_B.close) / BEFORE_DAY_B.close * 100) + ((YES_DAY.close - BEFORE_DAY_C.close) / BEFORE_DAY_C.close * 100) + ((YES_DAY.close - BEFORE_DAY_D.close) / BEFORE_DAY_D.close * 100)) / 4 > {self.diff_point}
+                                                            #     ORDER BY (((YES_DAY.close - BEFORE_DAY_A.close) / BEFORE_DAY_A.close * 100) + ((YES_DAY.close - BEFORE_DAY_B.close) / BEFORE_DAY_B.close * 100) + ((YES_DAY.close - BEFORE_DAY_C.close) / BEFORE_DAY_C.close * 100) + ((YES_DAY.close - BEFORE_DAY_D.close) / BEFORE_DAY_D.close * 100)) / 4 DESC
+
+                                                            # '''                                                                   
+                                                            # realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql).fetchall()
+
+                                                            #realtime_daily_buy_list.append(realtime_daily_buy_list_1)                        
+                                                            #     sql = f'''
+                                                            #         SELECT YES_DAY.* 
+                                                            #         FROM `{code}` YES_DAY
+                                                            #         WHERE YES_DAY.date <= '{date_rows_yesterday}'
+
+                                                            #         AND YES_DAY.close + (DATE_SUB({date_rows_yesterday}, INTERVAL 1 DAY)).high - (DATE_SUB({date_rows_yesterday}, INTERVAL 1 DAY).low) * 0.5) < (DATE_SUB({date_rows_yesterday}, INTERVAL 1 DAY).open
+                                                                    
+                                                                    
+                                                            
+                                                            #     '''
+                                                            #     realtime_daily_buy_list = self.engine_daily_craw.execute(sql).fetchall()
+                                                            # # AND (((YES_DAY.close - {date_rows_yesterday-20}.close) / {date_rows_yesterday-20}.close * 100) + ((YES_DAY.close - {date_rows_yesterday-60}.close) / {date_rows_yesterday-60}.close * 100) + ((YES_DAY.close - {date_rows_yesterday-120}.close) / {date_rows_yesterday-120}.close * 100) + ((YES_DAY.close - {date_rows_yesterday-240}.close) / {date_rows_yesterday-240}.close * 100)) / 4 > {self.diff_point}
+                                                            #     ORDER BY (((YES_DAY.close - {date_rows_yesterday-20}.close) / {date_rows_yesterday-20}.close * 100) + ((YES_DAY.close - {date_rows_yesterday-60}.close) / {date_rows_yesterday-60}.close * 100) + ((YES_DAY.close - {date_rows_yesterday-120}.close) / {date_rows_yesterday-120}.close * 100) + ((YES_DAY.close - {date_rows_yesterday-240}.close) / {date_rows_yesterday-240}.close * 100)) / 4 DESC
+                                                            
+                                                            # AND NOT exists (SELECT * FROM stock_konex b WHERE YES_DAY.code=b.code)
+                                                            # and info.stock_market IN ('{self.stock_market_a}','{self.stock_market_c}')
+                                                            #and info.category0 IN ('{self.category0_a}', '{self.category0_b}','{self.category0_c}')  
+                                                            # and YES_DAY.volume * YES_DAY.close > {self.total_transaction_price}  
+                                                            # and YES_DAY.vol20 * {self.vol_mul} < YES_DAY.volume  
+                                                            #and info.margin <= {self.margin} 
+                                                            #AND exists (SELECT * FROM stock_etf ETF WHERE YES_DAY.code=ETF.code)
+                                                            #AND exists (SELECT * FROM stock_kospi d WHERE YES_DAY.code=d.code)
+                                        
+                                    
+        elif self.db_to_realtime_daily_buy_list_num == 21:
+                                
+                        ma_period = 70 
+                        realtime_daily_buy_list = []
+                        realtime_daily_buy_list_1 = []
+                        realtime_daily_buy_list_2 = []
+                       # realtime_daily_buy_list_3 = []
+                        self.date_before_l = 240
+                        if i < self.date_before_l + 1:
+                            
+                            pass
+                        
+                        else:        
+                            # date_before_a =self.date_rows[i - 1 - self.date_before_a][0]
+                            # date_before_b =self.date_rows[i - 1 - self.date_before_b][0]
+                            # date_before_c =self.date_rows[i - 1 - self.date_before_c][0]
+                            # date_before_d =self.date_rows[i - 1 - self.date_before_d][0]
+    
+                            # date_before_e = self.date_rows[i -1 -1][0]      
+                            
+                            #if i > ma_period:
+                                            # 0.25 * YES_DAY.clo5 + 0.25 * YES_DAY.clo10 + 0.25 * YES_DAY.clo20 + 0.25 * YES_DAY.clo40 (11-28 추가)
+
+                                            sql = f"""
+                                                    SELECT *
+                                                    FROM `{date_rows_yesterday}` YES_DAY ,stock_info info 
+                                                    WHERE YES_DAY.code = info.code 
+                                                    and info.audit = '{self.audit}'  
+                                                    and info.remarks NOT LIKE '{self.remarks_manage}'  
+                                                    and info.remarks NOT LIKE '{self.remarks_stop}'  
+                                                    and info.stock_market IN ('{self.stock_market_a}')   
+                                                    and NOT exists (select * from stock_managing c where YES_DAY.code=c.code and c.code_name != '' group by c.code) 
+                                                    and NOT exists (select * from stock_insincerity d where YES_DAY.code=d.code and d.code_name !='' group by d.code) 
+                                                    and NOT exists (select * from stock_invest_caution e where YES_DAY.code=e.code and DATE_SUB({date_rows_yesterday}, INTERVAL {self.interval_month} MONTH ) < e.post_date and e.post_date < Date({date_rows_yesterday}) and e.type != '투자경고 지정해제' group by e.code) 
+                                                    and NOT exists (select * from stock_invest_warning f where YES_DAY.code=f.code and f.post_date <= DATE({date_rows_yesterday}) and (f.cleared_date > DATE({date_rows_yesterday}) or f.cleared_date is null) group by f.code) 
+                                                    and NOT exists (select * from stock_invest_danger g where YES_DAY.code=g.code and g.post_date <= DATE({date_rows_yesterday}) and (g.cleared_date > DATE({date_rows_yesterday}) or g.cleared_date is null) group by g.code)  
+                                                    AND YES_DAY.volume != 0 
+                                                    AND YES_DAY.close < {self.invest_unit}
+                                                    AND 0.25 * YES_DAY.clo5 + 0.25 * YES_DAY.clo10 + 0.25 * YES_DAY.clo20 + 0.25 * YES_DAY.clo40 > YES_DAY.close
+                                                    ORDER BY YES_DAY.volume * YES_DAY.close DESC 
+                                                """
+                                            realtime_daily_buy_list_temp = self.engine_daily_buy_list.execute(sql).fetchall()
+
+                                            # 과매도 포지션 포착
+                                            for item in realtime_daily_buy_list_temp:
+                                                code_name = item.code_name
+                                                # 위의 조건을 충족하는 종목의 종가 데이터들을 가져오는 쿼리
+                                                bb_sql = f"""
+                                                        SELECT close
+                                                        FROM `{code_name}`
+                                                        WHERE date <= '{date_rows_yesterday}'
+                                                        ORDER BY date DESC limit {ma_period}
+                                                    """
+                                                df_close = self.engine_daily_craw.execute(bb_sql).fetchall()
+
+                                                if len(df_close) >= ma_period:
+                                                    # 데이터프레임으로 종가리스트를 담아서 trading_algorithms.py 파일에 존재하는 BBands 함수에 보내주는 코드
+                                                    result = BBands(pd.DataFrame(df_close), w=ma_period)
+                                                    # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
+                                                    if result:
+                                                        mbb, ubb, lbb, perb, bw = result
+                                                        # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치 할 경우 매수리스트에 넣는다
+                                                        if perb < 0:
+                                                            items_code_name = item.code_name
+                                                            items = f"""
+                                                                    SELECT *
+                                                                    FROM `{date_rows_yesterday}` 
+                                                                    WHERE  code_name = '{items_code_name}'
+                                                                    """
+                                                            items = self.engine_daily_buy_list.execute(items).fetchall()
+                                            
+                                        
+
+                                                            # 종목코드
+                                                            code = items[0][4]
+                                                            #code_name = row[5]
+                                                            # 어제 종가
+                                                            yes_close = items[0][7]
+
+                                                            yes_open = items[0][8]
+                                                            # date_rows_yesterday 가 self.date_rows[i-1] 값이다.
+                                                            # 어제 일자 기준 n 일전 날짜
+                                                            #date_before = self.date_rows[i-1-self.day_before][0]
+                                                            
+                                                            date_before_a =self.date_rows[i - 1 - 20][0]
+                                                            date_before_b =self.date_rows[i - 1 - 40][0]
+                                                            date_before_c =self.date_rows[i - 1 - 60][0]
+                                                            date_before_d =self.date_rows[i - 1 - 80][0]
+                                                            date_before_e =self.date_rows[i - 1 - 100][0]
+                                                            date_before_f =self.date_rows[i - 1 - 120][0]
+                                                            date_before_g =self.date_rows[i - 1 - 140][0]
+                                                            date_before_h =self.date_rows[i - 1 - 160][0]
+                                                            date_before_i =self.date_rows[i - 1 - 180][0]
+                                                            date_before_j =self.date_rows[i - 1 - 200][0]
+                                                            date_before_k =self.date_rows[i - 1 - 220][0]
+                                                            date_before_l =self.date_rows[i - 1 - 240][0]
+                                                            # date_before_m =self.date_rows[i - 1 - 200][0]
+                                                            # date_before_n =self.date_rows[i - 1 - 200][0]
+                                                            
+                                                            # 어제 일자 기준 n 일전 종가
+                                                            #date_before_close = self.get_now_close_price_by_date_code_name(code_name, date_before)
+
+                                                            date_before_close_a = self.get_now_close_price_by_date(code, date_before_a)
+                                                            date_before_close_b = self.get_now_close_price_by_date(code, date_before_b)
+                                                            date_before_close_c = self.get_now_close_price_by_date(code, date_before_c)
+                                                            date_before_close_d = self.get_now_close_price_by_date(code, date_before_d)
+                                                            date_before_close_e = self.get_now_close_price_by_date(code, date_before_e)
+                                                            
+                                                            date_before_close_f = self.get_now_close_price_by_date(code, date_before_f)
+                                                            date_before_close_g = self.get_now_close_price_by_date(code, date_before_g)
+                                                            date_before_close_h = self.get_now_close_price_by_date(code, date_before_h)
+                                                            date_before_close_i = self.get_now_close_price_by_date(code, date_before_i)
+                                                            date_before_close_j = self.get_now_close_price_by_date(code, date_before_j)
+
+                                                            date_before_close_k = self.get_now_close_price_by_date(code, date_before_k)
+                                                            date_before_close_l = self.get_now_close_price_by_date(code, date_before_l)
+                                                        
+                                                            if date_before_close_a != 0 and date_before_close_a != False and date_before_close_b != 0 and date_before_close_b != False and date_before_close_c != 0 and date_before_close_c != False and date_before_close_d != 0 and date_before_close_d != False and date_before_close_e != 0 and date_before_close_e != False and date_before_close_f != 0 and date_before_close_f != False and date_before_close_g != 0 and date_before_close_g != False and date_before_close_h != 0 and date_before_close_h != False and date_before_close_i != 0 and date_before_close_i != False and date_before_close_j != 0 and date_before_close_j != False and date_before_close_k != 0 and date_before_close_k != False and date_before_close_l != 0 and date_before_close_l != False: 
+                                                                # 모멘텀 계산 : n일전 종가 대비 수익률
+                                                                diff_point_calc = (((yes_close - date_before_close_a) / date_before_close_a * 100) +
+                                                                                    ((yes_close - date_before_close_b) / date_before_close_b * 100) +
+                                                                                    ((yes_close - date_before_close_c) / date_before_close_c * 100) + 
+                                                                                    ((yes_close - date_before_close_d) / date_before_close_d * 100) +
+                                                                                    ((yes_close - date_before_close_e) / date_before_close_e * 100) +
+                                                                                    ((yes_close - date_before_close_f) / date_before_close_f * 100) +
+                                                                                    ((yes_close - date_before_close_g) / date_before_close_g * 100) +
+                                                                                    ((yes_close - date_before_close_h) / date_before_close_h * 100) +
+                                                                                    ((yes_close - date_before_close_i) / date_before_close_i * 100) +
+                                                                                    ((yes_close - date_before_close_j) / date_before_close_j * 100) +
+                                                                                    ((yes_close - date_before_close_k) / date_before_close_k * 100) +
+                                                                                    ((yes_close - date_before_close_l) / date_before_close_l * 100)) / 12
+
+
+                                                                # 모멘텀(수익률)이 self.diff_point 보다 높을 경우 realtime_daily_buy_list에 append
+                                                                #if ((diff_point_calc > self.diff_point) and (diff_point_calc_2 > self.diff_point)) or ((diff_point_calc_3 > self.diff_point) and (diff_point_calc_4 >self.diff_point)):                                                           
+                                                                   # realtime_daily_buy_list_2.append(items)
+
+                                                                if diff_point_calc >  self.diff_point: 
+                                                                    #code_name = str(row.code_name)
+                                                                    #code  =  int(row.code)                                  
+                                                                    sql = f"""
+                                                                        SELECT *
+                                                                        FROM `{date_rows_yesterday}`                                                                    
+                                                                        where code = {code}
+                                                                        """
+                                                                    realtime_daily_buy_list += self.engine_daily_buy_list.execute(sql).fetchall()
+                                                                    # realtime_daily_buy_list.append(realtime_daily_buy_list_2)    
+        elif self.db_to_realtime_daily_buy_list_num == 22:
+                                
+                        ma_period = 70 
+                        realtime_daily_buy_list = []
+                        realtime_daily_buy_list_1 = []
+                        realtime_daily_buy_list_2 = []
+                        date_before_e =self.date_rows[i - 1 - 1][0]
+                       # realtime_daily_buy_list_3 = []
+                        self.date_before_l = 240
+                        if i < self.date_before_l + 1:
+                            
+                            pass
+                        
+                        else:        
+                            # date_before_a =self.date_rows[i - 1 - self.date_before_a][0]
+                            # date_before_b =self.date_rows[i - 1 - self.date_before_b][0]
+                            # date_before_c =self.date_rows[i - 1 - self.date_before_c][0]
+                            # date_before_d =self.date_rows[i - 1 - self.date_before_d][0]
+    
+                            # date_before_e = self.date_rows[i -1 -1][0]      
+                            
+                            #if i > ma_period:
+                                            # 0.25 * YES_DAY.clo5 + 0.25 * YES_DAY.clo10 + 0.25 * YES_DAY.clo20 + 0.25 * YES_DAY.clo40 (11-28 추가)
+
+                                            sql = f"""
+                                                    SELECT *
+                                                    FROM `{date_rows_yesterday}` YES_DAY ,stock_info info  
+                                                    WHERE YES_DAY.code = info.code 
+                                                    and info.audit = '{self.audit}'  
+                                                    and info.remarks NOT LIKE '{self.remarks_manage}'  
+                                                    and info.remarks NOT LIKE '{self.remarks_stop}'  
+                                                    and info.stock_market IN ('{self.stock_market_a}','{self.stock_market_b}','{self.stock_market_c}')   
+                                                    and NOT exists (select * from stock_managing c where YES_DAY.code=c.code and c.code_name != '' group by c.code) 
+                                                    and NOT exists (select * from stock_insincerity d where YES_DAY.code=d.code and d.code_name !='' group by d.code) 
+                                                    and NOT exists (select * from stock_invest_caution e where YES_DAY.code=e.code and DATE_SUB({date_rows_yesterday}, INTERVAL {self.interval_month} MONTH ) < e.post_date and e.post_date < Date({date_rows_yesterday}) and e.type != '투자경고 지정해제' group by e.code) 
+                                                    and NOT exists (select * from stock_invest_warning f where YES_DAY.code=f.code and f.post_date <= DATE({date_rows_yesterday}) and (f.cleared_date > DATE({date_rows_yesterday}) or f.cleared_date is null) group by f.code) 
+                                                    and NOT exists (select * from stock_invest_danger g where YES_DAY.code=g.code and g.post_date <= DATE({date_rows_yesterday}) and (g.cleared_date > DATE({date_rows_yesterday}) or g.cleared_date is null) group by g.code)  
+                                                    AND YES_DAY.volume != 0 
+                                                    AND YES_DAY.close < {self.invest_unit}
+                                                    AND 0.25 * YES_DAY.clo5 + 0.25 * YES_DAY.clo10 + 0.25 * YES_DAY.clo20 + 0.25 * YES_DAY.clo40 > YES_DAY.close
+                                                    ORDER BY YES_DAY.volume * YES_DAY.close DESC 
+                                                """
+                                            realtime_daily_buy_list_temp = self.engine_daily_buy_list.execute(sql).fetchall()
+
+                                            # 과매도 포지션 포착
+                                            for item in realtime_daily_buy_list_temp:
+                                                code_name = item.code_name
+                                                # 위의 조건을 충족하는 종목의 종가 데이터들을 가져오는 쿼리
+                                                bb_sql = f"""
+                                                        SELECT close
+                                                        FROM `{code_name}`
+                                                        WHERE date <= '{date_rows_yesterday}'
+                                                        ORDER BY date DESC limit {ma_period}
+                                                    """
+                                                df_close = self.engine_daily_craw.execute(bb_sql).fetchall()
+
+                                                if len(df_close) >= ma_period:
+                                                    # 데이터프레임으로 종가리스트를 담아서 trading_algorithms.py 파일에 존재하는 BBands 함수에 보내주는 코드
+                                                    result = BBands(pd.DataFrame(df_close), w=ma_period)
+                                                    # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
+                                                    if result:
+                                                        mbb, ubb, lbb, perb, bw = result
+                                                        # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치 할 경우 매수리스트에 넣는다
+                                                        if perb < 0:
+                                                            items_code_name = item.code_name
+                                                            items = f"""
+                                                                    SELECT *
+                                                                    FROM `{date_rows_yesterday}` 
+                                                                    WHERE  code_name = '{items_code_name}'
+                                                                    """
+                                                            items = self.engine_daily_buy_list.execute(items).fetchall()
+                                            
+                                        
+
+                                                            # 종목코드
+                                                            code = items[0][4]
+                                                            code_name = items[0][5]
+                                                            #code_name = row[5]
+                                                            # 어제 종가
+                                                            yes_close = items[0][7]
+
+                                                            yes_open = items[0][8]
+                                                            # date_rows_yesterday 가 self.date_rows[i-1] 값이다.
+                                                            # 어제 일자 기준 n 일전 날짜
+                                                            #date_before = self.date_rows[i-1-self.day_before][0]
+                                                            
+                                                            date_before_a =self.date_rows[i - 1 - 20][0]
+                                                            date_before_b =self.date_rows[i - 1 - 40][0]
+                                                            date_before_c =self.date_rows[i - 1 - 60][0]
+                                                            date_before_d =self.date_rows[i - 1 - 80][0]
+                                                            date_before_e =self.date_rows[i - 1 - 100][0]
+                                                            date_before_f =self.date_rows[i - 1 - 120][0]
+                                                            date_before_g =self.date_rows[i - 1 - 140][0]
+                                                            date_before_h =self.date_rows[i - 1 - 160][0]
+                                                            date_before_i =self.date_rows[i - 1 - 180][0]
+                                                            date_before_j =self.date_rows[i - 1 - 200][0]
+                                                            date_before_k =self.date_rows[i - 1 - 220][0]
+                                                            date_before_l =self.date_rows[i - 1 - 240][0]
+                                                            
+                                                            date_before_m =self.date_rows[i - 1 - 14][0]
+                                                            date_before =self.date_rows[i -1][0]
+                                                            # date_before_n =self.date_rows[i - 1 - 200][0]
+                                                            
+                                                            # 어제 일자 기준 n 일전 종가
+                                                            #date_before_close = self.get_now_close_price_by_date_code_name(code_name, date_before)
+
+                                                            date_before_close_a = self.get_now_close_price_by_date(code, date_before_a)
+                                                            date_before_close_b = self.get_now_close_price_by_date(code, date_before_b)
+                                                            date_before_close_c = self.get_now_close_price_by_date(code, date_before_c)
+                                                            date_before_close_d = self.get_now_close_price_by_date(code, date_before_d)
+                                                            date_before_close_e = self.get_now_close_price_by_date(code, date_before_e)
+                                                            
+                                                            date_before_close_f = self.get_now_close_price_by_date(code, date_before_f)
+                                                            date_before_close_g = self.get_now_close_price_by_date(code, date_before_g)
+                                                            date_before_close_h = self.get_now_close_price_by_date(code, date_before_h)
+                                                            date_before_close_i = self.get_now_close_price_by_date(code, date_before_i)
+                                                            date_before_close_j = self.get_now_close_price_by_date(code, date_before_j)
+
+                                                            date_before_close_k = self.get_now_close_price_by_date(code, date_before_k)
+                                                            date_before_close_l = self.get_now_close_price_by_date(code, date_before_l)
+                                                                                         
+                                                            #date_before_close_m = self.get_now_rsi_price_by_date(code_name, date_before_m)
+                                                            if date_before_close_a != 0 and date_before_close_a != False and date_before_close_b != 0 and date_before_close_b != False and date_before_close_c != 0 and date_before_close_c != False and date_before_close_d != 0 and date_before_close_d != False and date_before_close_e != 0 and date_before_close_e != False and date_before_close_f != 0 and date_before_close_f != False and date_before_close_g != 0 and date_before_close_g != False and date_before_close_h != 0 and date_before_close_h != False and date_before_close_i != 0 and date_before_close_i != False and date_before_close_j != 0 and date_before_close_j != False and date_before_close_k != 0 and date_before_close_k != False and date_before_close_l != 0 and date_before_close_l != False: 
+                                                                # 모멘텀 계산 : n일전 종가 대비 수익률
+                                                                diff_point_calc = (((yes_close - date_before_close_a) / date_before_close_a * 100) +
+                                                                                    ((yes_close - date_before_close_b) / date_before_close_b * 100) +
+                                                                                    ((yes_close - date_before_close_c) / date_before_close_c * 100) + 
+                                                                                    ((yes_close - date_before_close_d) / date_before_close_d * 100) +
+                                                                                    ((yes_close - date_before_close_e) / date_before_close_e * 100) +
+                                                                                    ((yes_close - date_before_close_f) / date_before_close_f * 100) +
+                                                                                    ((yes_close - date_before_close_g) / date_before_close_g * 100) +
+                                                                                    ((yes_close - date_before_close_h) / date_before_close_h * 100) +
+                                                                                    ((yes_close - date_before_close_i) / date_before_close_i * 100) +
+                                                                                    ((yes_close - date_before_close_j) / date_before_close_j * 100) +
+                                                                                    ((yes_close - date_before_close_k) / date_before_close_k * 100) +
+                                                                                    ((yes_close - date_before_close_l) / date_before_close_l * 100)) / 12
+
+
+                                                                # 모멘텀(수익률)이 self.diff_point 보다 높을 경우 realtime_daily_buy_list에 append
+                                                                #if ((diff_point_calc > self.diff_point) and (diff_point_calc_2 > self.diff_point)) or ((diff_point_calc_3 > self.diff_point) and (diff_point_calc_4 >self.diff_point)):                                                           
+                                                                   # realtime_daily_buy_list_2.append(items)
+                                                                sql = "select close from `" + code_name + "` where date >= '%s' and date <= '%s' ORDER BY date desc"
+                                                                date_before_close_m = self.engine_daily_craw.execute(sql%(date_before_m, date_before)).fetchall()
+                                                                 # rsi 참고자료        
+                                                                    # https://wikidocs.net/163550#rsi   
+                                                                # variable = date_before_close_m[0][0] - date_before_close_m[1][0]
+                                                                # #variable_abs = variable
+                                                                # Up_a  = np.where(variable>=0, variable, 0)
+                                                                # #Up_a_DataFrame  = pd.DataFrame(Up_a)
+                                                                # down_b = np.where(variable < 0, abs(variable), 0)
+                                                                # #down_b_DataFrame  = pd.DataFrame(down_b)   
+                                                                # AU = Up_a.ewm(alpha=1/14, min_periods=14).mean()
+                                                                # AD = down_b.ewm(alpha=1/14, min_periods=14).mean()
+                                                                #df['RS'] = df['AU'] / df['AD']
+                                                                #df['RSI'] = 100 - (100 / (1 + df['RS']))
+                                                                # AU = pd.DataFrame(date_before_close_m).rolling(window=14).mean()
+                                                                # AD = pd.DataFrame(date_before_close_m).rolling(window=14).mean()
+                                                               
+                                                                # RSI = AU / (AD + AU) * 100
+                                                                #############################3
+                                                                # 참고 사이트 -https://hotorch.tistory.com/366
+                                                                date_before_close_m = pd.DataFrame(date_before_close_m[:])
+                                                                # delta = date_before_close_m.diff()
+                                                                # up ,down = delta.copy(),delta.copy()
+                                                                # up[up<0] = 0
+                                                                # down[down >0] = 0
+                                                                # _gain = pd.DataFrame(date_before_close_m).rolling(window=14).mean()
+                                                                # _loss = pd.DataFrame(down).rolling(window=14).mean()
+                                                                # RS = _gain / _loss
+                                                                # rsi_14 = pd.DataFrame(100 -(100 / (1+ RS)), name="RSI") 
+                                                                # ######
+                                                                data[0] = RSI(date_before_close_m, period = 14)
+    
+
+
+                                                                if (diff_point_calc >  self.diff_point) and (data[0] > 50): 
+                                                                    
+                                                                    #code_name = str(row.code_name)
+                                                                    #code  =  int(row.code)                                  
+                                                                    sql = f"""
+                                                                        SELECT *
+                                                                        FROM `{date_rows_yesterday}`                                                                    
+                                                                        where code = {code}
+                                                                        """
+                                                                    realtime_daily_buy_list += self.engine_daily_buy_list.execute(sql).fetchall()                               
+
+
 
 
         ######################################################################################################################################################################################
@@ -2011,6 +2545,58 @@ class simulator_func_mysql:
         else:
             return False
 
+        # rsi 종가를 가져오는 함수
+    def get_now_rsi_price_by_date(self, code_name, date):
+        sql = "select close from `" + code_name + "` where DATE_SUB('date', INTERVAL 14 day)  group by code"
+        return_price_a += self.engine_daily_craw.execute(sql % (date)).fetchall()
+
+         
+
+ # 특정 종목의 고가를 가져오는 함수
+    def get_high_price_by_date(self, code, date):
+        sql = "select high from `" + date + "` where code = '%s' group by code"
+        return_price = self.engine_daily_buy_list.execute(sql % (code)).fetchall()
+
+        if len(return_price) == 1:
+            return return_price[0][0]
+        else:
+            return False
+
+
+  # 특정 종목의 저가를 가져오는 함수
+    def get_low_price_by_date(self, code, date):
+        sql = "select low from `" + date + "` where code = '%s' group by code"
+        return_price = self.engine_daily_buy_list.execute(sql % (code)).fetchall()
+
+        if len(return_price) == 1:
+            return return_price[0][0]
+        else:
+            return False
+
+  # 특정 종목의 시작가를 가져오는 함수
+    def get_open_price_by_date(self, code, date):
+        sql = "select open from `" + date + "` where code = '%s' group by code"
+        return_price = self.engine_daily_buy_list.execute(sql % (code)).fetchall()
+
+        if len(return_price) == 1:
+            return return_price[0][0]
+        else:
+            return False                      
+
+
+
+    # 특정 종목의 종가를 가져오는 함수 2022-11-28 추가
+    def get_now_close_price_by_date_code_name(self, code_name, date):
+        sql = "select close from `" + date + "` where code_name = '%s' group by code_name"
+        return_price = self.engine_daily_buy_list.execute(sql % (code_name)).fetchall()
+
+        if len(return_price) == 1:
+            return return_price[0][0]
+        else:
+            return False
+
+
+
     # 특정 종목의 어제 종가를 가져오는 함수
     def get_yes_close_price_by_date(self, code, date):
         sql = "select close from `" + date + "` where code = '%s' group by code"
@@ -2126,35 +2712,82 @@ class simulator_func_mysql:
 
             sell_list = self.engine_simulator.execute(sql % (0, self.losscut_point)).fetchall()
 
-       #  5/ 60  moving average Death Cross sell list setting 이거나, 손절 기준 수익률 이하 떨어지면 손절하는 알고리즘
+       #  (clo5 < clo60) or (clo5 < clo40) or (clo5 < clo20)  moving average Death Cross sell list setting 알고리즘
         elif self.sell_list_num == 4:
             sql = "SELECT code,rate,present_price,valuation_profit FROM all_item_db WHERE (sell_date = '%s') " \
-                   "and ((clo5 < clo60) or rate <= '%s') group by code"
+                   "and ((clo5 < clo60) or (clo5 < clo40) or (clo5 < clo20)) group by code"
         
-            sell_list = self.engine_simulator.execute(sql % (0, self.losscut_point)).fetchall()
+            sell_list = self.engine_simulator.execute(sql % (0)).fetchall()
 
         # Absolute Momentum 전략 (특정일 전 보다 n% 이하로 떨어지면 매도) / code 버전
         elif self.sell_list_num == 5:
             sell_list = []
-            sql = "SELECT code, rate, present_price, valuation_profit FROM all_item_db WHERE sell_date = 0 " \
-                  "group by code"
+            sql = "SELECT code, rate, present_price, valuation_profit FROM all_item_db WHERE sell_date = 0 group by code"  
+                  
             # realtime_daily_buy_list_temp 로 일단 위 조건의 종목을 받는다.
             sell_list_temp = self.engine_simulator.execute(sql).fetchall()
             for row in sell_list_temp:
                 code = row[0]
+                rate = row[1]
                 present_price = row[2]
-                # date_rows_yesterday 가 self.date_rows[i-1] 값이다.
-                # date_rows_today 가 self.date_rows[i]
-                # 오늘 기준 n일 전 날짜
-                date_before = self.date_rows[i - self.day_before][0]
-                # 오늘 기준 n일 전 종가
-                date_before_close = self.get_now_close_price_by_date(code, date_before)
-                if date_before_close != 0 and date_before_close != False:
-                    diff_point_calc = (present_price - date_before_close) / date_before_close * 100
-                    # 현재가(present_price)가 self.day_before 일 전 종가 보다 self.diff_point(0도 가능) 만큼 떨어 지면 매도
-                    if diff_point_calc < self.diff_point * (-1):
-                        sell_list.append(row)
-     
+
+               # date_before = self.date_rows[i - self.day_before][0]
+
+
+                date_before_a =self.date_rows[i - 1 - 20][0]
+                date_before_b =self.date_rows[i - 1 - 40][0]
+                date_before_c =self.date_rows[i - 1 - 60][0]
+                date_before_d =self.date_rows[i - 1 - 80][0]
+                date_before_e =self.date_rows[i - 1 - 100][0]
+                date_before_f =self.date_rows[i - 1 - 120][0]
+                date_before_g =self.date_rows[i - 1 - 140][0]
+                date_before_h =self.date_rows[i - 1 - 160][0]
+                date_before_i =self.date_rows[i - 1 - 180][0]
+                date_before_j =self.date_rows[i - 1 - 200][0]
+                date_before_k =self.date_rows[i - 1 - 220][0]
+                date_before_l =self.date_rows[i - 1 - 240][0]
+                # date_before_m =self.date_rows[i - 1 - 200][0]
+                # date_before_n =self.date_rows[i - 1 - 200][0]
+                
+                # 어제 일자 기준 n 일전 종가
+                #date_before_close = self.get_now_close_price_by_date_code_name(code_name, date_before)
+
+                date_before_close_a = self.get_now_close_price_by_date(code, date_before_a)
+                date_before_close_b = self.get_now_close_price_by_date(code, date_before_b)
+                date_before_close_c = self.get_now_close_price_by_date(code, date_before_c)
+                date_before_close_d = self.get_now_close_price_by_date(code, date_before_d)
+                date_before_close_e = self.get_now_close_price_by_date(code, date_before_e)
+                
+                date_before_close_f = self.get_now_close_price_by_date(code, date_before_f)
+                date_before_close_g = self.get_now_close_price_by_date(code, date_before_g)
+                date_before_close_h = self.get_now_close_price_by_date(code, date_before_h)
+                date_before_close_i = self.get_now_close_price_by_date(code, date_before_i)
+                date_before_close_j = self.get_now_close_price_by_date(code, date_before_j)
+
+                date_before_close_k = self.get_now_close_price_by_date(code, date_before_k)
+                date_before_close_l = self.get_now_close_price_by_date(code, date_before_l)
+            
+                if date_before_close_a != 0 and date_before_close_a != False and date_before_close_b != 0 and date_before_close_b != False and date_before_close_c != 0 and date_before_close_c != False and date_before_close_d != 0 and date_before_close_d != False and date_before_close_e != 0 and date_before_close_e != False and date_before_close_f != 0 and date_before_close_f != False and date_before_close_g != 0 and date_before_close_g != False and date_before_close_h != 0 and date_before_close_h != False and date_before_close_i != 0 and date_before_close_i != False and date_before_close_j != 0 and date_before_close_j != False and date_before_close_k != 0 and date_before_close_k != False and date_before_close_l != 0 and date_before_close_l != False: 
+                    # 모멘텀 계산 : n일전 종가 대비 수익률
+                    diff_point_calc = (((present_price - date_before_close_a) / date_before_close_a * 100) +
+                                        ((present_price - date_before_close_b) / date_before_close_b * 100) +
+                                        ((present_price - date_before_close_c) / date_before_close_c * 100) + 
+                                        ((present_price - date_before_close_d) / date_before_close_d * 100) +
+                                        ((present_price - date_before_close_e) / date_before_close_e * 100) +
+                                        ((present_price - date_before_close_f) / date_before_close_f * 100) +
+                                        ((present_price - date_before_close_g) / date_before_close_g * 100) +
+                                        ((present_price - date_before_close_h) / date_before_close_h * 100) +
+                                        ((present_price - date_before_close_i) / date_before_close_i * 100) +
+                                        ((present_price - date_before_close_j) / date_before_close_j * 100) +
+                                        ((present_price - date_before_close_k) / date_before_close_k * 100) +
+                                        ((present_price - date_before_close_l) / date_before_close_l * 100)) / 12
+
+
+                    if diff_point_calc < self.diff_point * (-1):                                                           
+                         sell_list.append(row)    
+
+
+
         # Absolute Momentum 전략 (특정일 전 보다 n% 이하로 떨어지면 매도) / query version
         elif self.sell_list_num == 6:
             date_before = self.date_rows[i - self.day_before][0]
@@ -2194,7 +2827,7 @@ class simulator_func_mysql:
         elif self.sell_list_num == 9:   
             sell_list = []
             # 사용하는 이동평균선 기간
-            ma_period = 20
+            ma_period = 70
 
             if i > ma_period:
                 # all_item_db 에서 매도하지 않고 보유하고 있는 종목 가져오는 쿼리
@@ -2406,14 +3039,16 @@ class simulator_func_mysql:
         elif self.sell_list_num == 14:
             sell_list = []
             # 사용하는 이동평균선 기간
-            ma_period = 20
+            ma_period = 70
 
             if i > ma_period:
                 # all_item_db 에서 매도하지 않고 보유하고 있는 종목 가져오는 쿼리
+                # sql = "SELECT code, rate, present_price,valuation_profit, code_name FROM all_item_db WHERE (sell_date = '%s') " \
+                #       "and ((clo5 < clo20) or rate <= '%s') group by code"
+                # sell_list_temp = self.engine_simulator.execute(sql % (0, self.losscut_point)).fetchall()
                 sql = "SELECT code, rate, present_price,valuation_profit, code_name FROM all_item_db WHERE (sell_date = '%s') " \
-                      "and ((clo5 < clo20) or rate <= '%s') group by code"
-                sell_list_temp = self.engine_simulator.execute(sql % (0, self.losscut_point)).fetchall()
-                
+                  "and (rate>='%s' or rate <= '%s') group by code"
+                sell_list_temp = self.engine_simulator.execute(sql % (0, self.sell_point, self.losscut_point)).fetchall()
 
                 # 과매수 포지션 포착
                 for item in sell_list_temp:
@@ -2435,7 +3070,7 @@ class simulator_func_mysql:
                         if result:
                             mbb, ubb, lbb, perb, bw = result
                             # perb가 1보다 큰 경우: 종가가 볼린저밴드 상한선 위에 위치 할 경우 매도리스트에 넣는다
-                            if perb > 1:
+                            if perb > 0.5:
                                 sell_list.append(item)
 
         ##################################################################################################################################################################################################################
@@ -2908,6 +3543,31 @@ def escape_percentage(conn, clauseelement, multiparams, params):
             clauseelement = replaced
 
     return clauseelement, multiparams, params
+
+# ADD 11-29
+def SMA(data,period = 30) :
+    return data[:].rolling(window = period).mean()
+
+def RSI(data, period = 14) :
+    delta = data[:].diff(1)
+    delta = delta.dropna()
+    
+    up = delta.copy()
+    down = delta.copy()
+    up[up <0] =0
+    down[down>0] = 0
+    data['up'] = up
+    data['down'] = down
+    
+    AVG_Gain = SMA(data, period)
+    AVG_Loss = abs(SMA(data,period))
+    RS = AVG_Gain / AVG_Loss
+    
+    RSI = 100.0 - (100.0 / (1.0+RS))
+    data[0] = RSI
+    
+    return data[0]
+
 
 if __name__ == '__main__':
     logger.error('simulator.py로 실행해 주시기 바랍니다.')
