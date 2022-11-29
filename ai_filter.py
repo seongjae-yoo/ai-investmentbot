@@ -11,7 +11,11 @@ from sqlalchemy.exc import InternalError, ProgrammingError
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, ReduceLROnPlateau
 
-from ai.SPPModel import load_data, evaluate, predict, DataNotEnough, create_model_Bidirectional, create_cnn_GRU , attention_model, Create_BiLSTM_GRU_LSTM_cnn_BiLSTM_attention_model, Create_Bidirectional_GRU_LSTM_v2, create_model_bidirectional_v4,attention_model_1114_v3
+from ai.SPPModel import load_data, evaluate, predict, DataNotEnough, CNN_Attention_BiLSTM_Version3 
+
+
+
+
 from library import cf
 from library.open_api import setup_sql_mod
 from sklearn.metrics import mean_absolute_error
@@ -57,24 +61,21 @@ def filtered_by_basic_lstm(dataset, ai_settings):
         
     model = ai_settings['model']                        
 
-    #
-    # early_stopping = EarlyStopping(monitor='val_loss', patience=500)  # 200번이상 더 좋은 결과가 없으면 학습을 멈춤
-    date_now = time.strftime("%Y-%m-%d")
-    model_function_name= "attention_model_1114_v3"
-
-    model_name = f"{date_now}_{model_function_name}"
-    checkpoint_filepath = 'ModelCheckpoint/attention_model_1114_v3/Checkpoint'
+    
+    checkpoint_filepath = 'ModelCheckpoint/CNN_Attention_BiLSTM_Version3/Checkpoint'
 
     early_stopping = EarlyStopping(monitor='val_loss', patience=500)  # patience 번이상 더 좋은 결과가 없으면 학습을 멈춤
     #callback = tf.keras.callbacks.ModelCheckpoint('Transformer+TimeEmbedding.hdf5', 
     #                                          monitor='val_loss', 
     #                                          save_best_only=True, verbose=1)
-    tensorboard = TensorBoard(log_dir=os.path.join("logs", model_name))
+    
     ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, save_best_only=True, verbose=1, mode='min',monitor='val_loss')
     # reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
     #                           patience=5, min_lr=0.001, mode='min',verbose=1)
+    
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
                               patience=1, min_lr=0.0001, mode='min',verbose=1)
+    
     model.fit(shuffled_data["X_train"], shuffled_data["y_train"],
                         batch_size=ai_settings['batch_size'],
                         epochs=ai_settings['epochs'],
@@ -85,8 +86,13 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     scaled_data = load_data(df=dataset.copy(), n_steps=ai_settings['n_steps'], test_size=ai_settings['test_size'],
                             shuffle=False)
 
-    result = evaluate(scaled_data, model)
-    print(f"result: {result}")
+    # result = evaluate(scaled_data, model)
+    # print(f"result: {result}")
+
+    
+    train_huber_loss, train_mae, train_rmse,test_huber_loss, test_mae, test_rmse = evaluate(scaled_data, model)  
+    print(f"train_huber_loss, train_mae, train_rmse: {train_huber_loss,train_mae, train_rmse}")      
+    print(f"test_huber_loss, test_mae, test_rmse: {test_huber_loss,test_mae, test_rmse}")      
 
     # mse = evaluate(scaled_data, model)
     # print(f"Mean Squared Error: {mse}")
@@ -173,14 +179,15 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
     #### 함수로 모델 사용 !@ 
     # model 함수 부분만 바꾸어서 다른 모델 실험할 수 있습니다.
     #maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos')
+    #CNN_Attention_BiLSTM_Version3(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
         elif ai_filter_num == 3:
             ai_settings = {
-                        "model": attention_model_1114_v3(),   
+                        "model": CNN_Attention_BiLSTM_Version3(),   
                         "n_steps": 1, # 시퀀스 데이터를 몇개씩 담을지 설정       
                         "lookup_step": 1, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
                         "test_size": 0.3,
                         "batch_size": 32,
-                        "epochs": 10,
+                        "epochs": 500,
                         "ratio_cut": 5,
                         "table": "daily_craw",
                         "is_used_predicted_close" : True #false는 단한종목도 사지 않는다.
