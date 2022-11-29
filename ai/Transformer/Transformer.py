@@ -1,3 +1,5 @@
+# Transformer [16] is the most successful sequential learning self-attention based model.
+
 from tensorflow.keras.layers import Layer
 from keras.layers import Input
 import tensorflow as tf
