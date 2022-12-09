@@ -24,6 +24,13 @@ from sqlalchemy import create_engine
 from library.trading_algorithms import BBands
 import numpy as np
 
+# sell_ai function
+from ai.SPPModel import CNN_Attention_BiLSTM_Version3 ,load_data,evaluate,predict,DataNotEnough
+from tensorflow.keras.callbacks import EarlyStopping
+import tensorflow as tf  
+from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+
+
 pymysql.install_as_MySQLdb()
 
 
@@ -179,7 +186,7 @@ class simulator_func_mysql:
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
             self.start_invest_price = 9448076
             # 매수 금액
-            self.invest_unit = 100000
+            self.invest_unit = 1000000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
@@ -392,7 +399,7 @@ class simulator_func_mysql:
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함 (실시간 조건 매수 조건)
         # self.use_min 옵션이 반드시 True로 설정이 되어야함 (실시간 조건 매수 조건)
         # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다. !@
-        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21,22,23,24):
+        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21,22,23,24,25,26):
             
             self.simul_start_date = "20220502"
 
@@ -407,10 +414,10 @@ class simulator_func_mysql:
             # 초기 투자자금(시뮬레이션에서의 초기 투자 금액. 모의투자는 신청 당시의 금액이 초기 투자 금액이라고 보시면 됩니다)
             # 주의! start_invest_price 는 모의투자 초기 자본금과 별개. 시뮬레이션에서만 적용.
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
-            self.start_invest_price = 30000000
+            self.start_invest_price = 100000000
 
             # 매수 금액
-            self.invest_unit = 1000000
+            self.invest_unit = 10000000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
@@ -430,7 +437,7 @@ class simulator_func_mysql:
             self.day_before = 60 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
             # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
             self.diff_point = 10 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
-            self.sell_diff_point = -10
+            
             # volume * close (총 거래대금 금액) 의 변수: total_transaction_price
             self.total_transaction_price = 100000
             self.vol_mul = 2
@@ -584,17 +591,20 @@ class simulator_func_mysql:
         #!@
         # 1달전 ,3달전, 6달전 ,12달전  상대 모멘텀 전략(Relative Strength Momentum) + 볼린저밴드 전략 + 래리 윌리엄스 변동성 돌파 매수 전략
         # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)1744971
-        # 20210513일 기준
+        # 20210513일 기준 , self.diff_point = 15
         # self.sell_list_num = 5  -> -1341002  
         # self.sell_list_num = 2 -> 825594
         # 20210113일 기준 self.sell_list_num = 2-> 930471
         # 20210113일 기준 self.sell_list_num = 5-> -2711579
+        #########################################################33
+        # self.diff_point = 7, self.sell_list_num = 5 -> -4278731
+        # self.diff_point = 7, self.sell_list_num = 2 -> -750378
         # 고수익 방법 23알고리즘보다 안정적인 수익률 기대 못함
             elif self.simul_num == 22:       
 
                 self.db_to_realtime_daily_buy_list_num = 18
                 
-                self.sell_list_num = 5
+                self.sell_list_num = 2
                 #self.trade_check_num = 3
                 self.simul_start_date = "20210113"
                 #self.simul_start_date = "20200713"
@@ -605,7 +615,7 @@ class simulator_func_mysql:
                 self.date_before_c = 120
                 self.date_before_d = 240
 
-                self.diff_point = 15 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+                self.diff_point = 7 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
                 
                 self.margin = 40         
                 # AI알고리즘 사용 여부 
@@ -613,11 +623,20 @@ class simulator_func_mysql:
                 # self.ai_filter_num = 3  # ai 알고리즘 선택    
         
         # 2022-10-18 Written by SEONGJAE-YOO (Commits on Oct 18, 2022)
-        # 1~11 70만원
+        # 볼린저 밴드 0 설정
+        # 1~11 
         # sell_list=5 -> 743791
         # sell_list=2 -> 36183
-        # 안정적인 방법 
-        # 이 방법으로 논문 쓰기
+        #########################
+        # 볼린저 밴드 0.1 설정
+        # 162771    
+        #     
+        ##################################################3
+        # 볼린저 밴드 0.25 설정 
+        # sell_list=5 -> 134681
+        # ma_period = 75 이동평균 기간에 따른 수익률 비교?
+        # 안정적인 방법 !@
+        # 이 방법으로 single_attention_vector=False 논문 실험 (single_attention_vector=False -> true 변경해서 실험해보기)
             elif self.simul_num == 23:       
 
                 
@@ -631,12 +650,12 @@ class simulator_func_mysql:
                 # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                 # # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
                 # self.date_before_b = 59 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
-                # self.date_before_c = 123
+                # self.date_before_c = 123  
                 # self.date_before_d = 245
                 # self.day_before = 20    
-                self.diff_point = 7 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
-                
-                self.margin = 40         
+                self.diff_point = 5 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+                self.sell_diff_point = 3
+                self.margin = 100         
                 # # AI알고리즘 사용 여부 
                 # self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 # self.ai_filter_num = 3  # ai 알고리즘 선택                 
@@ -644,25 +663,78 @@ class simulator_func_mysql:
             elif self.simul_num == 24:       
 
                 
-                self.db_to_realtime_daily_buy_list_num = 22
+                self.db_to_realtime_daily_buy_list_num = 21
                 
-                self.sell_list_num = 5
+                self.sell_list_num = 16
                 #self.trade_check_num = 3
-                self.simul_start_date = "20210713"
+                self.simul_start_date = "20210113"
                 #self.simul_start_date = "20200713"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
                 # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                 # # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
                 # self.date_before_b = 59 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
-                # self.date_before_c = 123
+                # self.date_before_c = 123  
                 # self.date_before_d = 245
                 # self.day_before = 20    
-                self.diff_point = 7 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
-                
-                self.margin = 40         
+                self.diff_point = 5 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+                self.sell_diff_point = 3
+                self.margin = 100         
                 # # AI알고리즘 사용 여부 
-                # self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
-                # self.ai_filter_num = 3  # ai 알고리즘 선택 
+                self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                self.ai_filter_num = 3  # ai 알고리즘 선택               
+
+            elif self.simul_num == 25:       
+
+                
+                self.db_to_realtime_daily_buy_list_num = 21
+                
+                self.sell_list_num = 16
+                #self.trade_check_num = 3
+                self.simul_start_date = "20210113"
+                #self.simul_start_date = "20200713"
+                # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
+                # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                # # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
+                # self.date_before_b = 59 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                # self.date_before_c = 123  
+                # self.date_before_d = 245
+                # self.day_before = 20    
+                # 매수 금액
+                self.invest_unit = 100000000
+                self.diff_point = 5 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+                self.sell_diff_point = 3
+                self.margin = 100         
+                # # AI알고리즘 사용 여부 
+                self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                self.ai_filter_num = 3  # ai 알고리즘 선택 
+            # 어제 날짜 -1 sell list 날짜 조정 후 실험 
+            elif self.simul_num == 26:       
+                
+                self.db_to_realtime_daily_buy_list_num = 21
+                
+                self.sell_list_num = 16
+                #self.trade_check_num = 3
+                self.simul_start_date = "20210113"
+                #self.simul_start_date = "20200713"
+                # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
+                # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                # # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
+                # self.date_before_b = 59 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
+                # self.date_before_c = 123  
+                # self.date_before_d = 245
+                # self.day_before = 20    
+                self.diff_point = 5 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
+                self.sell_diff_point = 3
+                self.margin = 100         
+                # # AI알고리즘 사용 여부 
+                self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                self.ai_filter_num = 3  # ai 알고리즘 선택                   
+                
+                
+
+
+
+
 
 
         else:
@@ -1031,7 +1103,7 @@ class simulator_func_mysql:
 
             sql = "select * from `" + date_rows_yesterday + "` a where yes_clo20 > yes_clo5 and clo5 > clo20 " \
                                                             "and NOT exists (select null from stock_konex b where a.code=b.code) " \
-                                                            "and close < '%s' group by code"
+                                                            "and close < '%s' group by code limit 1"
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.invest_unit)).fetchall()
 
 
@@ -1825,12 +1897,12 @@ class simulator_func_mysql:
                                     
         elif self.db_to_realtime_daily_buy_list_num == 21:
                                 
-                        ma_period = 70 
+                        ma_period = 70
                         realtime_daily_buy_list = []
                         realtime_daily_buy_list_1 = []
                         realtime_daily_buy_list_2 = []
                        # realtime_daily_buy_list_3 = []
-                        self.date_before_l = 240
+                        self.date_before_l = 241
                         if i < self.date_before_l + 1:
                             
                             pass
@@ -1852,20 +1924,19 @@ class simulator_func_mysql:
                                                     WHERE YES_DAY.code = info.code 
                                                     and info.audit = '{self.audit}'  
                                                     and info.remarks NOT LIKE '{self.remarks_manage}'  
-                                                    and info.remarks NOT LIKE '{self.remarks_stop}'  
-                                                    and info.stock_market IN ('{self.stock_market_a}')   
+                                                    and info.remarks NOT LIKE '{self.remarks_stop}'    
                                                     and NOT exists (select * from stock_managing c where YES_DAY.code=c.code and c.code_name != '' group by c.code) 
                                                     and NOT exists (select * from stock_insincerity d where YES_DAY.code=d.code and d.code_name !='' group by d.code) 
                                                     and NOT exists (select * from stock_invest_caution e where YES_DAY.code=e.code and DATE_SUB({date_rows_yesterday}, INTERVAL {self.interval_month} MONTH ) < e.post_date and e.post_date < Date({date_rows_yesterday}) and e.type != '투자경고 지정해제' group by e.code) 
                                                     and NOT exists (select * from stock_invest_warning f where YES_DAY.code=f.code and f.post_date <= DATE({date_rows_yesterday}) and (f.cleared_date > DATE({date_rows_yesterday}) or f.cleared_date is null) group by f.code) 
                                                     and NOT exists (select * from stock_invest_danger g where YES_DAY.code=g.code and g.post_date <= DATE({date_rows_yesterday}) and (g.cleared_date > DATE({date_rows_yesterday}) or g.cleared_date is null) group by g.code)  
+                                                    AND 0.25 * YES_DAY.clo5 + 0.25 * YES_DAY.clo10 + 0.25 * YES_DAY.clo20 + 0.25 * YES_DAY.clo40 > YES_DAY.close
                                                     AND YES_DAY.volume != 0 
                                                     AND YES_DAY.close < {self.invest_unit}
-                                                    AND 0.25 * YES_DAY.clo5 + 0.25 * YES_DAY.clo10 + 0.25 * YES_DAY.clo20 + 0.25 * YES_DAY.clo40 > YES_DAY.close
                                                     ORDER BY YES_DAY.volume * YES_DAY.close DESC 
                                                 """
                                             realtime_daily_buy_list_temp = self.engine_daily_buy_list.execute(sql).fetchall()
-
+                                            
                                             # 과매도 포지션 포착
                                             for item in realtime_daily_buy_list_temp:
                                                 code_name = item.code_name
@@ -1884,7 +1955,7 @@ class simulator_func_mysql:
                                                     # result가 false가 아닐 경우 볼린저밴드의 수치를 가지고 알고리즘을 구현
                                                     if result:
                                                         mbb, ubb, lbb, perb, bw = result
-                                                        # perb가 음수인 경우: 종가가 볼린저밴드 하한선보다 아래에 위치 할 경우 매수리스트에 넣는다
+                                                        # perb가 음수인 경우: 현재종가가 볼린저밴드 하한선보다 아래에 위치 할 경우 매수리스트에 넣는다
                                                         if perb < 0:
                                                             items_code_name = item.code_name
                                                             items = f"""
@@ -2141,11 +2212,11 @@ class simulator_func_mysql:
                                                                 # RS = _gain / _loss
                                                                 # rsi_14 = pd.DataFrame(100 -(100 / (1+ RS)), name="RSI") 
                                                                 # ######
-                                                                data[0] = RSI(date_before_close_m, period = 14)
+                                                                #data[0] = RSI(date_before_close_m, period = 14)
     
 
 
-                                                                if (diff_point_calc >  self.diff_point) and (data[0] > 50): 
+                                                                if diff_point_calc >  self.diff_point: 
                                                                     
                                                                     #code_name = str(row.code_name)
                                                                     #code  =  int(row.code)                                  
@@ -2783,10 +2854,10 @@ class simulator_func_mysql:
                                         ((present_price - date_before_close_l) / date_before_close_l * 100)) / 12
 
 
-                    if diff_point_calc < self.diff_point * (-1):                                                           
+                    if diff_point_calc < self.sell_diff_point * (-1):                                                           
                          sell_list.append(row)    
-
-
+                          
+                     
 
         # Absolute Momentum 전략 (특정일 전 보다 n% 이하로 떨어지면 매도) / query version
         elif self.sell_list_num == 6:
@@ -3072,6 +3143,226 @@ class simulator_func_mysql:
                             # perb가 1보다 큰 경우: 종가가 볼린저밴드 상한선 위에 위치 할 경우 매도리스트에 넣는다
                             if perb > 0.5:
                                 sell_list.append(item)
+
+
+        # sell AI 기능 적용
+        elif self.sell_list_num == 15:
+            #sell_list_1 = ''
+            sell_list = []
+
+            sell_ai_settings = {
+                "model": CNN_Attention_BiLSTM_Version3(),   
+                "n_steps": 1, # 시퀀스 데이터를 몇개씩 담을지 설정       
+                "lookup_step": 1, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
+                "test_size": 0.3,
+                "batch_size": 32,
+                "epochs": 50,
+                "ratio_cut": -3,
+                "table": "daily_craw",
+                "is_used_predicted_close" : True #false는 단한종목도 사지 않는다.
+            }
+
+            tr_engine = create_training_engine(sell_ai_settings['table']) 
+           
+            sql_temp = "SELECT code, rate, present_price, valuation_profit,code_name FROM all_item_db WHERE sell_date = 0 group by code"  
+                  
+            # realtime_daily_buy_list_temp 로 일단 위 조건의 종목을 받는다.
+            sell_list_temp = self.engine_simulator.execute(sql_temp).fetchall()
+            for row in sell_list_temp:
+                code = row[0]
+                
+                code_name= row.code_name
+                # code_name = row[1]
+                # code_name = pd.DataFrame([code_name],columns=['code_name'])
+                rate = row[1]
+                present_price = row[2]
+
+               # date_before = self.date_rows[i - self.day_before][0]
+
+
+                date_before_a =self.date_rows[i - 1 - 20][0]
+                date_before_b =self.date_rows[i - 1 - 40][0]
+                date_before_c =self.date_rows[i - 1 - 60][0]
+                date_before_d =self.date_rows[i - 1 - 80][0]
+                date_before_e =self.date_rows[i - 1 - 100][0]
+                date_before_f =self.date_rows[i - 1 - 120][0]
+                date_before_g =self.date_rows[i - 1 - 140][0]
+                date_before_h =self.date_rows[i - 1 - 160][0]
+                date_before_i =self.date_rows[i - 1 - 180][0]
+                date_before_j =self.date_rows[i - 1 - 200][0]
+                date_before_k =self.date_rows[i - 1 - 220][0]
+                date_before_l =self.date_rows[i - 1 - 240][0]
+                # date_before_m =self.date_rows[i - 1 - 200][0]
+                # date_before_n =self.date_rows[i - 1 - 200][0]
+                
+                # 어제 일자 기준 n 일전 종가
+                #date_before_close = self.get_now_close_price_by_date_code_name(code_name, date_before)
+
+                date_before_close_a = self.get_now_close_price_by_date(code, date_before_a)
+                date_before_close_b = self.get_now_close_price_by_date(code, date_before_b)
+                date_before_close_c = self.get_now_close_price_by_date(code, date_before_c)
+                date_before_close_d = self.get_now_close_price_by_date(code, date_before_d)
+                date_before_close_e = self.get_now_close_price_by_date(code, date_before_e)
+                
+                date_before_close_f = self.get_now_close_price_by_date(code, date_before_f)
+                date_before_close_g = self.get_now_close_price_by_date(code, date_before_g)
+                date_before_close_h = self.get_now_close_price_by_date(code, date_before_h)
+                date_before_close_i = self.get_now_close_price_by_date(code, date_before_i)
+                date_before_close_j = self.get_now_close_price_by_date(code, date_before_j)
+
+                date_before_close_k = self.get_now_close_price_by_date(code, date_before_k)
+                date_before_close_l = self.get_now_close_price_by_date(code, date_before_l)
+            
+                if date_before_close_a != 0 and date_before_close_a != False and date_before_close_b != 0 and date_before_close_b != False and date_before_close_c != 0 and date_before_close_c != False and date_before_close_d != 0 and date_before_close_d != False and date_before_close_e != 0 and date_before_close_e != False and date_before_close_f != 0 and date_before_close_f != False and date_before_close_g != 0 and date_before_close_g != False and date_before_close_h != 0 and date_before_close_h != False and date_before_close_i != 0 and date_before_close_i != False and date_before_close_j != 0 and date_before_close_j != False and date_before_close_k != 0 and date_before_close_k != False and date_before_close_l != 0 and date_before_close_l != False: 
+                    # 모멘텀 계산 : n일전 종가 대비 수익률
+                    diff_point_calc = (((present_price - date_before_close_a) / date_before_close_a * 100) +
+                                        ((present_price - date_before_close_b) / date_before_close_b * 100) +
+                                        ((present_price - date_before_close_c) / date_before_close_c * 100) + 
+                                        ((present_price - date_before_close_d) / date_before_close_d * 100) +
+                                        ((present_price - date_before_close_e) / date_before_close_e * 100) +
+                                        ((present_price - date_before_close_f) / date_before_close_f * 100) +
+                                        ((present_price - date_before_close_g) / date_before_close_g * 100) +
+                                        ((present_price - date_before_close_h) / date_before_close_h * 100) +
+                                        ((present_price - date_before_close_i) / date_before_close_i * 100) +
+                                        ((present_price - date_before_close_j) / date_before_close_j * 100) +
+                                        ((present_price - date_before_close_k) / date_before_close_k * 100) +
+                                        ((present_price - date_before_close_l) / date_before_close_l * 100)) / 12
+
+
+                    if diff_point_calc < self.diff_point * (-1):                                                           
+                            #sell_list_a = self.get_now_close_price_by_date(code, )    
+                                #code_name= row.code_name    
+                            #feature_columns = ["close", "volume", "open", "high", "low"]
+                        #filtered_list = []
+                        #for code_name, in row:
+                            
+                                feature_columns = ["close", "volume", "open", "high", "low"]
+                                #print(f"{code_name} 종목 분석 중....")
+                                # sql = """
+                                #     SELECT {} FROM `{}`
+                                #     WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
+                                # """.format(','.join(feature_columns), code_name, until=datetime.datetime.today())
+                                # # pandas(pd) read_sql 을 사용하면 sql, engine을 넘겼을 때 return 값을 바로 데이터프레임으로 받을 수 있음
+                                # sell_df = pd.read_sql(sql, tr_engine)
+                                date_rows_yesterday = self.date_rows[i-1][0]
+                                # sell_sql = f"""
+                                #         SELECT close, volume, open, high, low
+                                #         FROM `{code_name}`
+                                #         WHERE date <= '{date_rows_yesterday}'
+                                        
+                                #         """
+                                # sell_df_1 = self.engine_daily_craw.execute(sell_sql).fetchall()
+
+                                sql = """
+                                        SELECT {} FROM `{}`
+                                        WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
+                                """.format(','.join(feature_columns), code_name, date_rows_yesterday)
+                                sell_df = pd.read_sql(sql, tr_engine)
+                                
+                                # 데이터가 10개(10일 or 10분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
+                                if len(sell_df) < 10:
+                                    # filtered_list.append(code_name)
+                                    print(f"테스트 데이터가 적어요")
+                                    continue
+                                try:
+                                    filtered = sell_list_ai(sell_df, sell_ai_settings)
+                                except (DataNotEnough, ValueError):
+                                    print(f"테스트 데이터가 적어요")
+                                    #filtered_list.append(code_name)
+                                    continue
+
+                                print(code_name)
+
+                                # filtered가 True 이면 sell_list에 해당 종목을 append
+                                if filtered:
+                                    print(f"기준에 부합하지 않으므로 제외")
+                                    sell_list.append(row)
+                                    # sell_list_1 = []
+                                    #sell_list_1.append(code_name)
+                                 
+                                    # sql = "SELECT code, rate, present_price, valuation_profit FROM all_item_db WHERE sell_date = 0 and code_name = '%s' group by code"  
+
+                                    # # realtime_daily_buy_list_temp 로 일단 위 조건의 종목을 받는다.
+                                    # sell_list += self.engine_simulator.execute(sql%(code_name)).fetchall()
+                        
+                                # # filtered_list에 있는 종목들을 realtime_daily_buy_list(매수리스트)에서 제거
+                                # # 모든 조건문에서 filtered_list를 생성해줘야 함
+                                # if len(sell_df) > 0:
+                                #     sell_list.append(sell_df)
+        # sell AI 기능 적용
+        elif self.sell_list_num == 16:
+            #sell_list_1 = ''
+            sell_list = []
+
+            sell_ai_settings = {
+                "model": CNN_Attention_BiLSTM_Version3(),   
+                "n_steps": 1, # 시퀀스 데이터를 몇개씩 담을지 설정       
+                "lookup_step": 1, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
+                "test_size": 0.3,
+                "batch_size": 32,
+                "epochs": 200,
+                "ratio_cut": -2,
+                "table": "daily_craw",
+                "is_used_predicted_close" : True #false는 단한종목도 사지 않는다.
+            }
+
+            tr_engine = create_training_engine(sell_ai_settings['table']) 
+           
+            sql_temp = "SELECT code, rate, present_price, valuation_profit,code_name FROM all_item_db WHERE sell_date = 0 group by code"  
+                  
+            # realtime_daily_buy_list_temp 로 일단 위 조건의 종목을 받는다.
+            sell_list_temp = self.engine_simulator.execute(sql_temp).fetchall()
+            for row in sell_list_temp:
+                code = row[0]
+                
+                code_name= row.code_name
+                # code_name = row[1]
+                # code_name = pd.DataFrame([code_name],columns=['code_name'])
+                rate = row[1]
+                present_price = row[2]
+
+               # date_before = self.date_rows[i - self.day_before][0]
+            
+            
+
+                                                                               
+                            
+                feature_columns = ["close", "volume", "open", "high", "low"]
+                               
+                date_rows_yesterday = self.date_rows[i-1][0]
+                # sell_sql = f"""
+                #         SELECT close, volume, open, high, low
+                #         FROM `{code_name}`
+                #         WHERE date <= '{date_rows_yesterday}'
+                        
+                #         """
+                # sell_df_1 = self.engine_daily_craw.execute(sell_sql).fetchall()
+
+                sql = """
+                        SELECT {} FROM `{}`
+                        WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
+                """.format(','.join(feature_columns), code_name, date_rows_yesterday)
+                sell_df = pd.read_sql(sql, tr_engine)
+                
+                # 데이터가 10개(10일 or 10분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
+                if len(sell_df) < 10:
+                    # filtered_list.append(code_name)
+                    print(f"테스트 데이터가 적어요")
+                    continue
+                try:
+                    filtered = sell_list_ai(sell_df, sell_ai_settings)
+                except (DataNotEnough, ValueError):
+                    print(f"테스트 데이터가 적어요")
+                    #filtered_list.append(code_name)
+                    continue
+
+                print(code_name)
+
+                # filtered가 True 이면 sell_list에 해당 종목을 append , # -2>= -3 ,2 
+                if filtered:
+                    print(f"기준에 부합되므로 추가됨")
+                    sell_list.append(row)                        
+
 
         ##################################################################################################################################################################################################################
         else:
@@ -3543,6 +3834,110 @@ def escape_percentage(conn, clauseelement, multiparams, params):
             clauseelement = replaced
 
     return clauseelement, multiparams, params
+
+
+
+
+# sell_AI 기능
+
+
+def sell_list_ai(dataset, ai_settings):
+    """
+    :param dataset: 실제 주가 데이터
+    :param settings: AI 알고리즘 세팅
+    :return: ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
+    """
+
+    shuffled_data = load_data(df=dataset.copy(), n_steps=ai_settings['n_steps'], test_size=ai_settings['test_size'])
+    
+    #!@
+
+    #model = create_model(n_steps=ai_settings['n_steps'], loss=ai_settings['loss'], units=ai_settings['units'],
+    #                     n_layers=ai_settings['n_layers'], dropout=ai_settings['dropout'])
+    # model = create_model_Bidirectional(n_steps=ai_settings['n_steps'], loss=ai_settings['loss'], units=ai_settings['units'],
+    #                         n_layers=ai_settings['n_layers'], dropout=ai_settings['dropout'])
+    
+        
+    model = ai_settings['model']                        
+
+    
+    checkpoint_filepath = 'ModelCheckpoint/CNN_Attention_BiLSTM_Version3/Checkpoint'
+
+    early_stopping = EarlyStopping(monitor='val_loss', patience=500)  # patience 번이상 더 좋은 결과가 없으면 학습을 멈춤
+    #callback = tf.keras.callbacks.ModelCheckpoint('Transformer+TimeEmbedding.hdf5', 
+    #                                          monitor='val_loss', 
+    #                                          save_best_only=True, verbose=1)
+    
+    ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, save_best_only=True, verbose=1, mode='min',monitor='val_loss')
+    # reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+    #                           patience=5, min_lr=0.001, mode='min',verbose=1)
+    
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+                              patience=1, min_lr=0.0001, mode='min',verbose=1)
+    
+    model.fit(shuffled_data["X_train"], shuffled_data["y_train"],
+                        batch_size=ai_settings['batch_size'],
+                        epochs=ai_settings['epochs'],
+                        validation_data=(shuffled_data["X_test"], shuffled_data["y_test"]),
+                        callbacks=[early_stopping,ModelCheckpoint,reduce_lr],
+                        verbose=1)
+
+    scaled_data = load_data(df=dataset.copy(), n_steps=ai_settings['n_steps'], test_size=ai_settings['test_size'],
+                            shuffle=False)
+
+    # result = evaluate(scaled_data, model)
+    # print(f"result: {result}")
+
+    
+    train_huber_loss, train_mae, train_rmse,test_huber_loss, test_mae, test_rmse = evaluate(scaled_data, model)  
+    print(f"train_huber_loss, train_mae, train_rmse: {train_huber_loss,train_mae, train_rmse}")      
+    print(f"test_huber_loss, test_mae, test_rmse: {test_huber_loss,test_mae, test_rmse}")      
+
+    # mse = evaluate(scaled_data, model)
+    # print(f"Mean Squared Error: {mse}")
+
+
+
+    # 예측 가격
+    future_price = predict(scaled_data, model, n_steps=ai_settings['n_steps'])
+
+    # 스케일링 된 예측 결과
+    scaled_y_pred = model.predict(scaled_data['X_test'])
+    # 실제 값으로 변환 된 결과
+    y_pred = np.squeeze(scaled_data['column_scaler']['close'].inverse_transform(scaled_y_pred))
+
+    if ai_settings['is_used_predicted_close']:
+        close = y_pred[-1] # 예측 그래프에서의 종가
+    else:
+        close = dataset.iloc[-1]['close'] # 실제 종가
+
+    # ratio : 예상 상승률
+    ratio = (future_price - close) / close * 100
+
+    msg = f"After {ai_settings['lookup_step']}: {int(close)} -> {int(future_price)}"
+
+    if ratio > 0: # lookup_step(분, 일) 후 상승 예상일 경우 출력 메시지
+        msg += f'    {ratio:.2f}% ⯅ '
+    elif ratio < 0: # lookup_step(분, 일) 후 하락 예상일 경우 출력 메시지
+        msg += f'    {ratio:.2f}% ⯆ '
+    print(msg, end=' ')
+    return ai_settings['ratio_cut'] >= ratio # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
+# -2>= -3 ,2 
+
+
+
+def create_training_engine(db_name):
+    return pymysql.connect(
+        host=cf.db_ip,
+        port=int(cf.db_port),
+        user=cf.db_id,
+        password=cf.db_passwd,
+        db=db_name,
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+
 
 # ADD 11-29
 def SMA(data,period = 30) :
