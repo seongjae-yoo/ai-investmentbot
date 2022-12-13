@@ -459,7 +459,8 @@ class simulator_func_mysql:
             self.remarks_stop = str("%거래정지%")
             self.stock_market_a = str("거래소")
             self.stock_market_b = str("코스닥")  #           info.stock_market IN ("거래소", "코스닥")
-            self.stock_market_c = str("ETF")
+            self.stock_market_c = str("KONEX")
+            self.stock_market_d = str("ETF")
             self.category0_a = str("우량기업")
             self.category0_b = str("외국기업")
             self.category0_c = str("중견기업")
@@ -1925,6 +1926,7 @@ class simulator_func_mysql:
                                                     and info.audit = '{self.audit}'  
                                                     and info.remarks NOT LIKE '{self.remarks_manage}'  
                                                     and info.remarks NOT LIKE '{self.remarks_stop}'    
+                                                    and info.stock_market IN ('{self.stock_market_a}', '{self.stock_market_b}', '{self.stock_market_c}', '{self.stock_market_d}')   
                                                     and NOT exists (select * from stock_managing c where YES_DAY.code=c.code and c.code_name != '' group by c.code) 
                                                     and NOT exists (select * from stock_insincerity d where YES_DAY.code=d.code and d.code_name !='' group by d.code) 
                                                     and NOT exists (select * from stock_invest_caution e where YES_DAY.code=e.code and DATE_SUB({date_rows_yesterday}, INTERVAL {self.interval_month} MONTH ) < e.post_date and e.post_date < Date({date_rows_yesterday}) and e.type != '투자경고 지정해제' group by e.code) 
