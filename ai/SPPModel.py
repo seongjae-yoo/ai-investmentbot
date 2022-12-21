@@ -67,6 +67,7 @@ from wandb.keras import WandbCallback
 import wandb
 
 
+
 plt.rcParams['font.family'] = 'Malgun Gothic'
 
 
@@ -102,7 +103,7 @@ def train(data, model, n_epochs=500, batch_size=32, verbose=1):
 
     #model_name = f"{date_now}_{model_function_name}"
     #checkpoint_filepath = 'ModelCheckpoint/CNN_Attention_BiLSTM_Version3_100/Checkpoint'
-    checkpoint_filepath="weights.CNN_Attention_BiLSTM_Version8.hdf5"
+    checkpoint_filepath="weights.CNN_Attention_BiLSTM_Version12.hdf5"
 
     early_stopping = EarlyStopping(monitor='val_loss', patience=500)  # patience 번이상 더 좋은 결과가 없으면 학습을 멈춤
     #callback = tf.keras.callbacks.ModelCheckpoint('Transformer+TimeEmbedding.hdf5', 
@@ -131,7 +132,7 @@ def train(data, model, n_epochs=500, batch_size=32, verbose=1):
 # wandb:  View project at https://wandb.ai/aiinvestmentbot/test-project
 # wandb:  View run at https://wandb.ai/aiinvestmentbot/test-project/runs/1mwzy32e
     wandb.init(project="NAVER", entity="SeongJae-Yoo")
-    wandb.run.name = 'CNN_Attention_BiLSTM_Version8'
+    wandb.run.name = 'CNN_Attention_BiLSTM_Version12'
     
     # generted run ID로 하고 싶다면 다음과 같이 쓴다.
     # wandb.run.name = wandb.run.id
@@ -166,7 +167,7 @@ def train(data, model, n_epochs=500, batch_size=32, verbose=1):
 # https://www.kaggle.com/code/ajax0564/transfromer-timetovector-timeseries
 def evaluate(data, model):
     # 가중치 로드
-    model.load_weights("weights.CNN_Attention_BiLSTM_Version8.hdf5")
+    model.load_weights("weights.CNN_Attention_BiLSTM_Version12.hdf5")
     
     test_loss,mae,rmse = model.evaluate(data["X_test"], data["y_test"], verbose=1)
 
@@ -1155,6 +1156,7 @@ def CNN_Attention_BiLSTM_Version8(maxlen=5, units=21, dropout=0.3, n_steps=1, LO
                 metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
     return model
 
+# CNN_Attention_BiLSTM_Version8 모델에다가 elu -> selu 변경한 모델
 def CNN_Attention_BiLSTM_Version9(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
@@ -1188,6 +1190,172 @@ def CNN_Attention_BiLSTM_Version9(maxlen=5, units=21, dropout=0.3, n_steps=1, LO
                 metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
     return model
 
+# CNN_Attention_BiLSTM_Version9 모델에다가 Conv1D 에 kernel_initializer = 'lecun_normal' 추가 
+'''
+SELU
+스케일된 ELU 활성화 함수의 변종으로,  완전 연결층(Full Connected Layer)만 쌓아서 신경망을 만들고 모든 은닉층이 SELU 활성화 함수를 사용한다면 네트워크가 자기 정규화가 된닷는것을 보였습니다.
+
+ normalized 되지 않은 weight에 대해서도 self-normalizing한다는 것을 증명하였다. 밑에 조건이 아니여도 자기 정규화가 된다.
+
+자기정규화가 되기 위한 몇가지 조건을 살펴보면
+
+입력 특성이 반드시 표준화(mean = 0 , std = 1) 이어야 합니다.
+모든 은닉층의 가중치는 lecun_normalization으로 초기화 되어있어야합니다.
+네트워크는 일렬로 쌓은 층으로 구성되어야 합니다. 순환신경망이나 스킵연결과 같은 순차적이지 않은 구조에 SELU를 사용하게 되면 자기 정규화가 되는것을 보장하지 않습니다.
+'''
+def CNN_Attention_BiLSTM_Version10(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
+    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
+    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+
+    Conv1D_kernel_initializer= tf.keras.initializers.LecunNormal(seed=1)
+    
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = units, padding='valid',kernel_size = 1, activation=keras.activations.selu,kernel_initializer = Conv1D_kernel_initializer,strides=30)(input_layer)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    # x_a = GlobalMaxPool1D()(lstm_out) 
+    # x_b = GlobalAveragePooling1D()(lstm_out)
+    # x = concatenate([x_a,x_b])
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version10.png', show_shapes=True, dpi=100 )
+  
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model
+
+# CNN_Attention_BiLSTM_Version8 모델에다가 conv1d의 activation 제거후 그다음층에 swish 활성화 함수 추가 
+def CNN_Attention_BiLSTM_Version11(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
+    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
+    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = units, padding='valid',kernel_size = 1,strides=30)(input_layer)
+    x = tf.keras.activations.swish(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    # x_a = GlobalMaxPool1D()(lstm_out) 
+    # x_b = GlobalAveragePooling1D()(lstm_out)
+    # x = concatenate([x_a,x_b])
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version11.png', show_shapes=True, dpi=100 )
+  
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model    
+
+# CNN_Attention_BiLSTM_Version8 모델에서 elu -> mish 변경 하고 실험 
+def CNN_Attention_BiLSTM_Version12(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
+    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
+    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = units, padding='valid',kernel_size = 1,strides=30)(input_layer)
+    x = mish(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    # x_a = GlobalMaxPool1D()(lstm_out) 
+    # x_b = GlobalAveragePooling1D()(lstm_out)
+    # x = concatenate([x_a,x_b])
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version12.png', show_shapes=True, dpi=100 )
+  
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model
+
+# CNN_Attention_BiLSTM_Version11 모델에다가 conv1d 수정함
+def CNN_Attention_BiLSTM_Version13(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+    Conv1D_kernel_regularizer=regularizers.l2(0.00004)
+    Conv1D_kernel_initializer=initializers.VarianceScaling(scale=2.0, mode='fan_in', distribution='normal', seed=None)
+# kernel_initializer = kears.initializers.VarianceScaling(scale=2., mode='fan_avg',distribution="uniform")
+
+    Conv1D_kernel_initializer_version2 = tf.keras.initializers.VarianceScaling(scale=0.1, mode='fan_in', distribution='uniform')
+
+# distribution-Random distribution to use. One of "truncated_normal", "untruncated_normal" and "uniform".
+# scale-Scaling factor (positive float).
+# mode-One of "fan_in", "fan_out", "fan_avg".
+
+
+
+
+
+
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
+    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
+    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = units, padding='valid',kernel_regularizer= Conv1D_kernel_regularizer, kernel_initializer=Conv1D_kernel_initializer,kernel_size = 1,strides=30)(input_layer)
+    x = tf.keras.activations.swish(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    # x_a = GlobalMaxPool1D()(lstm_out) 
+    # x_b = GlobalAveragePooling1D()(lstm_out)
+    # x = concatenate([x_a,x_b])
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version11.png', show_shapes=True, dpi=100 )
+  
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model        
 
 # cnn-attention-bilstm-attention 
 def CNN_Attention_BiLSTM_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
@@ -2053,3 +2221,7 @@ parameters = {
     'lambda_value': 1.5,
     'verbose': True
 }    
+
+def mish(x):
+    return x * K.tanh(K.softplus(x))
+    
