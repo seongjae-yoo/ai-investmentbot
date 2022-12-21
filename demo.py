@@ -9,7 +9,7 @@ from tensorflow.keras.callbacks import EarlyStopping #모델을 더 이상 학�
 from tensorflow.keras.layers import LSTM,GRU
 
 
-from ai.SPPModel import load_data, evaluate, DataNotEnough, predict, train , LSTM_CNN, Deep_CNN, CNN_GRU, BiGRU_BiLSTM, BiLSTM_GRU_LSTM_CNN ,CNN_Version2, CNN_BiLSTM_Attention, BiGRU_CNN_BiLSTM_Attention, BiLSTM_GRU_LSTM_CNN_BiLSTM_attention,TCN_BiLSTM, plot_graph, Create_Bidirectional_GRU_LSTM_v3, create_Transformer_model, create_Transformer_model_v2, CNN_Attention, create_model_bidirectional_v4,create_model_lstm_basic, GRU_CNN, BiLSTM_TCN, TCN, create_model_bidirectional_GRU_v4,CNN_BiGRU_Attention,BiLSTM_Attention_CNN , CNN_Attention_BiLSTM, LSTM_layers_4_v2, LSTM_layers_4 , Bi_LSTM_layers_4, CNN_Attention_BiLSTM_Version2, CNN_Attention_BiLSTM_Version3, CNN_Attention_BiLSTM_Version4,Deep_CNN_BiGRU, BiLSTM_layers_4_Version2, CNN_Attention_BiLSTM_Attention,BiLSTM_Attention, BiLSTM_Attention_sigmoid, CNN_Attention_BiLSTM_Version5, BiLSTM_single_attention_vector
+from ai.SPPModel import load_data, evaluate, DataNotEnough, predict, train , LSTM_CNN, Deep_CNN, CNN_GRU, BiGRU_BiLSTM, BiLSTM_GRU_LSTM_CNN ,CNN_Version2, CNN_BiLSTM_Attention, BiGRU_CNN_BiLSTM_Attention, BiLSTM_GRU_LSTM_CNN_BiLSTM_attention,TCN_BiLSTM, plot_graph, Create_Bidirectional_GRU_LSTM_v3, create_Transformer_model, create_Transformer_model_v2, CNN_Attention, create_model_bidirectional_v4,create_model_lstm_basic, GRU_CNN, BiLSTM_TCN, TCN, create_model_bidirectional_GRU_v4,CNN_BiGRU_Attention,BiLSTM_Attention_CNN , CNN_Attention_BiLSTM, LSTM_layers_4_v2, LSTM_layers_4 , Bi_LSTM_layers_4, CNN_Attention_BiLSTM_Version2, CNN_Attention_BiLSTM_Version3, CNN_Attention_BiLSTM_Version4,Deep_CNN_BiGRU, BiLSTM_layers_4_Version2, CNN_Attention_BiLSTM_Attention,BiLSTM_Attention, BiLSTM_Attention_sigmoid, CNN_Attention_BiLSTM_Version5, BiLSTM_single_attention_vector,CNN_Attention_BiLSTM_Version6, CNN_Attention_BiLSTM_Version7, CNN_Attention_BiLSTM_Version8, CNN_Attention_BiLSTM_Version9
 from library import cf
 
 ####2022-11-02
@@ -141,8 +141,8 @@ except DataNotEnough:
 #모델    
 # model 선택(원하시는 모델 함수를 선택하여 실행해주시면 됩니다.)
 
-#model = LSTM_layers_4_v2()
-model = BiLSTM_Attention()
+#model = LSTM_layers_4_v2()  
+model = CNN_Attention_BiLSTM_Version9()
 # 학습 시작
 history = train(shuffled_data, model, EPOCHS, BATCH_SIZE, verbose=1)
 
@@ -152,17 +152,17 @@ new_df = pd.read_sql(sql, conn)
 data = load_data(df=new_df, n_steps=N_STEPS, lookup_step=LOOKUP_STEP, test_size=TEST_SIZE, shuffle=False)
 
 
-train_huber_loss, train_mae, train_rmse,test_huber_loss, test_mae, test_rmse = evaluate(data, model)  
-print(f"train_huber_loss, train_mae, train_rmse: {train_huber_loss,train_mae, train_rmse}")      
-print(f"test_huber_loss, test_mae, test_rmse: {test_huber_loss,test_mae, test_rmse}")      
-
+test_loss,mae,rmse,real_mae,real_rmse = evaluate(data, model)  
+# print(f"train_huber_loss, train_mae, train_rmse: {train_huber_loss,train_mae, train_rmse}")      
+# print(f"test_huber_loss, test_mae, test_rmse: {test_huber_loss,test_mae, test_rmse}")      
+print(f"test_loss,mae,rmse,real_mae,real_rmse: {test_loss,mae,rmse,real_mae,real_rmse}")  
   
 
 
 future_price = predict(data, model, n_steps=N_STEPS)
 print(f"Future price after {LOOKUP_STEP} days is {future_price:.2f}")
 
-plot_graph(model, data)	
+#plot_graph(model, data)	
 #SVG(model_to_dot(model, show_shapes=True).create(prog='dot', format='svg'))
 #plot_model(model)
 #plot_graph(model, data)
