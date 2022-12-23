@@ -9,7 +9,7 @@ from tensorflow.keras.callbacks import EarlyStopping #모델을 더 이상 학�
 from tensorflow.keras.layers import LSTM,GRU
 
 
-from ai.SPPModel import load_data, DataNotEnough, predict, train , LSTM_CNN, Deep_CNN, CNN_GRU, BiGRU_BiLSTM, BiLSTM_GRU_LSTM_CNN ,CNN_Version2, CNN_BiLSTM_Attention, BiGRU_CNN_BiLSTM_Attention, BiLSTM_GRU_LSTM_CNN_BiLSTM_attention,TCN_BiLSTM, plot_graph, Create_Bidirectional_GRU_LSTM_v3, create_Transformer_model, create_Transformer_model_v2, CNN_Attention, create_model_bidirectional_v4,create_model_lstm_basic, GRU_CNN, BiLSTM_TCN, TCN, create_model_bidirectional_GRU_v4,CNN_BiGRU_Attention,BiLSTM_Attention_CNN , CNN_Attention_BiLSTM, LSTM_layers_4_v2, LSTM_layers_4 , Bi_LSTM_layers_4, CNN_Attention_BiLSTM_Version2, CNN_Attention_BiLSTM_Version3, CNN_Attention_BiLSTM_Version4,Deep_CNN_BiGRU, BiLSTM_layers_4_Version2, CNN_Attention_BiLSTM_Attention,BiLSTM_Attention, BiLSTM_Attention_sigmoid, CNN_Attention_BiLSTM_Version5, BiLSTM_single_attention_vector,CNN_Attention_BiLSTM_Version6, CNN_Attention_BiLSTM_Version7, CNN_Attention_BiLSTM_Version8, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version10, CNN_Attention_BiLSTM_Version11, CNN_Attention_BiLSTM_Version12, CNN_Attention_BiLSTM_Version13, CNN_Attention_BiLSTM_Version14, CNN_Attention_BiLSTM_Version15, CNN_Attention_BiLSTM_Version16
+from ai.SPPModel import load_data, DataNotEnough, predict, train , LSTM_CNN, Deep_CNN, CNN_GRU, BiGRU_BiLSTM, BiLSTM_GRU_LSTM_CNN ,CNN_Version2, CNN_BiLSTM_Attention, BiGRU_CNN_BiLSTM_Attention, BiLSTM_GRU_LSTM_CNN_BiLSTM_attention,TCN_BiLSTM, plot_graph, Create_Bidirectional_GRU_LSTM_v3, create_Transformer_model, create_Transformer_model_v2, CNN_Attention, create_model_bidirectional_v4,create_model_lstm_basic, GRU_CNN, BiLSTM_TCN, TCN, create_model_bidirectional_GRU_v4,CNN_BiGRU_Attention,BiLSTM_Attention_CNN , CNN_Attention_BiLSTM, LSTM_layers_4_v2, LSTM_layers_4 , Bi_LSTM_layers_4, CNN_Attention_BiLSTM_Version2, CNN_Attention_BiLSTM_Version3, CNN_Attention_BiLSTM_Version4,Deep_CNN_BiGRU, BiLSTM_layers_4_Version2, CNN_Attention_BiLSTM_Attention,BiLSTM_Attention, BiLSTM_Attention_sigmoid, CNN_Attention_BiLSTM_Version5, BiLSTM_single_attention_vector,CNN_Attention_BiLSTM_Version6, CNN_Attention_BiLSTM_Version7, CNN_Attention_BiLSTM_Version8, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version10, CNN_Attention_BiLSTM_Version11, CNN_Attention_BiLSTM_Version12, CNN_Attention_BiLSTM_Version13, CNN_Attention_BiLSTM_Version14, CNN_Attention_BiLSTM_Version15, CNN_Attention_BiLSTM_Version16, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version18, CNN_Attention_BiLSTM_Version17_test,CNN_Attention_BiLSTM_Version11_version2, CNN_Attention_BiLSTM_Version11_version3,CNN_Attention_BiLSTM_Version17_load_weights
 from library import cf
 
 ####2022-11-02
@@ -42,7 +42,7 @@ conn = pymysql.connect(host=cf.db_ip,
 # 상장시기 부터 전체 데이터로 하면 maxlen이 5개가 밑에 21개보다 mae값이 더 작음 
 FEATURE_COLUMNS = ["close", "volume", "open", "high", "low"]
 
-#date
+#5개 컬럼에서 date 추가하면 성능 매우안좋아짐
 
 #maxlen=21
 # FEATURE_COLUMNS   = [ 'close', 'open', 'high', 'low',
@@ -121,7 +121,7 @@ OPTIMIZER = "cos"
 BATCH_SIZE = 32
 
 # 학습 횟수
-EPOCHS = 500
+EPOCHS = 100
 
 ratio_cut = 5
 
@@ -138,11 +138,11 @@ except DataNotEnough:
     print('데이터가 충분하지 않습니다. ')
     exit(1)
   
-#모델    
+#모델    y
 # model 선택(원하시는 모델 함수를 선택하여 실행해주시면 됩니다.)
 
 #model = LSTM_layers_4_v2()  
-model = CNN_Attention_BiLSTM_Version16()
+model = CNN_Attention_BiLSTM_Version13()
 # 학습 시작
 history = train(shuffled_data, model, EPOCHS, BATCH_SIZE, verbose=1)
 
