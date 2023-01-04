@@ -61,10 +61,10 @@ def timedout_exit(widget):
     sys.exit(-1)
 
 
-class open_api(QAxWidget): # 키움증권의 OpenAPI+가 제공하는 메서드를 호출하려면 QAxWidget 클래스의 인스턴스가 필요함
+class open_api(QAxWidget):
     def __init__(self):
         super().__init__()
-        
+
         # openapi 호출 횟수를 저장하는 변수
         self.rq_count = 0
         self.date_setting()
@@ -95,7 +95,7 @@ class open_api(QAxWidget): # 키움증권의 OpenAPI+가 제공하는 메서드�
         # 여기서 invest_unit 설정함
         self.sf_variable_setting()
         self.ohlcv = defaultdict(list)
-        self._data = {} 
+        self._data = {}
 
     # 날짜 세팅
     def date_setting(self):
@@ -168,7 +168,6 @@ class open_api(QAxWidget): # 키움증권의 OpenAPI+가 제공하는 메서드�
         logger.debug("variable_setting 함수에 들어왔다.")
         self.get_today_buy_list_code = 0
         self.cf = cf
-        logger.debug("db_id이름" + self.cf.db_id)
         self.reset_opw00018_output()
         # 아래 분기문은 실전 투자 인지, 모의 투자 인지 결정
         if self.account_number == cf.real_account:  # 실전
@@ -398,10 +397,8 @@ class open_api(QAxWidget): # 키움증권의 OpenAPI+가 제공하는 메서드�
             # logger.debug("opt10080_req!!!")
             # logger.debug("Get an de_deposit!!!")
             self._opt10080(rqname, trcode)
-
         elif rqname == "opt10001_req":
             self._opt10001(rqname, trcode)
-
         elif rqname == "send_order_req":
             pass
         else:
@@ -960,7 +957,7 @@ class open_api(QAxWidget): # 키움증권의 OpenAPI+가 제공하는 메서드�
         logger.debug("end_invest_count_check 함수로 들어왔습니다!")
         logger.debug("end_invest_count_check_code!!!!!!!!")
         logger.debug(code)
-  
+
         sql = "UPDATE all_item_db SET chegyul_check='%s' WHERE code='%s' and sell_date = '%s' ORDER BY buy_date desc LIMIT 1"
 
         self.engine_JB.execute(sql % (0, code, 0))
@@ -1133,34 +1130,17 @@ class open_api(QAxWidget): # 키움증권의 OpenAPI+가 제공하는 메서드�
             self.buy_check_stop()
 
     # openapi 조회 카운트를 체크 하고 cf.max_api_call 횟수 만큼 카운트 되면 봇이 꺼지게 하는 함수
-    '''
-1. timedelta 기본 예제 참고 
-import datetime
-d1 = datetime.timedelta(seconds = 1)
-d2 = datetime.date(seconds = 2)
-d3 = d1 - d2
-
-print(d1)
-print(d2)
-print(d3)
-print(abs(d3))
-
-- Result
-0:00:01
-0:00:02
--1 day, 23:59:59
-0:00:01'''
     def exit_check(self):
+        logger.debug(self.rq_count)
+        if self.rq_count == cf.max_api_call:
+            sys.exit(1)
+
+        # openapi 조회 count 출력
         rq_delay = datetime.timedelta(seconds=0.6)
         time_diff = datetime.datetime.now() - self.call_time
         if rq_delay > datetime.datetime.now() - self.call_time:
             time.sleep((rq_delay - time_diff).total_seconds())
-
         self.rq_count += 1
-        # openapi 조회 count 출력
-        logger.debug(self.rq_count)
-        if self.rq_count == cf.max_api_call:
-            sys.exit(1)
 
     # 매도 했는데 bot이 꺼져있을때 매도해서 possessed_item 테이블에는 없는데 all_item_db에 sell_date 안찍힌 종목들 처리해준다.
     def final_chegyul_check(self):
@@ -1367,8 +1347,8 @@ print(abs(d3))
     # 10	현재가, 체결가, 실시간종가
 
     # 여기는 주문을 하는 함수가 아니라 주문을 한뒤에 결과값을 받아서 DB 에다가 처리 하는 함수
-    # OnReceiveChejanData이벤트는 주문전용 이벤트로 주문접수, 체결, 잔고발생시 호출됩니다. 
-    # 첫번째 매개변수 gubun 값으로 구분하며 체결구분 접수와 체결시 '0'값, 국내주식 잔고전달은 '1'값, 파생잔고 전달은 '4'가 됩니다. 
+    # OnReceiveChejanData이벤트는 주문전용 이벤트로 주문접수, 체결, 잔고발생시 호출됩니다. 
+    # 첫번째 매개변수 gubun 값으로 구분하며 체결구분 접수와 체결시 '0'값, 국내주식 잔고전달은 '1'값, 파생잔고 전달은 '4'가 됩니다. 
     def _receive_chejan_data(self, gubun, item_cnt, fid_list):
         logger.debug("_receive_chejan_data 함수로 들어왔습니다!!!")
         logger.debug("gubun !!! :" + gubun)
@@ -1507,7 +1487,6 @@ print(abs(d3))
         self.set_input_value("비밀번호입력매체구분", 00)
         # 조회구분 = 1:추정조회, 2: 일반조회
         self.set_input_value("조회구분", 1)
-        # open API 조회 함수를 호출해서 전문을 서버로 전송하는 역할
         self.comm_rq_data("opw00001_req", "opw00001", 0, "2000")
 
     # 먼저 OnReceiveTrData 이벤트가 발생할 때 수신 데이터를 가져오는 함수인 _opw00001를 open_api 클래스에 추가합니다.
@@ -1778,8 +1757,7 @@ print(abs(d3))
                 UPDATE setting_data SET code_update = '0';
             """)
 
-
- # 테마코드, 테마명 그리고 테마 그룹에 속하는 종목코드를 가져오는 함수
+    # 테마코드, 테마명 그리고 테마 그룹에 속하는 종목코드를 가져오는 함수
     def get_theme_info(self):
         try:
             thema = defaultdict(list)
@@ -1800,10 +1778,8 @@ print(abs(d3))
         data = self.dynamicCall("GetThemeGroupCode(QString)", theme_code)
         temp = []
         for x in data.split(';'):
-            temp.append(x[1:])  # 맨앞 'A'문자빼고 숫자만 가져온다.
+            temp.append(x[1:])
         return temp
-
-
 
     def _opt10001(self, rqname, trcode):
         output_keys = [
@@ -1817,12 +1793,12 @@ print(abs(d3))
 
         self._data = result
 
-    # 금융 데이터 요청 함수
+        # 금융 데이터 요청 함수
+
     def get_stock_finance(self, code):
         # koastudio 좌측 하단 TR목록 / opt10001 클릭 후 샘플 참고
-        self.set_input_value('종목코드', code) # 입력 데이터 설정
-        self.comm_rq_data('opt10001_req', 'opt10001', '0', '0001') #opt10001 TR 을 키움증권 서버에 요청
+        self.set_input_value('종목코드', code)  # 입력 데이터 설정
+        self.comm_rq_data('opt10001_req', 'opt10001', '0', '0001')  # opt10001 TR 을 키움증권 서버에 요청
         # CommRqData 이후 키움증권 서버에서 receive_tr_data 함수 호출 -> receive_tr_data 함수 에서 _opt10001 함수 호출
         # self._data 는 _opt10001 함수에서 저장 된 값
         return self._data
-       
