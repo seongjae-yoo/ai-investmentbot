@@ -29,7 +29,7 @@ real_daily_craw_db_name = "daily_craw"
 real_daily_buy_list_db_name = "daily_buy_list"
 
 # daily_buy_list database의 날짜 테이블을 과거 어떤 시점 부터 만들 것인지 설정 하는 변수
-start_daily_buy_list='20190102'
+start_daily_buy_list='20210101'
 
 # openapi 1회 조회 시 대기 시간(0.2 보다-> 0.3이 안정적)
 TR_REQ_TIME_INTERVAL = 0.3
