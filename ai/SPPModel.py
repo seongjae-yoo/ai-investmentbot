@@ -103,7 +103,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 
     #model_name = f"{date_now}_{model_function_name}"
     #checkpoint_filepath = 'ModelCheckpoint/CNN_Attention_BiLSTM_Version3_100/Checkpoint'
-    checkpoint_filepath="weights.CNN_Attention_BiLSTM_Version22.hdf5"
+    #checkpoint_filepath="weights.CNN_Attention_BiLSTM_Version22.hdf5"
 
     #early_stopping = EarlyStopping(monitor='val_loss', patience=500)  # patience 번이상 더 좋은 결과가 없으면 학습을 멈춤
     #callback = tf.keras.callbacks.ModelCheckpoint('Transformer+TimeEmbedding.hdf5', 
@@ -111,7 +111,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
     #                                          save_best_only=True, verbose=1)
 
     #tensorboard = TensorBoard(log_dir=os.path.join("logs", model_name))
-    ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, save_best_only=True, verbose=1, mode='min',monitor='val_loss')
+    #ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, save_best_only=True, verbose=1, mode='min',monitor='val_loss')
     # val_loss 인 경우, loss 값이기 때문에 값이 작을수록 좋습니다. 따라서 이때는 min을 입력해줘야합니다.
     # monitor=>모델을 저장할 때, 기준이 되는 값을 지정합니다.
     # 예를 들어, validation set의 loss가 가장 작을 때 저장하고 싶으면 'val_loss'를 입력하고
@@ -132,7 +132,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # wandb:  View project at https://wandb.ai/aiinvestmentbot/test-project
 # wandb:  View run at https://wandb.ai/aiinvestmentbot/test-project/runs/1mwzy32e
     wandb.init(project="NAVER", entity="SeongJae-Yoo")
-    wandb.run.name = 'CNN_Attention_BiLSTM_Version22'
+    #wandb.run.name = 'CNN_Attention_BiLSTM_Version11_test'
     
     # generted run ID로 하고 싶다면 다음과 같이 쓴다.
     # wandb.run.name = wandb.run.id
@@ -155,7 +155,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
                         batch_size=batch_size,
                         epochs=n_epochs,
                         validation_data=(data["X_test"], data["y_test"]),
-                        callbacks=[wandb_callback,reduce_lr,ModelCheckpoint],
+                        callbacks=[wandb_callback,reduce_lr],
                         verbose=verbose)
     # # 아래구문 추가하면  best_mae 값으로 실제값과 예측값의 plot_graph 가 나온다.
     #model.load_weights("weights.CNN_Attention_BiLSTM_Version7.hdf5")                    
