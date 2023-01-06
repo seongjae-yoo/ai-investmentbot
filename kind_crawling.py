@@ -1,7 +1,7 @@
 ver = "#version 1.5.0"
 print(f"kind_crawling Version: {ver}")
 
-# 강의에서 패러럴즈 관련 내용은 패치하여 문제없이 작동하게 만들었으니 무시하셔도 괜찮습니다.
+
 # 엑셀 파일의 저장 위치는 기존 다운로드 폴더에서 bot 프로젝트 폴더안의 KIND_xls로 변경 되었습니다.
 # 크롬드라이버설치 위치 C:chromedriver/chromedrive.exe => 자동으로 크롬드라이버가 설치 되도록 업데이트 되었습니다. 따로 C드라이브에 설치 하지 않으셔도 됩니다.
 
@@ -77,9 +77,9 @@ class KINDCrawler:
         # 엑셀에서 5000개만 담을 수 있어서 100일 단위로 조회하여 데이터를 불러옴
         self.rotate_period = 100
 
-        # 촬영 후 self.download_path 를 init으로 옮겼습니다.
+        # self.download_path 를 init으로 옮겼습니다.
 
-        # 아래 두 줄을 촬영 후 craw 함수로 옮겼습니다.
+        # 아래 두 줄을 craw 함수로 옮겼습니다.
         # options = webdriver.ChromeOptions()
         # self.driver = webdriver.Chrome("C:\chromedriver\chromedriver", options=options)
 
@@ -133,14 +133,14 @@ class KINDCrawler:
         element.send_keys((Keys.ENTER))
         self.dialog_block_wait() #로딩이 끝나는 순간까지 대기
 
-        # kind 엑셀다운로드 (촬영 후 Enter를 click으로 변경 했습니다.)
+        # kind 엑셀다운로드 (Enter를 click으로 변경 했습니다.)
         element = self.driver.find_element_by_xpath('//*[@id="searchForm"]/section/div/div[3]/a[2]')
         self.driver.execute_script('arguments[0].scrollIntoView(true);', element)
         self.driver.execute_script('window.scrollBy(100, 0)')
         self.take_snapshot('before_click.png')
         element.click()
 
-        # 파일이 다 다운될 때 까지 대기(촬영 후 아래 while문 추가 하였습니다.)
+        # 파일이 다 다운될 때 까지 대기(아래 while문 추가 하였습니다.)
         while not list(self.download_path.glob(self.FNAME_PATTERN)):
             sleep(1)
 
@@ -151,7 +151,7 @@ class KINDCrawler:
             converters={'종목코드': str}
         )[0]
 
-        # 촬영 후 코드가 수정 되었지만 영상 후반에 설명이 나옵니다~
+        
         # 엑셀 파일이 비어 있는 경우 code 컬럼에 '결과값이 없습니다' 라는 내용이 들어가 있다. 아래는 이러한 경우를 제외하는 로직
         df = df[df.종목코드 != '결과값이 없습니다.']
 
@@ -230,10 +230,10 @@ class KINDCrawler:
         # 시작전에 디렉토리 한번 정리
         self.clean_excel()
 
-        # ---------------------------------영상 촬영 후 추가 된 코드---------------------------------
-        # 셀레니움의 상태 확인용 스냅샷 디렉토리 확인 및 생성(촬영 후 추가된 코드입니다.)
+        
+        # 셀레니움의 상태 확인용 스냅샷 디렉토리 확인 및 생성
         pathlib.Path(self.snapshot_path).mkdir(exist_ok=True)
-        # 아래 라인들은 촬영 후 variable_setting 함수에 있던 것을 옮겨왔습니다.
+        # 아래 라인들은 variable_setting 함수에 있던 것을 옮겨왔습니다.
         options = webdriver.ChromeOptions()
         # Selenium이 띄운 크롬창의 다운로드 폴더 경로를 지정 (bot 프로젝트 폴더안의 KIND_xls 폴더)
         options.add_experimental_option("prefs", {"download.default_directory": str(self.download_path)})
@@ -273,7 +273,7 @@ class KINDCrawler:
                               ('투자경고종목.xls', 'stock_invest_warning'),
                               ('투자위험종목.xls', 'stock_invest_danger')]
         for names in insert_table_names:
-            # 영상 촬영 후 추가 된 코드
+            
             # 투자경고종목, 투자위험 종목의 경우 kind에 데이터가 많지 않아서 6000일 단위로 조회해도 무리가 없음
             # for문의 처음 돌때 names에는 ('투자주의종목.xls', 'stock_invest_caution') 값이 들어가 있다.
             # 이 때 names[0]에는 '투자주의종목.xls', names[1]에는 'stock_invest_caution' 값이 들어가 있다.
