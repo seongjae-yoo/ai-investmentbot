@@ -238,7 +238,8 @@ def load_data(df, n_steps=1, lookup_step=1, test_size=0.3, shuffle=True):
     column_scaler = {}
     # data를 칼럼별로 0과 1사이의 값으로 scale
     for column in df.columns:  # close, volume, open, high, low 컬럼들을 모두 MinMaxScaler 해준다.
-        scaler = MinMaxScaler()
+        #scaler = MinMaxScaler()
+        scaler = preprocessing.MinMaxScaler()
         #scaler = QuantileTransformer()
         
         #scaler = tf.keras.utils.normalize(column_scaler, axis=0)
