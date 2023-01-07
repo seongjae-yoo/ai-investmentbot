@@ -24,11 +24,11 @@ from sqlalchemy import create_engine
 from library.trading_algorithms import BBands
 import numpy as np
 
-# sell_ai function
-from ai.SPPModel import CNN_Attention_BiLSTM_Version3 ,load_data,evaluate,predict,DataNotEnough
-from tensorflow.keras.callbacks import EarlyStopping
-import tensorflow as tf  
-from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+#sell_ai function
+# from ai.SPPModel import CNN_Attention_BiLSTM_Version3 ,load_data,evaluate,predict,DataNotEnough
+# from tensorflow.keras.callbacks import EarlyStopping
+# import tensorflow as tf  
+# from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 
 
 pymysql.install_as_MySQLdb()
@@ -109,7 +109,7 @@ class simulator_func_mysql:
         # 일별 시뮬레이션을 사용하고 싶을 경우 False 
         self.use_min = False
         # 아침 9시에만 매수를 하고 싶은 경우 True, 9시가 아니어도 매수를 하고 싶은 경우 False(분별 시뮬레이션 적용 가능 / 일별 시뮬레이션은 9시에만 매수, 매도)
-        self.only_nine_buy = False
+        self.only_nine_buy = True
         # self.buy_stop옵션은 수정 필요가 없음. self.only_nine_buy 옵션을 True로 하게 되면 시뮬레이터가 9시에 매수 후에 self.buy_stop을 true로 변경해서 당일에는 더이상 매수하지 않도록 설정함
         self.buy_stop = False
 
@@ -130,7 +130,7 @@ class simulator_func_mysql:
 
         if self.simul_num in (1,4):
             # 시뮬레이팅 시작 일자(분 별 시뮬레이션의 경우 최근 1년 치 데이터만 있기 때문에 start_date 조정 필요)
-            self.simul_start_date = "20220802"
+            self.simul_start_date = "19000802"
 
             ######### 알고리즘 선택 #############
             # 매수 리스트 설정 알고리즘 번호
@@ -143,11 +143,11 @@ class simulator_func_mysql:
             # 초기 투자자금(시뮬레이션에서의 초기 투자 금액. 모의투자는 신청 당시의 금액이 초기 투자 금액이라고 보시면 됩니다)
             # 주의! start_invest_price 는 모의투자 초기 자본금과 별개. 시뮬레이션에서만 적용.
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
-            self.start_invest_price = 9448076
+            self.start_invest_price = 10000000
 
             # ex. 10만원 씩 분산 투자 해서 설정한 경우 / start_invest_price 에서 invest_unit 변수 값 만큼 매일 분산해서 여러종목을 투자한다.
             # 매일 한종목에 invest_unit 변수 값만큼 투자 하고 나머지 금액은 여러 종목마다  invest_unit 값만큼 투자한다. (분산 투자 개념)
-            self.invest_unit = 100000
+            self.invest_unit = 10000000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
@@ -443,12 +443,12 @@ class simulator_func_mysql:
             self.vol_mul = 2
             self.d1_diff = 2 
             self.interval_month = 12                       
-           
+            
             # 일별 시뮬레이션을 사용하고 싶을 경우 False 
             self.use_min = False
             # 아침 9시에만 매수를 하고 싶은 경우 True, 9시가 아니어도 매수를 하고 싶은 경우 False(분별 시뮬레이션 적용 가능 / 일별 시뮬레이션은 9시에만 매수, 매도)
             self.only_nine_buy = True
-            self.trade_check_num = 1 # 실시간 조건 매수 알고리즘 선택 
+            
             self.volume_up = 2  # 특정 거래대금 보다 x배 이상 증가 할 경우 매수
             self.rarry_k = 0.6
 
@@ -1102,7 +1102,7 @@ class simulator_func_mysql:
         if self.db_to_realtime_daily_buy_list_num == 1:
             # orderby는 거래량 많은 순서
 
-            sql = "select * from `" + date_rows_yesterday + "` a where yes_clo20 > yes_clo5 and clo5 > clo20 " \
+            sql = "select a.* from `" + date_rows_yesterday + "` a where yes_clo20 > yes_clo5 and clo5 > clo20 " \
                                                             "and NOT exists (select null from stock_konex b where a.code=b.code) " \
                                                             "and close < '%s' group by code limit 1"
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.invest_unit)).fetchall()
@@ -1111,14 +1111,14 @@ class simulator_func_mysql:
         # 5 / 40 골든크로스 buy
         elif self.db_to_realtime_daily_buy_list_num == 2:
             # orderby는 거래량 많은 순서
-            sql = "select * from `" + date_rows_yesterday + "` a where yes_clo40 > yes_clo5 and clo5 > clo40 " \
+            sql = "select a.* from `" + date_rows_yesterday + "` a where yes_clo40 > yes_clo5 and clo5 > clo40 " \
                                                             "and NOT exists (select null from stock_konex b where a.code=b.code) " \
                                                             "and close < '%s' group by code"
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.invest_unit)).fetchall()
 
 
         elif self.db_to_realtime_daily_buy_list_num == 3:
-            sql = "select * from `" + date_rows_yesterday + "` a where d1_diff_rate > 1 " \
+            sql = "select a.* from `" + date_rows_yesterday + "` a where d1_diff_rate > 1 " \
                                                             "and NOT exists (select null from stock_konex b where a.code=b.code) " \
                                                             "and close < '%s' group by code"
             # 아래 명령을 통해 테이블로 부터 데이터를 가져오면 리스트 형태로 realtime_daily_buy_list 에 담긴다.
@@ -1128,7 +1128,7 @@ class simulator_func_mysql:
         # 5 / 60 골든크로스 buy
         elif self.db_to_realtime_daily_buy_list_num == 4:
             # orderby는 거래량 많은 순서  
-            sql = "select * from `" + date_rows_yesterday + "` a where yes_clo60 > yes_clo5 and clo5 > clo60 " \
+            sql = "select a.* from `" + date_rows_yesterday + "` a where yes_clo60 > yes_clo5 and clo5 > clo60 " \
                                                             "and NOT exists (select null from stock_konex b where a.code=b.code) " \
                                                             "and close < '%s' group by code"
             realtime_daily_buy_list = self.engine_daily_buy_list.execute(sql % (self.invest_unit)).fetchall()
@@ -1136,7 +1136,7 @@ class simulator_func_mysql:
         #관리, 불성실, 주의, 경고, 위험 제외 하고 buy
         elif self.db_to_realtime_daily_buy_list_num == 5:
             
-            sql = "select * from `" + date_rows_yesterday + "` a " \
+            sql = "select a.* from `" + date_rows_yesterday + "` a " \
                     "where yes_clo20 > yes_clo5 and clo5 > clo20 " \
                     "and NOT exists (select null from stock_konex b where a.code=b.code)" \
                     "and NOT exists (select null from stock_managing c where a.code=c.code and c.code_name != '' group by c.code) " \
@@ -1157,7 +1157,7 @@ class simulator_func_mysql:
         
         elif self.db_to_realtime_daily_buy_list_num == 6:
             
-            sql = "select * from `" + date_rows_yesterday + "` a " \
+            sql = "select a.* from `" + date_rows_yesterday + "` a " \
                     "where yes_clo20 > yes_clo5 and clo5 > clo20 " \
                     "and volume * close > '%s' " \
                     "and vol20 * '%s' < volume " \
@@ -1181,8 +1181,8 @@ class simulator_func_mysql:
             if i < self.day_before + 1:
                 pass
             else:
-                sql = "SELECT * FROM `" + date_rows_yesterday +"` a " \
-                       "WHERE NOT exists (SELECT null FROM stock_konex b WHERE a.code=b.code) " \
+                sql = "SELECT YES_DAY.* FROM `" + date_rows_yesterday +"` YES_DAY " \
+                       "WHERE NOT exists (SELECT null FROM stock_konex b WHERE YES_DAY.code=b.code) " \
                        "AND close < '%s' "
                 # realtime_daily_buy_list_temp 로 일단 위 조건의 종목을을받는다.
                 realtime_daily_buy_list_temp = self.engine_daily_buy_list.execute(sql % (self.invest_unit)).fetchall()
@@ -1362,9 +1362,9 @@ class simulator_func_mysql:
                 (예시. 이평선, 거래량 사용)
                 '''
                 sql = f"""
-                        SELECT *
-                        FROM `{date_rows_yesterday}` a
-                        WHERE NOT exists(SELECT null FROM stock_konex b WHERE a.code = b.code)
+                        SELECT YES_DAY.*
+                        FROM `{date_rows_yesterday}` YES_DAY
+                        WHERE NOT exists(SELECT null FROM stock_konex b WHERE YES_DAY.code = b.code)
                             AND  volume != 0 
                             AND close < '{self.invest_unit}'
                             ORDER BY volume * close DESC limit 100
@@ -1727,7 +1727,7 @@ class simulator_func_mysql:
                                             
 
                                             sql = f"""
-                                                    SELECT *
+                                                    SELECT YES_DAY.*
                                                     FROM `{date_rows_yesterday}` YES_DAY ,stock_info info 
                                                     WHERE YES_DAY.code = info.code 
                                                     and info.audit = '{self.audit}'  
@@ -1920,7 +1920,7 @@ class simulator_func_mysql:
                                             # 0.25 * YES_DAY.clo5 + 0.25 * YES_DAY.clo10 + 0.25 * YES_DAY.clo20 + 0.25 * YES_DAY.clo40 (11-28 추가)
 
                                             sql = f"""
-                                                    SELECT *
+                                                    SELECT YES_DAY.*
                                                     FROM `{date_rows_yesterday}` YES_DAY ,stock_info info 
                                                     WHERE YES_DAY.code = info.code 
                                                     and info.audit = '{self.audit}'  
@@ -2068,7 +2068,7 @@ class simulator_func_mysql:
                                             # 0.25 * YES_DAY.clo5 + 0.25 * YES_DAY.clo10 + 0.25 * YES_DAY.clo20 + 0.25 * YES_DAY.clo40 (11-28 추가)
 
                                             sql = f"""
-                                                    SELECT *
+                                                    SELECT YES_DAY.*
                                                     FROM `{date_rows_yesterday}` YES_DAY ,stock_info info  
                                                     WHERE YES_DAY.code = info.code 
                                                     and info.audit = '{self.audit}'  
@@ -3044,11 +3044,12 @@ class simulator_func_mysql:
                     if i > ma_period:
                         
 
-                        sql = "SELECT ALLDB.code, ALLDB.rate, ALLDB.present_price, ALLDB.valuation_profit " \
-                                "FROM all_item_db ALLDB, daily_buy_list.` BEFORE_DAY_B " \
-                                "WHERE ALLDB.code = BEFORE_DAY_A.code = BEFORE_DAY_B.code = BEFORE_DAY_C.code = BEFORE_DAY_D.code " \
-                                "AND ALLDB.sell_date = 0 "\
-                                "AND (ALLDB.present_price - BEFORE_DAY.close) / BEFORE_DAY.close * 100 < '%s' "
+                        sql =  "SELECT ALLDB.* " \
+                        "FROM all_item_db ALLDB, daily_buy_list.`" + date_before_a + "` BEFORE_DAY_A, daily_buy_list.`" + date_before_b + "` BEFORE_DAY_B, daily_buy_list.`" + date_before_c + "` BEFORE_DAY_C , daily_buy_list.`" + date_before_d + "` BEFORE_DAY_D " \
+                        "WHERE ALLDB.code = BEFORE_DAY_A.code = BEFORE_DAY_B.code = BEFORE_DAY_C.code =BEFORE_DAY_D.code  " \
+                        "AND ALLDB.sell_date = 0 " \
+                        "AND ((ALLDB.close - BEFORE_DAY_A.close) / BEFORE_DAY_A.close * 100 + (ALLDB.close - BEFORE_DAY_B.close) / BEFORE_DAY_B.close * 100 + (ALLDB.close - BEFORE_DAY_C.close) / BEFORE_DAY_C.close * 100 + (ALLDB.close - BEFORE_DAY_D.close) / BEFORE_DAY_D.close * 100) / 4 < '%s' " 
+                        
                         sell_list = self.engine_simulator.execute(sql % (self.diff_point * (-1))).fetchall() 
                         # sql = f''' 
                         #     SELECT ALLDB.code, ALLDB.rate, ALLDB.present_price, ALLDB.valuation_profit, ALLDB.code_name 
