@@ -26,7 +26,7 @@ class collector_api():
         self.open_api = open_api()
         self.engine_JB = self.open_api.engine_JB
         self.variable_setting()
-        self.kind = KINDCrawler() # kind_crawling.py 파일에서 KINDCrawler 클래스 호출 하는 객체생성
+        self.kind = KINDCrawler()
 
     def variable_setting(self):
         self.open_api.py_gubun = "collector"
@@ -86,7 +86,7 @@ class collector_api():
         # min_craw db (분별 데이터) 업데이트
         if rows[0][8] != self.open_api.today:
             self.min_crawler_check()
-        self.kind.craw() # kind_crawling.py 파일의 class KINDCrawler: 클래스에서 크롤링 시작하는 craw 함수 호출
+        self.kind.craw()
 
         logger.debug("collecting 작업을 모두 정상적으로 마쳤습니다.")
 
@@ -101,7 +101,7 @@ class collector_api():
     # 실전 봇, 모의 봇 매수 종목 세팅 + all_item_db 업데이트 함수
     def realtime_daily_buy_list_check(self):
         if self.open_api.sf.is_date_exist(self.open_api.today):
-            logger.debug("daily_buy_list DB에 {} 테이블이 있습니다. DB에 realtime_daily_buy_list 테이블을 생성합니다".format(
+            logger.debug("daily_buy_list DB에 {} 테이블이 있습니다.DB에 realtime_daily_buy_list 테이블을 생성합니다".format(
                 self.open_api.today))
 
             self.open_api.sf.get_date_for_simul()
@@ -339,7 +339,7 @@ class collector_api():
         # 아래 버전은 위와 같이 kind 사이트에서 종목 데이터를 크롤링 하는 방식을 키움증권 OpenAPI로부터 가져오도록 변환된 방식입니다.
         # (지속적인 kind 사이트 크롤링 시 IP차단 문제 예방 차원 + 우선주 종목 또한 콜렉팅 하기 위함)
         # 이에 따라 daily_buy_list DB의 stock_managing(관리종목), stock_insincerity(불성실공시법인종목) 테이블은 비어 있게 되며
-        # 고급챕터에서 관리, 위험, 주의 종목 등을 필터링 하는 방법을 다룹니다.
+        #
         # 방법 : 위 <KIND version start---> ~ <KIND version end---> 사이 주석 처리 후 아래 <OPEN_API version start--> ~ <OPEN_API version end--> 사이 주석 해제
         # <OPEN_API version start------------------------------------------------------------------------------------------>
         # self.get_item_kospi()
@@ -410,9 +410,6 @@ class collector_api():
         df_temp['d1_diff_rate'] = d1_diff_rate.replace(numpy.inf, numpy.nan)
 
         # 하나씩 추가할때는 append 아니면 replace
-        # rolling : 기간이동계산
-        # rolling 메서드는 현재 열에 대하여 일정 크기의 창(window)를 이용하여 그 window안의 값을 추가 메서드를 통해 계산하는 메서드 입니다.
-        # window : 계산할 창(window)의 크기 입니다. 열 기준으로 계산할 경우 행의 수입니다.
         clo5 = df_temp['close'].rolling(window=5).mean()
         clo10 = df_temp['close'].rolling(window=10).mean()
         clo20 = df_temp['close'].rolling(window=20).mean()
@@ -438,7 +435,7 @@ class collector_api():
         df_temp['clo80_diff_rate'] = round((df_temp['close'] - clo80) / clo80 * 100, 2)
         df_temp['clo100_diff_rate'] = round((df_temp['close'] - clo100) / clo100 * 100, 2)
         df_temp['clo120_diff_rate'] = round((df_temp['close'] - clo120) / clo120 * 100, 2)
-        # shift : 행을 1만큼 아래로 내린다. 이전날에 60일 이동평균선이라고 볼수 있다.
+
         df_temp['yes_clo5'] = df_temp['clo5'].shift(1)
         df_temp['yes_clo10'] = df_temp['clo10'].shift(1)
         df_temp['yes_clo20'] = df_temp['clo20'].shift(1)
