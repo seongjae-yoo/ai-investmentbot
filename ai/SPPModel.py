@@ -16,7 +16,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler,StandardScaler,Normalizer, MaxAbsScaler,RobustScaler,QuantileTransformer
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import LSTM, Dense, Dropout , Activation, GRU
-
+#from sklearn import preprocessing
 from tensorflow.keras import *
 from tensorflow.keras.models import Sequential
 from tensorflow.python.keras.callbacks import EarlyStopping
@@ -131,8 +131,8 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # api key :483c55b5c6488e6484b5173b3f6dfe92af598e2d
 # wandb:  View project at https://wandb.ai/aiinvestmentbot/test-project
 # wandb:  View run at https://wandb.ai/aiinvestmentbot/test-project/runs/1mwzy32e
-    wandb.init(project="NAVER", entity="SeongJae-Yoo")
-    #wandb.run.name = 'CNN_Attention_BiLSTM_Version11_test'
+    wandb.init(project="pangrim", entity="SeongJae-Yoo")
+    wandb.run.name = 'CNN_Attention_BiLSTM_Version7'
     
     # generted run ID로 하고 싶다면 다음과 같이 쓴다.
     # wandb.run.name = wandb.run.id
@@ -238,8 +238,8 @@ def load_data(df, n_steps=1, lookup_step=1, test_size=0.3, shuffle=True):
     column_scaler = {}
     # data를 칼럼별로 0과 1사이의 값으로 scale
     for column in df.columns:  # close, volume, open, high, low 컬럼들을 모두 MinMaxScaler 해준다.
-        #scaler = MinMaxScaler()
-        scaler = preprocessing.MinMaxScaler()
+        
+        scaler = MinMaxScaler()
         #scaler = QuantileTransformer()
         
         #scaler = tf.keras.utils.normalize(column_scaler, axis=0)
