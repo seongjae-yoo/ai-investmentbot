@@ -41,7 +41,7 @@ conn = pymysql.connect(host=cf.db_ip,
 
 # 상장시기 부터 전체 데이터로 하면 maxlen이 5개가 밑에 21개보다 mae값이 더 작음 
 FEATURE_COLUMNS = ["close", "volume", "open", "high", "low"]
-
+#FEATURE_COLUMNS = ["d1_diff_rate", "clo5_diff_rate", "clo10_diff_rate", "clo20_diff_rate", "clo40_diff_rate"]
 #5개 컬럼에서 date 추가하면 성능 매우안좋아짐
 
 #maxlen=21
@@ -61,9 +61,9 @@ FEATURE_COLUMNS = ["close", "volume", "open", "high", "low"]
 
 #19940502 부터 20221117
 #20131106
-code_name = 'NAVER'
-# 19940502 부터
-until = '20221117'
+code_name = '방림'
+# 19890530 부터
+until = '20230110'
 
 sql = """
     SELECT {} FROM `{}`
@@ -142,7 +142,7 @@ except DataNotEnough:
 # model 선택(원하시는 모델 함수를 선택하여 실행해주시면 됩니다.)
 
 #model = LSTM_layers_4_v2()  
-model = CNN_Attention_BiLSTM_Version20()
+model = CNN_Attention_BiLSTM_Version7()
 # 학습 시작
 history = train(shuffled_data, model, EPOCHS, BATCH_SIZE, verbose=1)
 
@@ -162,7 +162,7 @@ data = load_data(df=new_df, n_steps=N_STEPS, lookup_step=LOOKUP_STEP, test_size=
 future_price = predict(data, model, n_steps=N_STEPS)
 print(f"Future price after {LOOKUP_STEP} days is {future_price:.2f}")
 
-#plot_graph(model, data)	
+plot_graph(model, data)	
 #SVG(model_to_dot(model, show_shapes=True).create(prog='dot', format='svg'))
 #plot_model(model)
 #plot_graph(model, data)
