@@ -132,7 +132,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # wandb:  View project at https://wandb.ai/aiinvestmentbot/test-project
 # wandb:  View run at https://wandb.ai/aiinvestmentbot/test-project/runs/1mwzy32e
     wandb.init(project="pangrim", entity="SeongJae-Yoo")
-    wandb.run.name = 'CNN_Attention_BiLSTM_Version7'
+    wandb.run.name = 'Bi_LSTM_layers_4'
     
     # generted run ID로 하고 싶다면 다음과 같이 쓴다.
     # wandb.run.name = wandb.run.id
@@ -917,7 +917,7 @@ def CNN_Attention_BiLSTM_Version2(maxlen=5, units=21, dropout=0.3, n_steps=1, LO
 # cnn-attention-bilstm (best)
 #  kernel이 L2(0.003)일 때가 약간 성능이 좋아졌다.(LSTM에 적용해 보기)
 
-def CNN_Attention_BiLSTM_Version3(maxlen=6, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+def CNN_Attention_BiLSTM_Version3(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
     input_layer = Input(shape=(maxlen, n_steps), )
 
     x = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu,strides=30, kernel_initializer="he_uniform")(input_layer)
@@ -961,7 +961,7 @@ def CNN_Attention_BiLSTM_Version4(maxlen=5, units=21, dropout=0.3, n_steps=1, LO
     output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
     model = Model(inputs=[input_layer], outputs=output)
     model.summary()  
-    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version3.png', show_shapes=True, dpi=100 )
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version4.png', show_shapes=True, dpi=100 )
     model.compile(loss=LOSS, 
                 optimizer=AngularGrad(optimizer),  
                 metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 

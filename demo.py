@@ -142,7 +142,7 @@ except DataNotEnough:
 # model 선택(원하시는 모델 함수를 선택하여 실행해주시면 됩니다.)
 
 #model = LSTM_layers_4_v2()  
-model = CNN_Attention_BiLSTM_Version7()
+model = Bi_LSTM_layers_4()
 # 학습 시작
 history = train(shuffled_data, model, EPOCHS, BATCH_SIZE, verbose=1)
 
