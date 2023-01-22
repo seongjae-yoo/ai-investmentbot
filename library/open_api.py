@@ -765,7 +765,7 @@ class open_api(QAxWidget):
 
         self.set_input_value("기준일자", start)
 
-        self.set_input_value("수정주가구분", 0)
+        self.set_input_value("수정주가구분", 1)
 
         self.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
 
