@@ -427,11 +427,11 @@ class simulator_func_mysql:
 
             # 손절 수익률 기준치
             self.losscut_point = -2
-
-            # 매수하는 순간 종목의 최신 종가 보다 10% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_limit_rate = 1.1
-            # 매수하는 순간 종목의 최신 종가 보다 -10% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
-            self.invest_min_limit_rate = 0.9
+            
+            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 2% 이상 오른 경우 사지 않도록 하는 설정(변경 가능)
+            self.invest_limit_rate = 1.02
+            # 실전/모의 봇 돌릴 때 매수하는 순간 종목의 최신 종가 보다 -3% 이하로 떨어진 경우 사지 않도록 하는 설정(변경 가능)
+            self.invest_min_limit_rate = 0.97
 
             # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 250일->1년)
             self.day_before = 60 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
@@ -2527,7 +2527,7 @@ class simulator_func_mysql:
     # 시뮬레이팅 할 날짜를 가져 오는 함수
     # 장이 열렸던 날 들을 self.date_rows 에 담기 위해서 gs글로벌의 date값을 대표적으로 가져온 것
     def get_date_for_simul(self):
-        sql = "select date from `gs글로벌` where date >= '%s' and date <= '%s' group by date"
+        sql = "select date from `삼성전자` where date >= '%s' and date <= '%s' group by date"
         self.date_rows = self.engine_daily_craw.execute(sql % (self.simul_start_date, self.simul_end_date)).fetchall()
 
     # daily_buy_list에 일자 테이블이 존재하는지 확인하는 함수
