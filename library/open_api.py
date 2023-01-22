@@ -625,7 +625,7 @@ class open_api(QAxWidget):
 
         self.set_input_value("종목코드", code)
         self.set_input_value("틱범위", 1)
-        self.set_input_value("수정주가구분", 0)
+        self.set_input_value("수정주가구분", 1)
         self.comm_rq_data("opt10080_req", "opt10080", 0, "1999")
 
         self.craw_table_exist = False
@@ -644,7 +644,7 @@ class open_api(QAxWidget):
             self.set_input_value("종목코드", code)
             self.set_input_value("틱범위", 1)
             # self.set_input_value("기준일자", start)
-            self.set_input_value("수정주가구분", 0)
+            self.set_input_value("수정주가구분", 1)
             self.comm_rq_data("opt10080_req", "opt10080", 2, "1999")
 
             if not self.ohlcv or self.ohlcv['date'][-1] < self.craw_db_last_min:
@@ -678,13 +678,16 @@ class open_api(QAxWidget):
         self.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
 
         # 만약에 종목 테이블이 없으면 600일 한번만 가져오는게 아니고 몇 천일이던 싹다 가져오는거다.
-        #if not self.is_craw_table_exist(code_name):
-        while self.remained_data == True:
-            self.set_input_value("종목코드", code)
-            self.set_input_value("기준일자", date)
-            self.set_input_value("수정주가구분", 0)
-            self.comm_rq_data("opt10081_req", "opt10081", 2, "0101")
+        if not self.is_craw_table_exist(code_name):
+            while self.remained_data == True:
+                time.sleep(TR_REQ_TIME_INTERVAL)
+                self.set_input_value("종목코드", code)
+                self.set_input_value("기준일자", date)
+                self.set_input_value("수정주가구분", 0)
+                self.comm_rq_data("opt10081_req", "opt10081", 2, "0101")
+                
 
+      
         # data 비어있는 경우
         if len(self.ohlcv) == 0:
             return []
