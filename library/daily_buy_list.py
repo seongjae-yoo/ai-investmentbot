@@ -33,7 +33,7 @@ class daily_buy_list():
     def date_rows_setting(self):
         print("date_rows_setting!!")
         # 날짜 지정
-        sql = "select date from `gs글로벌` where date >= '%s' group by date"
+        sql = "select date from `삼성전자` where date >= '%s' group by date"
         self.date_rows = self.engine_daily_craw.execute(sql % self.start_date).fetchall()
 
     def is_table_exist_daily_buy_list(self, date):
