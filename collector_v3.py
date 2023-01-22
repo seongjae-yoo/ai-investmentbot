@@ -4,7 +4,7 @@ print("collector 프로그램이 시작 되었습니다!")
 from library.collector_api import *
 
 class Collector:
-    print("collector 클래스에 들어왔습니다.") 
+    print("collector 클래스에 들어왔습니다.")
 
     def __init__(self):
         print("__init__ 함수에 들어왔습니다.")
@@ -12,8 +12,7 @@ class Collector:
 
     def collecting(self):
         self.collector_api.code_update_check()
-    #    self.collector_api._create_stock_info()
- 
+
 if __name__ == "__main__":
     print("__main__에 들어왔습니다.")
     # 아래는 키움증권 openapi를 사용하기 위해 사용하는 한 줄! 이해 할 필요 X
