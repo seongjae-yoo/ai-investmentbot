@@ -9,7 +9,7 @@ from tensorflow.keras.callbacks import EarlyStopping #모델을 더 이상 학�
 from tensorflow.keras.layers import LSTM,GRU
 
 
-from ai.SPPModel import load_data, DataNotEnough, predict, train , LSTM_CNN, Deep_CNN, CNN_GRU, BiGRU_BiLSTM, BiLSTM_GRU_LSTM_CNN ,CNN_Version2, CNN_BiLSTM_Attention, BiGRU_CNN_BiLSTM_Attention, BiLSTM_GRU_LSTM_CNN_BiLSTM_attention,TCN_BiLSTM, plot_graph, Create_Bidirectional_GRU_LSTM_v3, create_Transformer_model, create_Transformer_model_v2, CNN_Attention, create_model_bidirectional_v4,create_model_lstm_basic, GRU_CNN, BiLSTM_TCN, TCN, create_model_bidirectional_GRU_v4,CNN_BiGRU_Attention,BiLSTM_Attention_CNN , CNN_Attention_BiLSTM, LSTM_layers_4_v2, LSTM_layers_4 , Bi_LSTM_layers_4, CNN_Attention_BiLSTM_Version2, CNN_Attention_BiLSTM_Version3, CNN_Attention_BiLSTM_Version4,Deep_CNN_BiGRU, BiLSTM_layers_4_Version2, CNN_Attention_BiLSTM_Attention,BiLSTM_Attention, BiLSTM_Attention_sigmoid, CNN_Attention_BiLSTM_Version5, BiLSTM_single_attention_vector,CNN_Attention_BiLSTM_Version6, CNN_Attention_BiLSTM_Version7, CNN_Attention_BiLSTM_Version8, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version10, CNN_Attention_BiLSTM_Version11, CNN_Attention_BiLSTM_Version12, CNN_Attention_BiLSTM_Version13, CNN_Attention_BiLSTM_Version14, CNN_Attention_BiLSTM_Version15, CNN_Attention_BiLSTM_Version16, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version18, CNN_Attention_BiLSTM_Version17_test,CNN_Attention_BiLSTM_Version11_version2, CNN_Attention_BiLSTM_Version11_version3,CNN_Attention_BiLSTM_Version17_load_weights, CNN_Attention_BiLSTM_Version19, CNN_Attention_BiLSTM_Version20, CNN_Attention_BiLSTM_Version21, CNN_Attention_BiLSTM_Version22,CNN_Attention_BiLSTM_Version23
+from ai.SPPModel import load_data, DataNotEnough, predict, train , LSTM_CNN, Deep_CNN, CNN_GRU, BiGRU_BiLSTM, BiLSTM_GRU_LSTM_CNN ,CNN_Version2, CNN_BiLSTM_Attention, BiGRU_CNN_BiLSTM_Attention, BiLSTM_GRU_LSTM_CNN_BiLSTM_attention,TCN_BiLSTM, plot_graph, Create_Bidirectional_GRU_LSTM_v3, create_Transformer_model, create_Transformer_model_v2, CNN_Attention, create_model_bidirectional_v4,create_model_lstm_basic, GRU_CNN, BiLSTM_TCN, TCN, create_model_bidirectional_GRU_v4,CNN_BiGRU_Attention,BiLSTM_Attention_CNN , CNN_Attention_BiLSTM, LSTM_layers_4_v2, LSTM_layers_4 , Bi_LSTM_layers_4, CNN_Attention_BiLSTM_Version2, CNN_Attention_BiLSTM_Version3, CNN_Attention_BiLSTM_Version4,Deep_CNN_BiGRU, BiLSTM_layers_4_Version2, CNN_Attention_BiLSTM_Attention,BiLSTM_Attention, BiLSTM_Attention_sigmoid, CNN_Attention_BiLSTM_Version5, BiLSTM_single_attention_vector,CNN_Attention_BiLSTM_Version6, CNN_Attention_BiLSTM_Version7, CNN_Attention_BiLSTM_Version8, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version10, CNN_Attention_BiLSTM_Version11, CNN_Attention_BiLSTM_Version12, CNN_Attention_BiLSTM_Version13, CNN_Attention_BiLSTM_Version14, CNN_Attention_BiLSTM_Version15, CNN_Attention_BiLSTM_Version16, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version18, CNN_Attention_BiLSTM_Version17_test,CNN_Attention_BiLSTM_Version11_version2, CNN_Attention_BiLSTM_Version11_version3,CNN_Attention_BiLSTM_Version17_load_weights, CNN_Attention_BiLSTM_Version19, CNN_Attention_BiLSTM_Version20, CNN_Attention_BiLSTM_Version21, CNN_Attention_BiLSTM_Version22,CNN_Attention_BiLSTM_Version23, CNN_Attention_BiLSTM_Version20_test
 from library import cf
 
 ####2022-11-02
@@ -59,10 +59,9 @@ FEATURE_COLUMNS = ["close", "volume", "open", "high", "low"]
 # """.format(','.join(FEATURE_COLUMNS), code_name, until) #STR_TO_DATE : 형식 문자열에 날짜 및 시간 부분이 모두 포함 된 경우 DATETIME 값을 반환
 
 
-#19940502 부터 20221117
-#20131106
+
 code_name = '모두투어'
-# 19890530 부터
+ 
 until = '20211223'
 
 sql = """
@@ -139,10 +138,10 @@ except DataNotEnough:
     exit(1)
   
 #모델    y
-# model 선택(원하시는 모델 함수를 선택하여 실행해주시면 됩니다.)
-
+# model 선택(원하시는 모델 함수를 SPPModel.py 파일에서 찾으셔서 model 변수를 수정 후 모델들을 실험하시면 됩니다.)
+#BiGRU_CNN_BiLSTM_Attention
 #model = LSTM_layers_4_v2()  
-model = CNN_Attention_BiLSTM_Version20()
+model = CNN_Attention_BiLSTM_Version17()
 # 학습 시작
 history = train(shuffled_data, model, EPOCHS, BATCH_SIZE, verbose=1)
 

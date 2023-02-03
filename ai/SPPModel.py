@@ -131,9 +131,19 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # api key :483c55b5c6488e6484b5173b3f6dfe92af598e2d
 # wandb:  View project at https://wandb.ai/aiinvestmentbot/test-project
 # wandb:  View run at https://wandb.ai/aiinvestmentbot/test-project/runs/1mwzy32e
-    wandb.init(project="modetour", entity="SeongJae-Yoo")
-    #wandb.run.name = 'CNN_Attention_BiLSTM_Version7'
-    
+    wandb.init(project="samyangfoods", entity="SeongJae-Yoo")
+    wandb.run.name = 'test_modelcheckpoint'
+    # Save a model file manually from the current directory:
+    #wandb.save('model-best.h5')
+
+#     # restore the model file "model.h5" from a specific run by user "lavanyashukla"
+# # in project "save_and_restore" from run "10pr4joa"
+    #best_model = wandb.restore('model-best.h5', run_path="SeongJae-Yoo/modetour/runs/c2s4ydod")
+   #modetour/runs/c2s4ydod
+
+# use the "name" attribute of the returned object if your framework expects a filename, e.g. as in Keras
+    #model.load_weights(best_model.name)
+
     # generted run ID로 하고 싶다면 다음과 같이 쓴다.
     # wandb.run.name = wandb.run.id
     wandb.run.save()
@@ -729,25 +739,25 @@ def CNN_Version2(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optim
     
     input_layer = Input(shape=(maxlen, n_steps), )
 
-    conv = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu,strides=30, kernel_initializer="he_uniform")(input_layer)
+    conv = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu,strides=30)(input_layer)
     conv = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(conv) 
     conv = MaxPooling1D(pool_size=1,strides=2)(conv) 
     
-    conv1 = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu,strides=30,kernel_initializer="he_uniform")(conv)
-    conv1 = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(conv1) 
-    conv1 = MaxPooling1D(pool_size=1,strides=2)(conv1) 
+    # conv1 = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu,strides=30,kernel_initializer="he_uniform")(conv)
+    # conv1 = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(conv1) 
+    # conv1 = MaxPooling1D(pool_size=1,strides=2)(conv1) 
     
     # conv2 = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu)(conv1)
     # conv3 = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu)(conv2)
     # conv4 = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu)(conv3)
-    conv5 = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu,strides=30,kernel_initializer="he_uniform")(conv1)
-    conv5 = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(conv5) 
+    # conv5 = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu,strides=30,kernel_initializer="he_uniform")(conv1)
+    # conv5 = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(conv5) 
     #conv5 = MaxPooling1D(pool_size=1,strides=2)(conv5)
-    x_a = GlobalMaxPool1D()(conv5)
-    x_b = GlobalAveragePooling1D()(conv5)
-    conv5 = concatenate([x_a,x_b])
+    x_a = GlobalMaxPool1D()(conv)
+    x_b = GlobalAveragePooling1D()(conv)
+    conv = concatenate([x_a,x_b])
    # conv5 = Flatten()(conv5)
-    z = Dropout(dropout)(Dense(units)(conv5))
+    z = Dropout(dropout)(Dense(units)(conv))
     #x = GlobalMaxPool1D()(x)
     x = Dense(1,activation='linear')(z)
     model = Model(inputs=input_layer, outputs=x)
@@ -769,15 +779,15 @@ def CNN_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", opti
     conv = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(conv) 
     conv = MaxPooling1D(pool_size=1,strides=2)(conv)
  
-    conv1 = Conv1D(filters = units, padding='valid',kernel_size = 1, activation=keras.activations.elu,strides=30)(conv)
-    conv1 = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(conv1) 
-    conv1 = MaxPooling1D(pool_size=1,strides=2)(conv1)
+    # conv1 = Conv1D(filters = units, padding='valid',kernel_size = 1, activation=keras.activations.elu,strides=30)(conv)
+    # conv1 = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(conv1) 
+    # conv1 = MaxPooling1D(pool_size=1,strides=2)(conv1)
 
-    conv5 = Conv1D(filters = units, padding='valid',kernel_size = 1, activation=keras.activations.elu,strides=30)(conv1)
-    conv5 = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(conv5) 
-    conv5 = MaxPooling1D(pool_size=1,strides=2)(conv5)
+    # conv5 = Conv1D(filters = units, padding='valid',kernel_size = 1, activation=keras.activations.elu,strides=30)(conv1)
+    # conv5 = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(conv5) 
+    # conv5 = MaxPooling1D(pool_size=1,strides=2)(conv5)
     #x = GlobalMaxPool1D()(x)
-    lstm_out = Dropout(0.3)(conv5)
+    lstm_out = Dropout(dropout)(conv)
     attention_mul = attention_3d_block2(lstm_out)
     attention_mul = Flatten()(attention_mul)
 
@@ -1529,7 +1539,7 @@ def CNN_Attention_BiLSTM_Version16(maxlen=5, units=21, dropout=0.3, n_steps=1, L
 # CNN_Attention_BiLSTM_Version11 모델에다가 lstm 모델에 recurrent_activation='hard_sigmoid' 설정
 # Soft Sigmoid function과 비교 했을 때 계산비용이 적으며, deep learning 기반의 binary classification task에서 희망적인 결과를 보임
 # (https://arxiv.org/pdf/1511.00363.pdf)
-# CNN_Attention_BiLSTM_Version11 모댈 보다 성능 안좋음
+# 
 def CNN_Attention_BiLSTM_Version17(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
@@ -1879,6 +1889,47 @@ def CNN_Attention_BiLSTM_Version23(maxlen=5, units=21, dropout=0.3, n_steps=1, L
     return model
 
 
+def CNN_Attention_BiLSTM_Version20_test(maxlen=5, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+    #activation1 = 'elu'
+    activation2 = 'tanh'
+    dropout=0.4
+    Conv1D_units = 21
+    BiLstm_units =21
+    Conv1D_strides = 30
+    MaxPooling1D_strides = 2
+    BatchNormalization_momentum=0.9
+
+
+    #####################################################################################
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
+    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
+    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    Conv1D_kernel_initializer=GlorotUniform(seed=1)  
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+    x = Conv1D(filters = Conv1D_units,padding='valid' ,kernel_size = 1,kernel_initializer=Conv1D_kernel_initializer,strides=Conv1D_strides)(input_layer) 
+    x = tf.keras.activations.swish(x) # Swish was introduced on Oct 2017 as an alternative activation function to relu.
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=BatchNormalization_momentum)(x) 
+    x = MaxPooling1D(pool_size=1,strides=MaxPooling1D_strides)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(BiLstm_units,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,activation=activation2, recurrent_activation='hard_sigmoid',return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version20_test.png', show_shapes=True, dpi=100 )
+  
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model
+
+
 # cnn-attention-bilstm-attention 
 def CNN_Attention_BiLSTM_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1944,23 +1995,22 @@ def BiGRU_CNN_BiLSTM_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS 
     
     input_layer = Input(shape=(maxlen, n_steps), )
    
-    x = tf.keras.layers.Bidirectional(GRU(units,return_sequences=True, dropout=dropout,
-                           recurrent_dropout=dropout))(input_layer) 
+    x = tf.keras.layers.Bidirectional(GRU(units,return_sequences=True))(input_layer) 
 
 
 
-    x =Conv1D(filters=units, kernel_size=1, activation=keras.activations.elu,strides=30, kernel_initializer="he_uniform")(x)                       
-    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    x =Conv1D(filters=units, kernel_size=1, activation=keras.activations.elu,strides=30)(x)                       
     x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
     
 
-    x = Conv1D(filters=units, kernel_size=1, activation=keras.activations.elu,strides=30, kernel_initializer="he_uniform")(x)                        
-    x = MaxPooling1D(pool_size=1,strides=2)(x)
-    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x)
+    # x = Conv1D(filters=units, kernel_size=1, activation=keras.activations.elu,strides=30)(x)                        
+    # x = MaxPooling1D(pool_size=1,strides=2)(x)
+    # x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x)
 
-    x = Conv1D(filters=units, kernel_size=1, activation=keras.activations.elu,strides=30, kernel_initializer="he_uniform")(x) 
-    x = MaxPooling1D(pool_size=1,strides=2)(x)
-    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x)
+    # x = Conv1D(filters=units, kernel_size=1, activation=keras.activations.elu,strides=30)(x) 
+    # x = MaxPooling1D(pool_size=1,strides=2)(x)
+    # x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x)
 
 
 
