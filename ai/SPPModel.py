@@ -131,8 +131,8 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # api key :483c55b5c6488e6484b5173b3f6dfe92af598e2d
 # wandb:  View project at https://wandb.ai/aiinvestmentbot/test-project
 # wandb:  View run at https://wandb.ai/aiinvestmentbot/test-project/runs/1mwzy32e
-    wandb.init(project="samyangfoods", entity="SeongJae-Yoo")
-    wandb.run.name = 'test_modelcheckpoint'
+    wandb.init(project="samsung", entity="SeongJae-Yoo")
+    wandb.run.name = 'CNN_Attention_BiLSTM'
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
@@ -374,12 +374,13 @@ def LSTM_layers_4_v2(maxlen=5,units=21, dropout=0.3, n_steps=1, LOSS = "mae", op
 def Bi_LSTM_layers_4(maxlen=5,units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer='cos'):
     model=Sequential()
     model.add(tf.keras.layers.Bidirectional(LSTM(units,return_sequences=True),input_shape=(maxlen, n_steps)))
+    model.add(Dropout(dropout))
     model.add(tf.keras.layers.Bidirectional(LSTM(units,return_sequences=True)))
     model.add(Dropout(dropout))
     model.add(tf.keras.layers.Bidirectional(LSTM(units,return_sequences=True)))
     model.add(Dropout(dropout))
     model.add(tf.keras.layers.Bidirectional(LSTM(units, return_sequences=False)))
-    # model.add(Flatten())
+    model.add(Dropout(dropout))
     model.add(Dense(1,activation='linear'))
     model.summary()
     tf.keras.utils.plot_model(model=model,to_file='Bi_LSTM_layers_4.png', show_shapes=True, dpi=100 )
@@ -734,8 +735,8 @@ def BiLSTM_GRU_LSTM_CNN(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae"
 
     return model    
 
-# CNN_Version2
-def CNN_Version2(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+# CNN
+def CNN(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
     
     input_layer = Input(shape=(maxlen, n_steps), )
 
@@ -762,7 +763,7 @@ def CNN_Version2(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optim
     x = Dense(1,activation='linear')(z)
     model = Model(inputs=input_layer, outputs=x)
     model.summary()
-    tf.keras.utils.plot_model(model=model,to_file='CNN_Version2.png', show_shapes=True, dpi=100 )  
+    tf.keras.utils.plot_model(model=model,to_file='CNN.png', show_shapes=True, dpi=100 )  
     model.compile(loss=LOSS, 
                 optimizer=AngularGrad(optimizer),  
                 metrics=['mae',tf.keras.metrics.RootMeanSquaredError()])
@@ -879,7 +880,7 @@ def CNN_Attention_BiLSTM(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae
     
     # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
     attention_mul = attention_3d_block2(x)
-    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, kernel_initializer = 'glorot_normal', recurrent_initializer='random_normal', bias_initializer='he_uniform',return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units,return_sequences=True),name='bilstm')(attention_mul)
     lstm_out = Dropout(dropout)(lstm_out)
     x = Flatten()(lstm_out)
 
@@ -1995,7 +1996,7 @@ def BiGRU_CNN_BiLSTM_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS 
     
     input_layer = Input(shape=(maxlen, n_steps), )
    
-    x = tf.keras.layers.Bidirectional(GRU(units,return_sequences=True))(input_layer) 
+    x = tf.keras.layers.Bidirectional(GRU(units,return_sequences=True),name='biGRU')(input_layer) 
 
 
 
