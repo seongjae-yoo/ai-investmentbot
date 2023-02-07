@@ -1,6 +1,6 @@
 import tensorflow as tf
 import math
-
+#수정본
 class AngularGrad(tf.keras.optimizers.Optimizer):
   def __init__(
       self,
