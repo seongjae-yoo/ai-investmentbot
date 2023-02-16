@@ -141,7 +141,7 @@ except DataNotEnough:
 # model 선택(원하시는 모델 함수를 SPPModel.py 파일에서 찾으셔서 model 변수를 수정 후 모델들을 실험하시면 됩니다.)
 #BiGRU_CNN_BiLSTM_Attention  
 #model = LSTM_layers_4_v2()  
-model = CNN_Attention_BiLSTM()
+model = CNN_Attention_BiLSTM_Version18()
 # 학습 시작
 history = train(shuffled_data, model, EPOCHS, BATCH_SIZE, verbose=1)
 
