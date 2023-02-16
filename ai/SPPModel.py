@@ -132,7 +132,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # wandb:  View project at https://wandb.ai/aiinvestmentbot/test-project
 # wandb:  View run at https://wandb.ai/aiinvestmentbot/test-project/runs/1mwzy32e
     wandb.init(project="samsung", entity="SeongJae-Yoo")
-    wandb.run.name = 'CNN_Attention_BiLSTM'
+    wandb.run.name = 'CNN_Attention_BiLSTM_Version18'
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
@@ -171,6 +171,76 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
     #model.load_weights("weights.CNN_Attention_BiLSTM_Version7.hdf5")                    
     
     return history
+
+
+# 학습 함수
+def wandb_sweep_train(data, sweep_model, n_epochs=100, batch_size=32, verbose=1):
+    # Default values for hyper-parameters we're going to sweep over
+    config_defaults = {
+        'BiLstm_units': 21,
+        'Conv1D_strides': 30,
+        'Conv1D_units': 21,
+        'dropout' : 0.3
+    }
+
+    # Initialize a new wandb run
+    wandb.init(config=config_defaults)
+    
+    
+    # Config is a variable that holds and saves hyperparameters and inputs
+    config = wandb.config
+    
+    #def CNN_Attention_BiLSTM_Version9(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    
+    
+    input_layer = Input(shape=(5, 1), )
+
+    x = Conv1D(filters = config.Conv1D_units,padding='valid' ,kernel_size = 1,strides=config.Conv1D_strides)(input_layer)
+    x = tf.keras.activations.swish(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(config.BiLstm_units,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(config.dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    sweep_model = Model(inputs=[input_layer], outputs=output)
+    sweep_model.summary()  
+
+  
+    sweep_model.compile(loss="mae", 
+                optimizer=AngularGrad('cos'),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    
+                
+    wandb_callback = WandbCallback(monitor='val_loss',save_model=True,mode='min',log_weights=True,log_evaluation=True,validation_steps=5,verbose=1)
+    #lr_callback = tf.keras.callbacks.LearningRateScheduler(lr_scheduler)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+                              patience=1, min_lr=0.0001, mode='min',verbose=1)
+# reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+#                                    patience=1, verbose=1, mode='min',
+#                                    min_delta=0.0001, cooldown=0, min_lr=1e-8)
+
+    history = sweep_model.fit(data["X_train"], data["y_train"],
+                        batch_size=batch_size,
+                        epochs=n_epochs,
+                        validation_data=(data["X_test"], data["y_test"]),
+                        callbacks=[wandb_callback,reduce_lr],
+                        verbose=verbose)
+    # # 아래구문 추가하면  best_mae 값으로 실제값과 예측값의 plot_graph 가 나온다.
+    #model.load_weights("weights.CNN_Attention_BiLSTM_Version7.hdf5")                    
+    
+    return history
+
+
 
 # 에러 평가 함수 # 스케일링된 결과 값을 본래 값으로 복원한다 (inverse_transform 함수란?)
 # 참고 사이트 
@@ -239,6 +309,19 @@ def predict(data, model, n_steps=1):
     
     return predicted_price
     
+def sweep_predict(data, sweep_model, n_steps=1):
+    last_sequence = data["last_sequence"][-n_steps:]
+    column_scaler = data["column_scaler"]
+    # last_sequence를 reshape 합니다   
+    last_sequence = last_sequence.reshape((last_sequence.shape[1], last_sequence.shape[0]))
+    # 3차원으로 변경
+    last_sequence = np.expand_dims(last_sequence, axis=0)
+    # 스케일 된 예측값을 계산 (0과 1사이의 값)
+    prediction = sweep_model.predict(last_sequence)
+    # 스케일 된 값에서 실제 값으로 변환
+    predicted_price = column_scaler["close"].inverse_transform(prediction)[0][0]
+    
+    return predicted_price  
 
 # 스케일링 and "X_train", "X_test", "y_train", "y_test" 추출 함수
 def load_data(df, n_steps=1, lookup_step=1, test_size=0.3, shuffle=True):
@@ -900,13 +983,13 @@ def CNN_Attention_BiLSTM(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae
 def CNN_Attention_BiLSTM_Version2(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
     input_layer = Input(shape=(maxlen, n_steps), )
 
-    x = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu,strides=30, kernel_initializer=glorot_uniform(seed=1))(input_layer)
+    x = Conv1D(filters = units, kernel_size = 1, activation=keras.activations.elu,strides=30, kernel_initializer=glorot_uniform())(input_layer)
     x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
     x = MaxPooling1D(pool_size=1,strides=2)(x)
     
     # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
     attention_mul = attention_3d_block2(x)
-    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True,kernel_initializer=GlorotUniform(seed=1)),name='bilstm')(attention_mul)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True,kernel_initializer=GlorotUniform()),name='bilstm')(attention_mul)
     lstm_out = Dropout(dropout)(lstm_out)
     x = Flatten()(lstm_out)
     # x_a = GlobalMaxPool1D()(lstm_out) 
@@ -1094,10 +1177,10 @@ def CNN_Attention_BiLSTM_Version6(maxlen=5, units=21, n_steps=1, LOSS = "mae", o
 def CNN_Attention_BiLSTM_Version7(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.0, stddev=0.05, seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.0, stddev=0.05)
 # recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
 
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1128,9 +1211,9 @@ def CNN_Attention_BiLSTM_Version7(maxlen=5, units=21, dropout=0.3, n_steps=1, LO
 def CNN_Attention_BiLSTM_Version8(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1163,9 +1246,9 @@ def CNN_Attention_BiLSTM_Version8(maxlen=5, units=21, dropout=0.3, n_steps=1, LO
 def CNN_Attention_BiLSTM_Version9(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1211,11 +1294,11 @@ SELU
 def CNN_Attention_BiLSTM_Version10(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
 
-    Conv1D_kernel_initializer= tf.keras.initializers.LecunNormal(seed=1)
+    Conv1D_kernel_initializer= tf.keras.initializers.LecunNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1248,9 +1331,9 @@ def CNN_Attention_BiLSTM_Version10(maxlen=5, units=21, dropout=0.3, n_steps=1, L
 def CNN_Attention_BiLSTM_Version11(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1283,10 +1366,10 @@ def CNN_Attention_BiLSTM_Version11(maxlen=5, units=21, dropout=0.3, n_steps=1, L
 def CNN_Attention_BiLSTM_Version11_version2(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
-    Conv1D_kernel_initializer= tf.keras.initializers.GlorotUniform(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    Conv1D_kernel_initializer= tf.keras.initializers.GlorotUniform()
     #'glorot_uniform'
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1321,9 +1404,9 @@ def CNN_Attention_BiLSTM_Version11_version2(maxlen=5, units=21, dropout=0.3, n_s
 def CNN_Attention_BiLSTM_Version11_version3(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1357,9 +1440,9 @@ def CNN_Attention_BiLSTM_Version11_version3(maxlen=5, units=21, dropout=0.3, n_s
 def CNN_Attention_BiLSTM_Version12(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1393,7 +1476,7 @@ def CNN_Attention_BiLSTM_Version12(maxlen=5, units=21, dropout=0.3, n_steps=1, L
 def CNN_Attention_BiLSTM_Version13(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
     Conv1D_kernel_regularizer=regularizers.l2(0.00001)
-    Conv1D_kernel_initializer=initializers.VarianceScaling(scale=2.0, mode='fan_in', distribution='normal', seed=1)
+    Conv1D_kernel_initializer=initializers.VarianceScaling(scale=2.0, mode='fan_in', distribution='normal')
 # kernel_initializer = kears.initializers.VarianceScaling(scale=2., mode='fan_avg',distribution="uniform")
 
 #    Conv1D_kernel_initializer_version2 = tf.keras.initializers.VarianceScaling(scale=0.1, mode='fan_in', distribution='uniform')
@@ -1408,9 +1491,9 @@ def CNN_Attention_BiLSTM_Version13(maxlen=5, units=21, dropout=0.3, n_steps=1, L
 
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1472,9 +1555,9 @@ def CNN_Attention_BiLSTM_Version14(maxlen=5, units=21, dropout=0.3, n_steps=1, L
 def CNN_Attention_BiLSTM_Version15(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1506,9 +1589,9 @@ def CNN_Attention_BiLSTM_Version15(maxlen=5, units=21, dropout=0.3, n_steps=1, L
 def CNN_Attention_BiLSTM_Version16(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1544,10 +1627,10 @@ def CNN_Attention_BiLSTM_Version16(maxlen=5, units=21, dropout=0.3, n_steps=1, L
 def CNN_Attention_BiLSTM_Version17(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
-    Conv1D_kernel_initializer=GlorotUniform(seed=1)    
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    Conv1D_kernel_initializer=GlorotUniform()    
     
     input_layer = Input(shape=(maxlen, n_steps), )
 
@@ -1579,9 +1662,9 @@ def CNN_Attention_BiLSTM_Version17(maxlen=5, units=21, dropout=0.3, n_steps=1, L
 def CNN_Attention_BiLSTM_Version17_load_weights(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1615,9 +1698,9 @@ def CNN_Attention_BiLSTM_Version17_load_weights(maxlen=5, units=21, dropout=0.3,
 def CNN_Attention_BiLSTM_Version17_test(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1652,11 +1735,11 @@ def CNN_Attention_BiLSTM_Version17_test(maxlen=5, units=21, dropout=0.3, n_steps
 def CNN_Attention_BiLSTM_Version18(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
 
-    Conv1D_kernel_initializer=GlorotUniform(seed=1)   
+    Conv1D_kernel_initializer=GlorotUniform()   
     
     
     
@@ -1693,14 +1776,14 @@ def CNN_Attention_BiLSTM_Version18(maxlen=5, units=21, dropout=0.3, n_steps=1, L
 def CNN_Attention_BiLSTM_Version19(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     #Conv1D_kernel_initializer=tf.keras.initializers.TruncatedNormal(mean=0, stddev=0.1,seed=1)
-    Conv1D_kernel_initializer_v2=tf.keras.initializers.TruncatedNormal(mean=0, stddev=0.05,seed=1)
+    Conv1D_kernel_initializer_v2=tf.keras.initializers.TruncatedNormal(mean=0, stddev=0.05)
     
-    #Conv1D_kernel_initializer=GlorotUniform(seed=1)   
+    #Conv1D_kernel_initializer=GlorotUniform()   
     
 
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1743,10 +1826,10 @@ def CNN_Attention_BiLSTM_Version20(maxlen=5, n_steps=1, LOSS = "mae", optimizer=
 
 
     #####################################################################################
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
-    Conv1D_kernel_initializer=GlorotUniform(seed=1)  
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    Conv1D_kernel_initializer=GlorotUniform()  
     
     input_layer = Input(shape=(maxlen, n_steps), )
     x = Conv1D(filters = Conv1D_units,padding='valid' ,kernel_size = 1,kernel_initializer=Conv1D_kernel_initializer,strides=Conv1D_strides)(input_layer) 
@@ -1785,9 +1868,9 @@ def CNN_Attention_BiLSTM_Version21(maxlen=5, n_steps=1, LOSS = "mae", optimizer=
 
 
     #####################################################################################
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1796,7 +1879,7 @@ def CNN_Attention_BiLSTM_Version21(maxlen=5, n_steps=1, LOSS = "mae", optimizer=
     x = tf.keras.layers.BatchNormalization(axis=1,momentum=BatchNormalization_momentum)(x) 
     x = MaxPooling1D(pool_size=1,strides=MaxPooling1D_strides)(x)
     
-    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
+    # bilstm은 kernel_initializer=glorot_uniform() 적용하면 성능이 낮아짐
     attention_mul = attention_3d_block2(x)
     lstm_out = tf.keras.layers.Bidirectional(LSTM(BiLstm_units,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,activation=activation2, return_sequences=True),name='bilstm')(attention_mul)
     lstm_out = Dropout(dropout)(lstm_out)
@@ -1826,9 +1909,9 @@ def CNN_Attention_BiLSTM_Version22(maxlen=5, n_steps=1, LOSS = "mae", optimizer=
 
 
     #####################################################################################
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1858,9 +1941,9 @@ def CNN_Attention_BiLSTM_Version22(maxlen=5, n_steps=1, LOSS = "mae", optimizer=
 def CNN_Attention_BiLSTM_Version23(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
     
     
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -1903,10 +1986,10 @@ def CNN_Attention_BiLSTM_Version20_test(maxlen=5, n_steps=1, LOSS = "mae", optim
 
 
     #####################################################################################
-    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
-    bias_initializer = tf.keras.initializers.HeUniform(seed=1)
-    kernel_initializer = tf.keras.initializers.GlorotNormal(seed=1)
-    Conv1D_kernel_initializer=GlorotUniform(seed=1)  
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    Conv1D_kernel_initializer=GlorotUniform()  
     
     input_layer = Input(shape=(maxlen, n_steps), )
     x = Conv1D(filters = Conv1D_units,padding='valid' ,kernel_size = 1,kernel_initializer=Conv1D_kernel_initializer,strides=Conv1D_strides)(input_layer) 
@@ -2568,6 +2651,34 @@ def create_Transformer_model_v2(n_steps=1,maxlen=5,d_k=5,d_v = 5,n_heads = 5,ff_
 
 
 
+def sweep_model():
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    
+    
+    input_layer = Input(shape=(5, 1), )
+
+    x = Conv1D(filters = 21,padding='valid' ,kernel_size = 1,strides=30)(input_layer)
+    x = tf.keras.activations.swish(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(21,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(0.3)(lstm_out)
+    x = Flatten()(lstm_out)
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    sweep_model = tf.keras.Model(inputs=[input_layer], outputs=output)
+    sweep_model.summary()  
+
+  
+    sweep_model.compile(loss="mae", 
+                optimizer=AngularGrad('cos'),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return sweep_model
 
 
 
