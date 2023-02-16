@@ -11,7 +11,7 @@ from sqlalchemy.exc import InternalError, ProgrammingError
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, ReduceLROnPlateau
 
-from ai.SPPModel import load_data, evaluate, predict, DataNotEnough, CNN_Attention_BiLSTM_Version3 
+from ai.SPPModel import load_data, predict, DataNotEnough, CNN_Attention_BiLSTM_Version3,CNN_Attention_BiLSTM_Version11, CNN_Attention_BiLSTM_Version17,CNN_Attention_BiLSTM_Version9
 
 
 
@@ -27,6 +27,24 @@ import tensorflow as tf
 
 from tensorflow.keras.layers import LSTM, Dense, Dropout , Activation
 from tensorflow.keras.models import Sequential
+
+from wandb.keras import WandbCallback
+import wandb
+
+
+def lr_scheduler(epoch, lr):
+    # log the current learning rate onto W&B
+    if wandb.run is None:
+        raise wandb.Error("You must call wandb.init() before WandbCallback()")
+
+    wandb.log({'learning_rate': lr}, commit=False)
+    
+    if epoch < 7:
+        return lr
+    else:
+        return lr * tf.math.exp(-0.1)
+
+
 
 listen(Pool, 'connect', setup_sql_mod) # 서버와 클라이언트를 연결해준다.
 listen(Pool, 'first_connect', setup_sql_mod)
@@ -59,19 +77,42 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     #                         n_layers=ai_settings['n_layers'], dropout=ai_settings['dropout'])
     
         
-    model = ai_settings['model']                        
-
+    #model = CNN_Attention_BiLSTM_Version17()                        
+    model = ai_settings['model']
     
-    checkpoint_filepath = 'ModelCheckpoint/CNN_Attention_BiLSTM_Version3/Checkpoint'
+    #checkpoint_filepath = 'ModelCheckpoint/CNN_Attention_BiLSTM_Version3/Checkpoint'
 
-    early_stopping = EarlyStopping(monitor='val_loss', patience=500)  # patience 번이상 더 좋은 결과가 없으면 학습을 멈춤
+    #early_stopping = EarlyStopping(monitor='val_loss', patience=500)  # patience 번이상 더 좋은 결과가 없으면 학습을 멈춤
     #callback = tf.keras.callbacks.ModelCheckpoint('Transformer+TimeEmbedding.hdf5', 
     #                                          monitor='val_loss', 
     #                                          save_best_only=True, verbose=1)
     
-    ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, save_best_only=True, verbose=1, mode='min',monitor='val_loss')
+    #ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, save_best_only=True, verbose=1, mode='min',monitor='val_loss')
     # reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
     #                           patience=5, min_lr=0.001, mode='min',verbose=1)
+    #wandb.init(project="simulation_buy", entity="SeongJae-Yoo")
+    #wandb.run.name = 'Bi_LSTM_layers_4'
+    
+    #wandb.run.name = 'test_222'
+    # Save a model file manually from the current directory:
+    #wandb.save('model-best.h5')
+
+    # restore the model file "model.h5" from a specific run by user "lavanyashukla"
+# in project "save_and_restore" from run "10pr4joa"
+    #best_model = wandb.restore('model-best_v1.h5', run_path="SeongJae-Yoo/modetour/runs/c2s4ydod")
+
+
+# use the "name" attribute of the returned object if your framework expects a filename, e.g. as in Keras
+    #model.load_weights(best_model.name)
+    model.load_weights('model-best.h5')
+    # wandb.log({"gradients": wandb.Histogram(numpy_array_or_sequence)})
+    # wandb.run.summary.update({"gradients": wandb.Histogram(np_histogram=np.histogram(data))})
+
+    # wandb   Hyperparameter Sweeps   시각화 할 수 있는 자료 (아래 확인)
+    #https://colab.research.google.com/drive/1gKixa6hNUB8qrn1CfHirOfTEQm0qLCSS#scrollTo=1gD9qhA9yOYs
+    
+    #wandb_callback = WandbCallback(monitor='val_loss',save_model=True,mode='min',log_weights=True,log_evaluation=True,validation_steps=5,verbose=1)
+    #lr_callback = tf.keras.callbacks.LearningRateScheduler(lr_scheduler)
     
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
                               patience=1, min_lr=0.0001, mode='min',verbose=1)
@@ -80,7 +121,7 @@ def filtered_by_basic_lstm(dataset, ai_settings):
                         batch_size=ai_settings['batch_size'],
                         epochs=ai_settings['epochs'],
                         validation_data=(shuffled_data["X_test"], shuffled_data["y_test"]),
-                        callbacks=[early_stopping,ModelCheckpoint,reduce_lr],
+                        callbacks=[reduce_lr],
                         verbose=1)
 
     scaled_data = load_data(df=dataset.copy(), n_steps=ai_settings['n_steps'], test_size=ai_settings['test_size'],
@@ -90,9 +131,9 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     # print(f"result: {result}")
 
     
-    train_huber_loss, train_mae, train_rmse,test_huber_loss, test_mae, test_rmse = evaluate(scaled_data, model)  
-    print(f"train_huber_loss, train_mae, train_rmse: {train_huber_loss,train_mae, train_rmse}")      
-    print(f"test_huber_loss, test_mae, test_rmse: {test_huber_loss,test_mae, test_rmse}")      
+    # train_huber_loss, train_mae, train_rmse,test_huber_loss, test_mae, test_rmse = evaluate(scaled_data, model)  
+    # print(f"train_huber_loss, train_mae, train_rmse: {train_huber_loss,train_mae, train_rmse}")      
+    # print(f"test_huber_loss, test_mae, test_rmse: {test_huber_loss,test_mae, test_rmse}")      
 
     # mse = evaluate(scaled_data, model)
     # print(f"Mean Squared Error: {mse}")
@@ -123,6 +164,117 @@ def filtered_by_basic_lstm(dataset, ai_settings):
         msg += f'    {ratio:.2f}% ⯆ '
     print(msg, end=' ')
     return ai_settings['ratio_cut'] >= ratio # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
+
+
+
+def filtered_by_basic_lstm_v2(dataset, ai_settings):
+    """
+    :param dataset: 실제 주가 데이터
+    :param settings: AI 알고리즘 세팅
+    :return: ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
+    """
+
+    shuffled_data = load_data(df=dataset.copy(), n_steps=ai_settings['n_steps'], test_size=ai_settings['test_size'])
+    
+    #!@
+
+    #model = create_model(n_steps=ai_settings['n_steps'], loss=ai_settings['loss'], units=ai_settings['units'],
+    #                     n_layers=ai_settings['n_layers'], dropout=ai_settings['dropout'])
+    # model = create_model_Bidirectional(n_steps=ai_settings['n_steps'], loss=ai_settings['loss'], units=ai_settings['units'],
+    #                         n_layers=ai_settings['n_layers'], dropout=ai_settings['dropout'])
+    
+        
+    #model = CNN_Attention_BiLSTM_Version9()                       
+    model = ai_settings['model']
+    
+    #checkpoint_filepath = 'ModelCheckpoint/CNN_Attention_BiLSTM_Version3/Checkpoint'
+
+    #early_stopping = EarlyStopping(monitor='val_loss', patience=500)  # patience 번이상 더 좋은 결과가 없으면 학습을 멈춤
+    #callback = tf.keras.callbacks.ModelCheckpoint('Transformer+TimeEmbedding.hdf5', 
+    #                                          monitor='val_loss', 
+    #                                          save_best_only=True, verbose=1)
+    
+    #ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, save_best_only=True, verbose=1, mode='min',monitor='val_loss')
+    # reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+    #                           patience=5, min_lr=0.001, mode='min',verbose=1)
+    #wandb.init(project="simulation_buy", entity="SeongJae-Yoo")
+    #wandb.run.name = 'Bi_LSTM_layers_4'
+    
+    #wandb.run.name = 'test_222'
+    # Save a model file manually from the current directory:
+    #wandb.save('model-best.h5')
+
+    # restore the model file "model.h5" from a specific run by user "lavanyashukla"
+# in project "save_and_restore" from run "10pr4joa"
+    #best_model = wandb.restore('model-best.h5', run_path="SeongJae-Yoo/samyangfoods/runs/3db1mv6m")
+
+
+# use the "name" attribute of the returned object if your framework expects a filename, e.g. as in Keras
+    #model.load_weights(best_model.name)
+    model.load_weights('model-best.h5')
+    # generted run ID로 하고 싶다면 다음과 같이 쓴다.
+    # wandb.run.name = wandb.run.id
+    #wandb.run.save()
+    # wandb.log({"gradients": wandb.Histogram(numpy_array_or_sequence)})
+    # wandb.run.summary.update({"gradients": wandb.Histogram(np_histogram=np.histogram(data))})
+
+    # wandb   Hyperparameter Sweeps   시각화 할 수 있는 자료 (아래 확인)
+    #https://colab.research.google.com/drive/1gKixa6hNUB8qrn1CfHirOfTEQm0qLCSS#scrollTo=1gD9qhA9yOYs
+    
+    #wandb_callback = WandbCallback(monitor='val_loss',save_model=True,mode='min',log_weights=True,log_evaluation=True,validation_steps=5,verbose=1)
+    #lr_callback = tf.keras.callbacks.LearningRateScheduler(lr_scheduler)
+    
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+                              patience=1, min_lr=0.0001, mode='min',verbose=1)
+    
+    model.fit(shuffled_data["X_train"], shuffled_data["y_train"],
+                        batch_size=ai_settings['batch_size'],
+                        epochs=ai_settings['epochs'],
+                        validation_data=(shuffled_data["X_test"], shuffled_data["y_test"]),
+                        callbacks=[reduce_lr],
+                        verbose=1)
+
+    scaled_data = load_data(df=dataset.copy(), n_steps=ai_settings['n_steps'], test_size=ai_settings['test_size'],
+                            shuffle=False)
+
+    # result = evaluate(scaled_data, model)
+    # print(f"result: {result}")
+
+    
+    # train_huber_loss, train_mae, train_rmse,test_huber_loss, test_mae, test_rmse = evaluate(scaled_data, model)  
+    # print(f"train_huber_loss, train_mae, train_rmse: {train_huber_loss,train_mae, train_rmse}")      
+    # print(f"test_huber_loss, test_mae, test_rmse: {test_huber_loss,test_mae, test_rmse}")      
+
+    # mse = evaluate(scaled_data, model)
+    # print(f"Mean Squared Error: {mse}")
+
+
+
+    # 예측 가격
+    future_price = predict(scaled_data, model, n_steps=ai_settings['n_steps'])
+
+    # 스케일링 된 예측 결과
+    scaled_y_pred = model.predict(scaled_data['X_test'])
+    # 실제 값으로 변환 된 결과
+    y_pred = np.squeeze(scaled_data['column_scaler']['close'].inverse_transform(scaled_y_pred))
+
+    if ai_settings['is_used_predicted_close']:
+        close = y_pred[-1] # 예측 그래프에서의 종가
+    else:
+        close = dataset.iloc[-1]['close'] # 실제 종가
+
+    # ratio : 예상 상승률
+    ratio = (future_price - close) / close * 100
+
+    msg = f"After {ai_settings['lookup_step']}: {int(close)} -> {int(future_price)}"
+
+    if ratio > 0: # lookup_step(분, 일) 후 상승 예상일 경우 출력 메시지
+        msg += f'    {ratio:.2f}% ⯅ '
+    elif ratio < 0: # lookup_step(분, 일) 후 하락 예상일 경우 출력 메시지
+        msg += f'    {ratio:.2f}% ⯆ '
+    print(msg, end=' ')
+    return ai_settings['ratio_cut'] >= ratio # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
+
 
 
 def create_training_engine(db_name):
@@ -181,14 +333,14 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
     #maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos')
     #CNN_Attention_BiLSTM_Version3(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
         elif ai_filter_num == 3:
-            ai_settings = {
-                        "model": CNN_Attention_BiLSTM_Version3(),   
+            ai_settings = {   
+                        "model" : None,
                         "n_steps": 1, # 시퀀스 데이터를 몇개씩 담을지 설정       
                         "lookup_step": 1, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
                         "test_size": 0.3,
                         "batch_size": 32,
-                        "epochs": 500,
-                        "ratio_cut": 5,
+                        "epochs": 100,
+                        "ratio_cut": 2,
                         "table": "daily_craw",
                         "is_used_predicted_close" : True #false는 단한종목도 사지 않는다.
                     }
@@ -208,7 +360,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 else:
                     print(f"{err} \n 데이터베이스가 존재 하지 않습니다. \n 콜렉터를 실행해주세요 ")
                 exit(1)
-
+                 
             feature_columns = ["close", "volume", "open", "high", "low"]
             # feature_columns   = [ 'close', 'open', 'high', 'low',
             #         'volume', 'clo5', 'clo10', 'clo20', 'clo40', 'clo60', 'clo80',
@@ -225,13 +377,18 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 # pandas(pd) read_sql 을 사용하면 sql, engine을 넘겼을 때 return 값을 바로 데이터프레임으로 받을 수 있음
                 df = pd.read_sql(sql, tr_engine)
 
-                # 데이터가 10개(10일 or 10분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
-                if len(df) < 10:
+                # 데이터가 2000개(2000일 or 2000분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
+                if len(df) < 1:
                     filtered_list.append(code_name)
                     print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")
                     continue
                 try:
-                    filtered = filtered_by_basic_lstm(df, ai_settings)
+                    if 1<= len(df) <=5000:
+                        ai_settings['model'] = CNN_Attention_BiLSTM_Version9()
+                        filtered = filtered_by_basic_lstm(df, ai_settings)
+                    elif len(df) >5000:       
+                        ai_settings['model'] = CNN_Attention_BiLSTM_Version9()
+                        filtered = filtered_by_basic_lstm_v2(df, ai_settings)       
                 except (DataNotEnough, ValueError):
                     print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")
                     filtered_list.append(code_name)
