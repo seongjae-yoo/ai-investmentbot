@@ -3,7 +3,7 @@ import pandas as pd
 
 #ma_period = 70 
 # result = BBands(pd.DataFrame(df_close), w=ma_period)
-def BBands(df_close, w=70, k=3):
+def BBands(df_close, w=20, k=2):
     """
         w: 이동평균선 기간 값 (20)
         k: 승수 (2)
@@ -52,9 +52,13 @@ def BBands(df_close, w=70, k=3):
     # 볼린저 밴드의 하한선: 70일 이평선 값 - ( 70일 동안의 주가 표준편차 값 ) * 2
     # ubb = mbb + (std * 2)
     # lbb =  mbb - (std * 2)
+    # Calculate the upper and lower Bollinger Bands
+# upper_band = MA + 2 * STD
+# lower_band = MA - 2 * STD
+
     #1.8 
-    ubb = mbb + (std * 3.0)
-    lbb =  mbb - (std * 3.0)
+    ubb = mbb + std * 2
+    lbb =  mbb - std * 2
 
     if ubb > lbb:
         perb = (close - lbb) / (ubb - lbb)
