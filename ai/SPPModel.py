@@ -136,8 +136,8 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
-#     # restore the model file "model.h5" from a specific run by user "lavanyashukla"
-# # in project "save_and_restore" from run "10pr4joa"
+#     # restore the model file "model.h5" from a specific run by user 
+# # in project "save_and_restore" 
     #best_model = wandb.restore('model-best.h5', run_path="SeongJae-Yoo/modetour/runs/c2s4ydod")
    #modetour/runs/c2s4ydod
 
