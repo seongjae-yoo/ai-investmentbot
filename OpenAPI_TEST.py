@@ -104,7 +104,7 @@ class OpenTest:
         print("ex12 -- 삼성전자 주가 데이터 ")
         # koastudio 좌측 하단 TR목록 / 'opt10081:주식일봉차트조회요청' 클릭 후 샘플 참고
         # get_total_data : 특정 종목의 1985년 이후 특정 날짜까지의 주가 데이터를 모두 가져오는 함수
-        data = self.open_api.get_total_data('005930', '삼성전자', '20200424')
+        data = self.open_api.get_total_data('004840', 'DRB동일', '19850201')
         print(data)
         #
         print("ex13 -- 삼성전자 재정 데이터 ")
