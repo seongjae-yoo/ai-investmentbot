@@ -1,6 +1,6 @@
 from library.simulator_func_mysql import *
-
-
+        
+  
 class Simulator:
     def __init__(self):
         self.print_info()  
@@ -16,11 +16,11 @@ class Simulator:
         #                    ex) 2020년 01월 01일까지 시뮬레이터를 마쳤는데, 그 이후로 연달아서 2020년 01월 02일 부터 시뮬레이터 테스트를 하고 싶은 경우
 
         option = str(input("시뮬레이팅 데이터베이스 초기화 여부 : (y or n) "))
-       
+          
         if option == 'y':
             self.simul_reset = 'reset'  
         elif option == 'n':
-            self.simul_reset = 'continue'
+            self.simul_reset = 'continue' 
         else:
             print("y or n (소문자) 만 입력 가능 합니다.")
             exit(1)  
@@ -29,7 +29,8 @@ class Simulator:
         # simulator_func_mysql 라이브러리 클래스 호출
         simulator_func_mysql(self.simul_num, self.simul_reset, 0)
 
-
+ 
 if __name__ == "__main__":
     # simulator 클래스 호출
     Simulator()
+    
