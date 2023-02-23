@@ -28,7 +28,7 @@ from .angular_grad import AngularGrad
 from matplotlib import pyplot
 ####
 from keras.layers import GRU, MaxPooling1D, Conv1D, GlobalMaxPool1D, Activation, Add, Flatten, BatchNormalization , GlobalAveragePooling1D
-from keras.layers import Dense, Embedding, Input, concatenate, TimeDistributed, Attention, PReLU, ELU
+from keras.layers import Dense, Embedding, Input, concatenate, TimeDistributed, Attention, PReLU, ELU,LeakyReLU
 #### 2022 11 01 add
 ## pip install dropconnect-tensorflow (Successfully installed dropconnect-tensorflow-0.1.1)
 from dropconnect_tensorflow import DropConnectDense
@@ -132,7 +132,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # wandb:  View project at https://wandb.ai/aiinvestmentbot/test-project
 # wandb:  View run at https://wandb.ai/aiinvestmentbot/test-project/runs/1mwzy32e
     wandb.init(project="samsung", entity="SeongJae-Yoo")
-    wandb.run.name = 'CNN_Attention_BiLSTM_Version18'
+    wandb.run.name = 'CNN_Attention_BiLSTM_Version24'
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
@@ -146,7 +146,8 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 
     # generted run ID로 하고 싶다면 다음과 같이 쓴다.
     # wandb.run.name = wandb.run.id
-    wandb.run.save()
+    #wandb.run.save()
+    #wandb.save("C:/Users/SeongJae-Yoo/AI-InvestmentBot/wandb",base_path="C:/Users/SeongJae-Yoo/AI-InvestmentBot")
     # wandb.log({"gradients": wandb.Histogram(numpy_array_or_sequence)})
     # wandb.run.summary.update({"gradients": wandb.Histogram(np_histogram=np.histogram(data))})
 
@@ -172,14 +173,15 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
     
     return history
 
-
+# CNN_Attention_BiLSTM_Version9 적용
 # 학습 함수
 def wandb_sweep_train(data, sweep_model, n_epochs=100, batch_size=32, verbose=1):
     # Default values for hyper-parameters we're going to sweep over
     config_defaults = {
-        'BiLstm_units': 21,
+        'Conv1D_filters': 21,
+        'Conv1D_activation': 'elu',
         'Conv1D_strides': 30,
-        'Conv1D_units': 21,
+        'BiLstm_units': 21,
         'dropout' : 0.3
     }
 
@@ -192,7 +194,9 @@ def wandb_sweep_train(data, sweep_model, n_epochs=100, batch_size=32, verbose=1)
     
     #def CNN_Attention_BiLSTM_Version9(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
-
+    # Conv1D_activation_A = tf.keras.activations.swish 
+    # Conv1D_activation_B = tf.keras.activations.elu
+    # Conv1D_activation_C = tf.keras.activations.selu   
     recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
     bias_initializer = tf.keras.initializers.HeUniform()
     kernel_initializer = tf.keras.initializers.GlorotNormal()
@@ -200,14 +204,14 @@ def wandb_sweep_train(data, sweep_model, n_epochs=100, batch_size=32, verbose=1)
     
     input_layer = Input(shape=(5, 1), )
 
-    x = Conv1D(filters = config.Conv1D_units,padding='valid' ,kernel_size = 1,strides=config.Conv1D_strides)(input_layer)
-    x = tf.keras.activations.swish(x)
+    x = Conv1D(filters = config.Conv1D_filters,padding='valid',activation=config.Conv1D_activation,kernel_size = 1,strides=config.Conv1D_strides)(input_layer)
+    #x = tf.keras.activations.swish(x)
     x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
     x = MaxPooling1D(pool_size=1,strides=2)(x)
     
-    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐  
     attention_mul = attention_3d_block2(x)
-    lstm_out = tf.keras.layers.Bidirectional(LSTM(config.BiLstm_units,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=config.BiLstm_units,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
     lstm_out = Dropout(config.dropout)(lstm_out)
     x = Flatten()(lstm_out)
 
@@ -1966,6 +1970,40 @@ def CNN_Attention_BiLSTM_Version23(maxlen=5, units=21, dropout=0.3, n_steps=1, L
     model = Model(inputs=[input_layer], outputs=output)
     model.summary()  
     tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version23.png', show_shapes=True, dpi=100 )
+  
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model
+
+def CNN_Attention_BiLSTM_Version24(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = units, padding='valid',activation='relu',kernel_size = 1,strides=30)(input_layer)
+    #x = tf.keras.activations.swish(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐  
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=units, kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    # x_a = GlobalMaxPool1D()(lstm_out) 
+    # x_b = GlobalAveragePooling1D()(lstm_out)
+    # x = concatenate([x_a,x_b])
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version24.png', show_shapes=True, dpi=100 )
   
     model.compile(loss=LOSS, 
                 optimizer=AngularGrad(optimizer),  
