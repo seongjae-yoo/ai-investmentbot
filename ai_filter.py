@@ -11,7 +11,7 @@ from sqlalchemy.exc import InternalError, ProgrammingError
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, ReduceLROnPlateau
 
-from ai.SPPModel import load_data, predict, DataNotEnough, CNN_Attention_BiLSTM_Version3,CNN_Attention_BiLSTM_Version11, CNN_Attention_BiLSTM_Version17,CNN_Attention_BiLSTM_Version9
+from ai.SPPModel import load_data, predict, DataNotEnough, CNN_Attention_BiLSTM_Version3,CNN_Attention_BiLSTM_Version11, CNN_Attention_BiLSTM_Version17,CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version27
 
 
 
@@ -384,10 +384,10 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                     continue
                 try:
                     if 1<= len(df) <=5000:
-                        ai_settings['model'] = CNN_Attention_BiLSTM_Version9()
+                        ai_settings['model'] = CNN_Attention_BiLSTM_Version27()  # 셀트리온헬스케어 model-best.h5 -> pretty-sweep-110 사용
                         filtered = filtered_by_basic_lstm(df, ai_settings)
                     elif len(df) >5000:       
-                        ai_settings['model'] = CNN_Attention_BiLSTM_Version9()
+                        ai_settings['model'] = CNN_Attention_BiLSTM_Version27()
                         filtered = filtered_by_basic_lstm_v2(df, ai_settings)       
                 except (DataNotEnough, ValueError):
                     print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")
