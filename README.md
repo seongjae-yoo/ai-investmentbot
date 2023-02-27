@@ -65,12 +65,18 @@ AI 자동 투자 봇 만들기, 노트북으로 월급을 두 배 불리는 법
 
 링크 클릭 - [https://github.com/SEONGJAE-YOO/AI-InvestmentBot/commits/main](https://github.com/SEONGJAE-YOO/AI-InvestmentBot/commits/main)
 
-
+# 1. Miniconda3 설치 
+# 2. 가상환경 conda create -n py37_64 python=3.7.13  설치
+# 3. pip install -r requirements_py37_64.txt  설치
 
 
 * 초기 세팅
 
 깃블로그에 올려두었습니다.링크 클릭하시면 보실 수 있습니다.
 [https://codingstorylove.github.io/ai-investmentbot/project/AI_InvestmentBot01/#page-title](https://codingstorylove.github.io/ai-investmentbot/project/AI_InvestmentBot01/#page-title)
+
+# error 해결방안
+## 1. python demo.py 파일 실행 할때 oserror symbolic link privilege not held 다음과 같이 에러 나면 vscode 터미널 관리자로 열어서 해결하세요  (아래 링크 참고 후 에러 해결하세요)
+## https://parodev.tistory.com/47   참고
 
 
