@@ -25,7 +25,7 @@ from library.trading_algorithms import BBands
 import numpy as np
 
 #sell_ai function
-from ai.SPPModel import CNN_Attention_BiLSTM_Version11 ,load_data,predict,DataNotEnough, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version9
+from ai.SPPModel import CNN_Attention_BiLSTM_Version11 ,load_data,predict,DataNotEnough, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version27
 from tensorflow.keras.callbacks import EarlyStopping
 import tensorflow as tf  
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
@@ -624,7 +624,7 @@ class simulator_func_mysql:
                 
                 self.sell_list_num = 2
                 #self.trade_check_num = 3
-                self.simul_start_date = "20210113"
+                self.simul_start_date = "20210112"
                 #self.simul_start_date = "20200713"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
                 self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
@@ -662,7 +662,7 @@ class simulator_func_mysql:
                 
                 self.sell_list_num = 5
                 #self.trade_check_num = 3
-                self.simul_start_date = "20210101"
+                self.simul_start_date = "20210112"
                 #self.simul_start_date = "20200713"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
                 # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
@@ -678,14 +678,15 @@ class simulator_func_mysql:
                 # self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 # self.ai_filter_num = 3  # ai 알고리즘 선택                 
             # 안정적인 방법 !@
+            # 02 -27 일 이방법으로 시뮬레이션
             elif self.simul_num == 24:       
 
                 
                 self.db_to_realtime_daily_buy_list_num = 21
                 
-                self.sell_list_num = 16
+                self.sell_list_num = 5
                 #self.trade_check_num = 3
-                self.simul_start_date = "20210110"
+                self.simul_start_date = "20210112"
                 #self.simul_start_date = "20200713"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
                 # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
@@ -708,13 +709,13 @@ class simulator_func_mysql:
                 
                 self.sell_list_num = 16
                 #self.trade_check_num = 3
-                self.simul_start_date = "20210108"
+                self.simul_start_date = "20210112"
                 #self.simul_start_date = "20200713"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
                 # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                 # # n일 전 종가 대비 현재 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지 설정(0으로 설정 시 단순히 증가 했을 때 매수, 감소 했을 때 매도)
                 # self.date_before_b = 59 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
-                # self.date_before_c = 123 
+                # self.date_before_c = 123  
                 # self.date_before_d = 245
                 # self.day_before = 20    
                 self.diff_point = 5 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
@@ -723,6 +724,7 @@ class simulator_func_mysql:
                 # # AI알고리즘 사용 여부 
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 3  # ai 알고리즘 선택 
+                
             # 어제 날짜 -1 sell list 날짜 조정 후 실험 
             elif self.simul_num == 26:       
                 
@@ -730,7 +732,7 @@ class simulator_func_mysql:
                 
                 self.sell_list_num = 16
                 #self.trade_check_num = 3
-                self.simul_start_date = "20210113"
+                self.simul_start_date = "20210112"
                 #self.simul_start_date = "20200713"
                 # n일 전 종가 데이터를 가져올지 설정 (ex. 20 -> 장이 열리는 날 기준 20일 이니까 기간으로 보면 약 한 달, 240일->1년)
                 # self.date_before_a = 20 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
@@ -1913,7 +1915,7 @@ class simulator_func_mysql:
                                     
         elif self.db_to_realtime_daily_buy_list_num == 21:
                                 
-                        ma_period = 30
+                        ma_period = 70
                         realtime_daily_buy_list = []
                         realtime_daily_buy_list_1 = []
                         realtime_daily_buy_list_2 = []
@@ -3519,10 +3521,10 @@ class simulator_func_mysql:
                     continue
                 try:
                     if 1<= len(sell_df) <=5000:
-                        sell_ai_settings['model'] = CNN_Attention_BiLSTM_Version9()
+                        sell_ai_settings['model'] = CNN_Attention_BiLSTM_Version27()
                         filtered = sell_list_ai(sell_df, sell_ai_settings)
                     elif len(sell_df) >5000:                          
-                        sell_ai_settings['model'] = CNN_Attention_BiLSTM_Version9()
+                        sell_ai_settings['model'] = CNN_Attention_BiLSTM_Version27()
                         filtered = sell_list_ai_v2(sell_df, sell_ai_settings)
                 except (DataNotEnough, ValueError):
                     print(f"테스트 데이터가 적어요")
