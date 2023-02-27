@@ -132,7 +132,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # wandb:  View project at https://wandb.ai/aiinvestmentbot/test-project
 # wandb:  View run at https://wandb.ai/aiinvestmentbot/test-project/runs/1mwzy32e
     wandb.init(project="samsung", entity="SeongJae-Yoo")
-    wandb.run.name = 'CNN_Attention_BiLSTM_Version24'
+    wandb.run.name = 'CNN_Attention_BiLSTM_Version26'
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
@@ -1246,7 +1246,7 @@ def CNN_Attention_BiLSTM_Version8(maxlen=5, units=21, dropout=0.3, n_steps=1, LO
     return model
 
 # CNN_Attention_BiLSTM_Version8 모델에다가 elu -> selu 변경한 모델
-# CNN_Attention_BiLSTM_Version8 모델보다 성능 안좋음
+
 def CNN_Attention_BiLSTM_Version9(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
 
 
@@ -2004,6 +2004,118 @@ def CNN_Attention_BiLSTM_Version24(maxlen=5, units=21, dropout=0.3, n_steps=1, L
     model = Model(inputs=[input_layer], outputs=output)
     model.summary()  
     tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version24.png', show_shapes=True, dpi=100 )
+  
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model
+
+
+
+#### 
+# wandb sweep 테스트  - amber-sweep-144 (셀트리온헬스케어)
+
+def CNN_Attention_BiLSTM_Version25(maxlen=5, units=16, dropout=0.2, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = 31, padding='valid',activation='relu',kernel_size = 1,strides=30)(input_layer)
+    #x = tf.keras.activations.swish(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐  
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=units, kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    # x_a = GlobalMaxPool1D()(lstm_out) 
+    # x_b = GlobalAveragePooling1D()(lstm_out)
+    # x = concatenate([x_a,x_b])
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version25.png', show_shapes=True, dpi=100 )
+  
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model
+
+
+
+####
+# wandb sweep 테스트  -  proud-sweep-16, conv1d_activation : relu 로 변경하고 실험 (삼성전자)
+
+def CNN_Attention_BiLSTM_Version26(maxlen=5, units=21, dropout=0.2, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = 31, padding='valid',activation='relu',kernel_size = 1,strides=30)(input_layer)
+    #x = tf.keras.activations.swish(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐  
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=units, kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    # x_a = GlobalMaxPool1D()(lstm_out) 
+    # x_b = GlobalAveragePooling1D()(lstm_out)
+    # x = concatenate([x_a,x_b])
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version26.png', show_shapes=True, dpi=100 )
+  
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model
+# 논문 시뮬레이션 할때 사용하였던 모델  
+def CNN_Attention_BiLSTM_Version27(maxlen=5, units=21, dropout=0.2, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = 31, padding='valid',activation='selu',kernel_size = 1,strides=30)(input_layer)
+    #x = tf.keras.activations.swish(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    # bilstm은 kernel_initializer=glorot_uniform(seed=0) 적용하면 성능이 낮아짐  
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=units, kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    # x_a = GlobalMaxPool1D()(lstm_out) 
+    # x_b = GlobalAveragePooling1D()(lstm_out)
+    # x = concatenate([x_a,x_b])
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()  
+    tf.keras.utils.plot_model(model=model,to_file='CNN_Attention_BiLSTM_Version27.png', show_shapes=True, dpi=100 )
   
     model.compile(loss=LOSS, 
                 optimizer=AngularGrad(optimizer),  
