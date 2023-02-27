@@ -68,9 +68,10 @@ FEATURE_COLUMNS = ["close", "volume", "open", "high", "low"]
 #     WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
 # """.format(','.join(FEATURE_COLUMNS), code_name, until) #STR_TO_DATE : 형식 문자열에 날짜 및 시간 부분이 모두 포함 된 경우 DATETIME 값을 반환
 
+# 셀트리온헬스케어
+code_name = '셀트리온헬스케어'
 
-
-code_name = '삼성전자'
+#code_name = '삼성전자'
  
 until = '20211230'
 
