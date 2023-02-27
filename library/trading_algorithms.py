@@ -3,7 +3,7 @@ import pandas as pd
 
 #ma_period = 70 
 # result = BBands(pd.DataFrame(df_close), w=ma_period)
-def BBands(df_close, w=20, k=2):
+def BBands(df_close, w=70, k=3):
     """
         w: 이동평균선 기간 값 (20)
         k: 승수 (2)
@@ -57,8 +57,8 @@ def BBands(df_close, w=20, k=2):
 # lower_band = MA - 2 * STD
 
     #1.8 
-    ubb = mbb + std * 2
-    lbb =  mbb - std * 2
+    ubb = mbb + std * 3
+    lbb =  mbb - std * 3
 
     if ubb > lbb:
         perb = (close - lbb) / (ubb - lbb)
