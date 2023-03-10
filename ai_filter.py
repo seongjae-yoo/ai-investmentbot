@@ -104,7 +104,7 @@ def filtered_by_basic_lstm(dataset, ai_settings):
 
 # use the "name" attribute of the returned object if your framework expects a filename, e.g. as in Keras
     #model.load_weights(best_model.name)
-    model.load_weights('model-best.h5')
+    #model.load_weights('model-best.h5')
     # wandb.log({"gradients": wandb.Histogram(numpy_array_or_sequence)})
     # wandb.run.summary.update({"gradients": wandb.Histogram(np_histogram=np.histogram(data))})
 
@@ -211,7 +211,7 @@ def filtered_by_basic_lstm_v2(dataset, ai_settings):
 
 # use the "name" attribute of the returned object if your framework expects a filename, e.g. as in Keras
     #model.load_weights(best_model.name)
-    model.load_weights('model-best.h5')
+    #model.load_weights('model-best.h5')
     # generted run ID로 하고 싶다면 다음과 같이 쓴다.
     # wandb.run.name = wandb.run.id
     #wandb.run.save()
@@ -340,7 +340,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                         "test_size": 0.3,
                         "batch_size": 32,
                         "epochs": 100,
-                        "ratio_cut": 2,
+                        "ratio_cut": 1,
                         "table": "daily_craw",
                         "is_used_predicted_close" : True #false는 단한종목도 사지 않는다.
                     }
@@ -377,7 +377,7 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 # pandas(pd) read_sql 을 사용하면 sql, engine을 넘겼을 때 return 값을 바로 데이터프레임으로 받을 수 있음
                 df = pd.read_sql(sql, tr_engine)
 
-                # 데이터가 2000개(2000일 or 2000분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
+                # 데이터가 1개(1일 or 1분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
                 if len(df) < 1:
                     filtered_list.append(code_name)
                     print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")
