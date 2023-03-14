@@ -131,7 +131,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # api key :483c55b5c6488e6484b5173b3f6dfe92af598e2d
     wandb.init(project="celltrionhealthcare", entity="SeongJae-Yoo")
     #wandb.init(project="samsung", entity="SeongJae-Yoo")
-    wandb.run.name = 'CNN_Attention_BiLSTM_window_size_5_BATCH_SIZE_32'
+    wandb.run.name = 'CNN_Attention_BiLSTM_window_size_5'
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
