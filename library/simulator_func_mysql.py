@@ -432,8 +432,8 @@ class simulator_func_mysql:
             # 키움증권 모의투자의 경우 초기에 모의투자 신청 할 때 설정 한 금액으로 자본금이 설정됨
             self.start_invest_price = 100000000
 
-            # 매수 금액
-            self.invest_unit = 10000000
+            # 매수 금액  
+            self.invest_unit = 20000000
 
             # 자산 중 최소로 남겨 둘 금액
             self.limit_money = 0
@@ -785,7 +785,7 @@ class simulator_func_mysql:
                 # self.date_before_b = 59 # 단위 일 (모멘텀에서 현재가랑 몇 일전의 종가와 비교할지)
                 # self.date_before_c = 123  
                 # self.date_before_d = 245
-                # self.day_before = 20    
+                # self.day_before = 20     
                 self.diff_point = 3 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수, 몇 프로 떨어졌을 때 매도 할 지)
                 self.sell_diff_point = 3
                 self.margin = 100      
@@ -865,7 +865,7 @@ class simulator_func_mysql:
             self.check_balance()
 
             # 매수할때 수수료 한번, 매도할때 전체금액에 세금, 수수료
-            self.tax_rate = 0.0025
+            self.tax_rate = 0.0025   
             self.fees_rate = 0.00015
 
             # 시뮬레이터를 멈춘 지점 부터 다시 돌리기 위해 사용하는 변수(중요X)
@@ -2469,7 +2469,7 @@ class simulator_func_mysql:
                             
                             #if i > ma_period:
                                             # 0.25 * YES_DAY.clo5 + 0.25 * YES_DAY.clo10 + 0.25 * YES_DAY.clo20 + 0.25 * YES_DAY.clo40 (11-28 추가)
-
+                                            #AND YES_DAY.volume != 0 
                                             sql = f"""
                                                     SELECT YES_DAY.*
                                                     FROM `{date_rows_yesterday}` YES_DAY ,stock_info info 
@@ -2477,14 +2477,13 @@ class simulator_func_mysql:
                                                     and info.audit = '{self.audit}'  
                                                     and info.remarks NOT LIKE '{self.remarks_manage}'  
                                                     and info.remarks NOT LIKE '{self.remarks_stop}'    
-                                                    and info.stock_market IN ('{self.stock_market_a}', '{self.stock_market_b}', '{self.stock_market_c}', '{self.stock_market_d}')   
+                                                    and info.stock_market IN ('{self.stock_market_a}', '{self.stock_market_b}', '{self.stock_market_c}')   
                                                     and NOT exists (select * from stock_managing c where YES_DAY.code=c.code and c.code_name != '' group by c.code) 
                                                     and NOT exists (select * from stock_insincerity d where YES_DAY.code=d.code and d.code_name !='' group by d.code) 
                                                     and NOT exists (select * from stock_invest_caution e where YES_DAY.code=e.code and DATE_SUB({date_rows_yesterday}, INTERVAL {self.interval_month} MONTH ) < e.post_date and e.post_date < Date({date_rows_yesterday}) and e.type != '투자경고 지정해제' group by e.code) 
                                                     and NOT exists (select * from stock_invest_warning f where YES_DAY.code=f.code and f.post_date <= DATE({date_rows_yesterday}) and (f.cleared_date > DATE({date_rows_yesterday}) or f.cleared_date is null) group by f.code) 
                                                     and NOT exists (select * from stock_invest_danger g where YES_DAY.code=g.code and g.post_date <= DATE({date_rows_yesterday}) and (g.cleared_date > DATE({date_rows_yesterday}) or g.cleared_date is null) group by g.code)  
                                                     AND 0.25 * YES_DAY.clo5 + 0.25 * YES_DAY.clo10 + 0.25 * YES_DAY.clo20 + 0.25 * YES_DAY.clo40 > YES_DAY.close
-                                                    AND YES_DAY.volume != 0 
                                                     AND YES_DAY.close < {self.invest_unit}
                                                     ORDER BY YES_DAY.volume * YES_DAY.close DESC 
                                                 """
@@ -2776,7 +2775,7 @@ class simulator_func_mysql:
         self.df_all_item.loc[0, 'purchase_price'] = purchase_price
         self.df_all_item.loc[0, 'present_price'] = purchase_price
 
-        # #jackbot("code_name: "+ code_name + "purchase_price: "+ str(purchase_price))
+        # ("code_name: "+ code_name + "purchase_price: "+ str(purchase_price))
         self.df_all_item.loc[0, 'holding_amount'] = int(self.invest_unit / purchase_price)
         self.df_all_item.loc[0, 'buy_date'] = min_date
         self.df_all_item.loc[0, 'item_total_purchase'] = self.df_all_item.loc[0, 'purchase_price'] * \
