@@ -131,7 +131,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # api key :483c55b5c6488e6484b5173b3f6dfe92af598e2d
     wandb.init(project="celltrionhealthcare", entity="SeongJae-Yoo")
     #wandb.init(project="samsung", entity="SeongJae-Yoo")
-    wandb.run.name = 'CNN_Attention_BiLSTM_window_size_5'
+    wandb.run.name = 'BiGRU_CNN_BiLSTM_Attention_test0321'
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
@@ -243,6 +243,78 @@ def wandb_sweep_train(data, sweep_model, n_epochs=100, batch_size=32, verbose=1)
     
     return history
 
+# BiGRU_CNN_BiLSTM_Attention sweep function 
+def wandb_sweep_train_version2(data, sweep_model, n_epochs=100, batch_size=32, verbose=1):
+    # Default values for hyper-parameters we're going to sweep over
+    config_defaults = {
+        "name": "BiGRU_CNN_BiLSTM_Attention",
+        'BiGRU_units':21,
+        'Conv1D_filters': 21,
+        'Conv1D_activation': 'elu',
+        'Conv1D_strides': 30,
+        'BiLstm_units': 21,
+        'dropout' : 0.3
+    }
+
+    # Initialize a new wandb run
+    wandb.init(config=config_defaults)
+    
+    
+    # Config is a variable that holds and saves hyperparameters and inputs
+    config = wandb.config
+    
+    #def CNN_Attention_BiLSTM_Version9(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+    # Conv1D_activation_A = tf.keras.activations.swish 
+    # Conv1D_activation_B = tf.keras.activations.elu
+    # Conv1D_activation_C = tf.keras.activations.selu   
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    
+    
+    input_layer = Input(shape=(5, 1), )
+
+    x = tf.keras.layers.Bidirectional(GRU(units=config.BiGRU_units,return_sequences=True),name='biGRU')(input_layer)                        
+    x = Conv1D(filters = config.Conv1D_filters,padding='valid',activation=config.Conv1D_activation,kernel_size = 1,strides=config.Conv1D_strides)(x)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    
+    
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=config.BiLstm_units,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(x)
+    lstm_out = Dropout(config.dropout)(lstm_out)
+    attention_mul = attention_3d_block2(lstm_out)
+    x = Flatten()(attention_mul)
+
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함
+    sweep_model = Model(inputs=[input_layer], outputs=output)
+    sweep_model.summary()  
+
+  
+    sweep_model.compile(loss="mae", 
+                optimizer=AngularGrad('cos'),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    
+                
+    wandb_callback = WandbCallback(monitor='val_loss',save_model=True,mode='min',log_weights=True,log_evaluation=True,validation_steps=5,verbose=1)
+    #lr_callback = tf.keras.callbacks.LearningRateScheduler(lr_scheduler)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+                              patience=1, min_lr=0.0001, mode='min',verbose=1)
+# reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+#                                    patience=1, verbose=1, mode='min',
+#                                    min_delta=0.0001, cooldown=0, min_lr=1e-8)
+
+    history = sweep_model.fit(data["X_train"], data["y_train"],
+                        batch_size=batch_size,
+                        epochs=n_epochs,
+                        validation_data=(data["X_test"], data["y_test"]),
+                        callbacks=[wandb_callback,reduce_lr],
+                        verbose=verbose)
+    # # 아래구문 추가하면  best_mae 값으로 실제값과 예측값의 plot_graph 가 나온다.
+    #model.load_weights("weights.CNN_Attention_BiLSTM_Version7.hdf5")                    
+    
+    return history
 
 
 # 에러 평가 함수 # 스케일링된 결과 값을 본래 값으로 복원한다 (inverse_transform 함수란?)
