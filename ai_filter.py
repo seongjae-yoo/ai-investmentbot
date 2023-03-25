@@ -400,6 +400,75 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                 if filtered:
                     print(f"기준에 부합하지 않으므로 realtime_daily_buy_list 에서 제외")
                     filtered_list.append(code_name)
+                    
+        elif ai_filter_num == 4:
+            ai_settings = {   
+                        "model" : None,
+                        "n_steps": 1, # 시퀀스 데이터를 몇개씩 담을지 설정       
+                        "lookup_step": 1, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
+                        "test_size": 0.3,
+                        "batch_size": 32,
+                        "epochs": 100,
+                        "ratio_cut": 0,
+                        "table": "daily_craw",
+                        "is_used_predicted_close" : False #false는 단한종목도 사지 않는다.
+                    }
+
+            tr_engine = create_training_engine(ai_settings['table'])
+
+
+
+            # DISTINCT : 중복된 컬럼 제거
+            try:   
+                buy_list = engine.execute("""
+                    SELECT DISTINCT code_name FROM realtime_daily_buy_list
+                """).fetchall()
+            except (InternalError, ProgrammingError) as err:
+                if 'Table' in str(err):
+                    print(f"{err} \n realtime_daily_buy_list 테이블이 존재 하지 않습니다. \n 콜렉터를 실행해주세요 ")
+                else:
+                    print(f"{err} \n 데이터베이스가 존재 하지 않습니다. \n 콜렉터를 실행해주세요 ")
+                exit(1)
+                 
+            feature_columns = ["close", "volume", "open", "high", "low"]
+            # feature_columns   = [ 'close', 'open', 'high', 'low',
+            #         'volume', 'clo5', 'clo10', 'clo20', 'clo40', 'clo60', 'clo80',
+            #         'clo100', 'clo120','yes_clo5', 'yes_clo10', 'yes_clo20', 'yes_clo40', 'yes_clo60','yes_clo80','yes_clo100', 'yes_clo120'
+            #         ] 
+            filtered_list = []
+            for code_name, in buy_list:
+                print(f"{code_name} 종목 분석 중....")
+
+                sql = """
+                    SELECT {} FROM `{}`
+                    WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
+                """.format(','.join(feature_columns), code_name, until)
+                # pandas(pd) read_sql 을 사용하면 sql, engine을 넘겼을 때 return 값을 바로 데이터프레임으로 받을 수 있음
+                df = pd.read_sql(sql, tr_engine)
+
+                # 데이터가 1개(1일 or 1분)가 넘지 않으면 예측도가 떨어지기 때문에 필터링
+                if len(df) < 1:
+                    filtered_list.append(code_name)
+                    print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")
+                    continue
+                try:
+                    if 1<= len(df) <=5000:
+                        ai_settings['model'] = CNN_Attention_BiLSTM_Version27()  # 셀트리온헬스케어 model-best.h5 -> pretty-sweep-110 사용
+                        filtered = filtered_by_basic_lstm(df, ai_settings)
+                    elif len(df) >5000:       
+                        ai_settings['model'] = CNN_Attention_BiLSTM_Version27()
+                        filtered = filtered_by_basic_lstm_v2(df, ai_settings)       
+                except (DataNotEnough, ValueError):
+                    print(f"테스트 데이터가 적어서 realtime_daily_buy_list 에서 제외")
+                    filtered_list.append(code_name)
+                    continue
+
+                print(code_name)
+
+                # filtered가 True 이면 filtered_list(필터링 종목)에 해당 종목을 append
+                if filtered:
+                    print(f"기준에 부합하지 않으므로 realtime_daily_buy_list 에서 제외")
+                    filtered_list.append(code_name)
 
         # filtered_list에 있는 종목들을 realtime_daily_buy_list(매수리스트)에서 제거
         # 모든 조건문에서 filtered_list를 생성해줘야 함
