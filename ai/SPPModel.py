@@ -432,7 +432,7 @@ def load_data(df, n_steps=1, lookup_step=1, test_size=0.3, shuffle=True):
     if not sequence_data:
         raise DataNotEnough()
 
-    # dataset의 뒤에서 lookup_step 만큼 짤라온 last_sequence와 기존의 sequence를 합쳐서 last_sequence를 만듦
+    # dataset의 뒤에서 lookup_step 만큼 짤라온 last_sequence와 기존의 sequence를 합쳐서 last_sequence를 만듬
     # last_sequence는 향후 dataset에 없는 미래데이터 예측에 쓰임
     last_sequence = list(sequences) + list(last_sequence)
     # shift the last sequence by -1
