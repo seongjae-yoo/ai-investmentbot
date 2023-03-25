@@ -786,14 +786,13 @@ class simulator_func_mysql:
             elif self.simul_num == 29:       
                  
                 self.db_to_realtime_daily_buy_list_num = 24                
-                self.sell_list_num = 16
+                self.sell_list_num = 18
                 self.simul_start_date = "20210113"            
                 self.diff_point = 1 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수)
-                self.sell_diff_point = 1
                 self.margin = 100      
                 # # AI알고리즘 사용 여부 
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
-                self.ai_filter_num = 3  # ai 알고리즘 선택   
+                self.ai_filter_num = 4  # ai 알고리즘 선택   
 
 
 
@@ -3711,7 +3710,7 @@ class simulator_func_mysql:
 
                 print(code_name)
 
-                # filtered가 True 이면 sell_list에 해당 종목을 append , # -2>= -3 ,2 
+                # filtered가 True 이면 sell_list에 해당 종목을 append , # -2>= -3 
                 if filtered:
                     print(f"기준에 부합되므로 추가됨")
                     sell_list.append(row)
@@ -3770,6 +3769,85 @@ class simulator_func_mysql:
 
                     if diff_point_calc < self.sell_diff_point * (-1):                                                           
                          sell_list.append(row)
+
+        elif self.sell_list_num == 18:
+            #sell_list_1 = ''
+            sell_list = []
+
+            sell_ai_settings = {
+                "model": None,   
+                "n_steps": 1, # 시퀀스 데이터를 몇개씩 담을지 설정       
+                "lookup_step": 1, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
+                "test_size": 0.3,
+                "batch_size": 32,
+                "epochs": 100,
+                "ratio_cut": 0,
+                "table": "daily_craw",
+                "is_used_predicted_close" : False #false는 단한종목도 사지 않는다.
+            }
+
+            tr_engine = create_training_engine(sell_ai_settings['table']) 
+           
+            sql_temp = "SELECT code, rate, close, valuation_profit,code_name FROM all_item_db WHERE sell_date = 0 group by code"  
+                  
+            # 
+            sell_list_temp = self.engine_simulator.execute(sql_temp).fetchall()
+            for row in sell_list_temp:
+                code = row[0]
+                
+                code_name= row.code_name
+                # code_name = row[1]
+                # code_name = pd.DataFrame([code_name],columns=['code_name'])
+                rate = row[1]
+                close = row[2]
+
+               # date_before = self.date_rows[i - self.day_before][0]
+            
+            
+
+                                                                               
+                            
+                feature_columns = ["close", "volume", "open", "high", "low"]
+                               
+                date_rows_yesterday = self.date_rows[i-1][0]
+                # sell_sql = f"""
+                #         SELECT close, volume, open, high, low
+                #         FROM `{code_name}`
+                #         WHERE date <= '{date_rows_yesterday}'
+                        
+                #         """
+                # sell_df_1 = self.engine_daily_craw.execute(sell_sql).fetchall()
+
+                sql = """
+                        SELECT {} FROM `{}`
+                        WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
+                """.format(','.join(feature_columns), code_name, date_rows_yesterday)
+                sell_df = pd.read_sql(sql, tr_engine)
+                
+                # 데이터가 없으면 필터링
+                if len(sell_df) < 1:
+                    # filtered_list.append(code_name)
+                    print(f"테스트 데이터가 적어요")
+                    continue
+                try:
+                    if 1<= len(sell_df) <=5000:
+                        sell_ai_settings['model'] = CNN_Attention_BiLSTM_Version27()
+                        filtered = sell_list_ai(sell_df, sell_ai_settings)
+                    elif len(sell_df) >5000:                          
+                        sell_ai_settings['model'] = CNN_Attention_BiLSTM_Version27()
+                        filtered = sell_list_ai_v2(sell_df, sell_ai_settings)
+                except (DataNotEnough, ValueError):
+                    print(f"테스트 데이터가 적어요")
+                    #filtered_list.append(code_name)
+                    continue
+
+                print(code_name)
+
+                # filtered가 True 이면 sell_list에 해당 종목을 append 
+                if filtered:
+                    print(f"기준에 부합되므로 추가됨")
+                    sell_list.append(row)
+
 
         ##################################################################################################################################################################################################################
         else:
@@ -4353,7 +4431,7 @@ def sell_list_ai(dataset, sell_ai_settings):
         msg += f'    {ratio:.2f}% ⯆ '
     print(msg, end=' ')
     return sell_ai_settings['ratio_cut'] >= ratio # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
-# -2>= -3 ,2 
+# -2>= -3 , 
 
 def sell_list_ai_v2(dataset, sell_ai_settings):
     """
