@@ -782,7 +782,7 @@ class simulator_func_mysql:
                 # # AI알고리즘 사용 여부 
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 3  # ai 알고리즘 선택   
-                                             
+            # ratio_cut = 0 은 수익률 마이너스 , ratio_cut =1 , 매도 할때는 -1 로 실험             
             elif self.simul_num == 29:       
                  
                 self.db_to_realtime_daily_buy_list_num = 24                
@@ -3781,9 +3781,9 @@ class simulator_func_mysql:
                 "test_size": 0.3,
                 "batch_size": 32,
                 "epochs": 100,
-                "ratio_cut": 0,
+                "ratio_cut": -1,
                 "table": "daily_craw",
-                "is_used_predicted_close" : False #false는 단한종목도 사지 않는다.
+                "is_used_predicted_close" : False 
             }
 
             tr_engine = create_training_engine(sell_ai_settings['table']) 
