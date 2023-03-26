@@ -163,7 +163,7 @@ def filtered_by_basic_lstm(dataset, ai_settings):
     elif ratio < 0: # lookup_step(분, 일) 후 하락 예상일 경우 출력 메시지
         msg += f'    {ratio:.2f}% ⯆ '
     print(msg, end=' ')
-    return ai_settings['ratio_cut'] >= ratio # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
+    return ai_settings['ratio_cut'] > ratio # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
 
 
 
@@ -273,7 +273,7 @@ def filtered_by_basic_lstm_v2(dataset, ai_settings):
     elif ratio < 0: # lookup_step(분, 일) 후 하락 예상일 경우 출력 메시지
         msg += f'    {ratio:.2f}% ⯆ '
     print(msg, end=' ')
-    return ai_settings['ratio_cut'] >= ratio # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
+    return ai_settings['ratio_cut'] > ratio # ratio_cut(목표 수익률) 보다 ratio가 작으면 True 반환(필터링 대상)
 
 
 
