@@ -834,7 +834,7 @@ class simulator_func_mysql:
             self.tax_rate = 0.0025   
             self.fees_rate = 0.00015
 
-            # 시뮬레이터를 멈춘 지점 부터 다시 돌리기 위해 사용하는 변수(중요X)
+            # 시뮬레이터를 멈춘 지점 부터 다시 돌리기 위해 사용하는 변수(중요X)!@
             self.simul_reset_lock = False
 
     # 데이터베이스와 테이블을 세팅하기 위한 함수
@@ -3788,7 +3788,7 @@ class simulator_func_mysql:
 
             tr_engine = create_training_engine(sell_ai_settings['table']) 
            
-            sql_temp = "SELECT code, rate, close, valuation_profit,code_name FROM all_item_db WHERE sell_date = 0 group by code"  
+            sql_temp = "SELECT code, rate, present_price, valuation_profit,code_name FROM all_item_db WHERE sell_date = 0 group by code"  
                   
             # 
             sell_list_temp = self.engine_simulator.execute(sql_temp).fetchall()
@@ -3798,8 +3798,8 @@ class simulator_func_mysql:
                 code_name= row.code_name
                 # code_name = row[1]
                 # code_name = pd.DataFrame([code_name],columns=['code_name'])
-                rate = row[1]
-                close = row[2]
+                #rate = row[1]
+                #close = row[2]
 
                # date_before = self.date_rows[i - self.day_before][0]
             
