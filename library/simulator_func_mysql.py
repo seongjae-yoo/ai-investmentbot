@@ -3781,9 +3781,9 @@ class simulator_func_mysql:
                 "test_size": 0.3,
                 "batch_size": 32,
                 "epochs": 100,
-                "ratio_cut": 0,
+                "ratio_cut": -1,
                 "table": "daily_craw",
-                "is_used_predicted_close" : True 
+                "is_used_predicted_close" : False
             }
 
             tr_engine = create_training_engine(sell_ai_settings['table']) 

@@ -409,9 +409,9 @@ def ai_filter(ai_filter_num, engine, until=datetime.datetime.today()):
                         "test_size": 0.3,
                         "batch_size": 32,
                         "epochs": 100,
-                        "ratio_cut": 0,
+                        "ratio_cut": 1,
                         "table": "daily_craw",
-                        "is_used_predicted_close" : True #false는 단한종목도 사지 않는다.
+                        "is_used_predicted_close" : False #false는 단한종목도 사지 않는다.
                     }
 
             tr_engine = create_training_engine(ai_settings['table'])
