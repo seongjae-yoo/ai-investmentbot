@@ -129,9 +129,9 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
     #                     verbose=verbose)
     
 # api key :483c55b5c6488e6484b5173b3f6dfe92af598e2d
-    wandb.init(project="celltrionhealthcare", entity="SeongJae-Yoo")
-    #wandb.init(project="samsung", entity="SeongJae-Yoo")
-    wandb.run.name = 'BiGRU_CNN_BiLSTM_Attention_test0321'
+    #wandb.init(project="celltrionhealthcare", entity="SeongJae-Yoo")
+    wandb.init(project="samsung", entity="SeongJae-Yoo")
+    wandb.run.name = 'BiGRU_CNN_BiLSTM_Attention_version2'
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
@@ -2501,6 +2501,43 @@ def BiGRU_CNN_BiLSTM_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS 
                 metrics=['mae',tf.keras.metrics.RootMeanSquaredError()])
 
     return model   
+
+
+
+def BiGRU_CNN_BiLSTM_Attention_version2(maxlen=5,dropout=0.2, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+    
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+   
+    x = tf.keras.layers.Bidirectional(GRU(units=16,return_sequences=True),name='biGRU')(input_layer) 
+
+
+
+    x =Conv1D(filters=31, kernel_size=1, activation=keras.activations.elu,strides=40)(x)                       
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+
+
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=21,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(x)
+    lstm_out = Dropout(dropout)(lstm_out)
+    attention_mul = attention_3d_block2(lstm_out)
+    attention_mul = Flatten()(attention_mul)
+    
+    output_layer = Dense(1, activation="linear")(attention_mul)
+    model = Model(inputs=input_layer, outputs=output_layer,name='BiGRU_CNN_BiLSTM_Attention_version2')
+    model.summary()
+    tf.keras.utils.plot_model(model=model,to_file='BiGRU_CNN_BiLSTM_Attention_version2.png', show_shapes=True, dpi=100 )  
+    
+    
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()])
+
+    return model   
+
 
 def BiLSTM_GRU_LSTM_CNN_BiLSTM_attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
     
