@@ -1,0 +1,289 @@
+Model: "functional_1"
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to
+==================================================================================================
+input_1 (InputLayer)            [(None, 5, 1)]       0
+__________________________________________________________________________________________________
+biGRU (Bidirectional)           (None, 5, 32)        1824        input_1[0][0]
+__________________________________________________________________________________________________
+conv1d (Conv1D)                 (None, 1, 21)        693         biGRU[0][0]
+__________________________________________________________________________________________________
+batch_normalization (BatchNorma (None, 1, 21)        4           conv1d[0][0]
+__________________________________________________________________________________________________
+max_pooling1d (MaxPooling1D)    (None, 1, 21)        0           batch_normalization[0][0]
+__________________________________________________________________________________________________
+bilstm (Bidirectional)          (None, 1, 32)        4864        max_pooling1d[0][0]
+__________________________________________________________________________________________________
+dropout (Dropout)               (None, 1, 32)        0           bilstm[0][0]
+__________________________________________________________________________________________________
+permute (Permute)               (None, 32, 1)        0           dropout[0][0]
+__________________________________________________________________________________________________
+dense (Dense)                   (None, 32, 1)        2           permute[0][0]
+__________________________________________________________________________________________________
+permute_1 (Permute)             (None, 1, 32)        0           dense[0][0]
+__________________________________________________________________________________________________
+multiply (Multiply)             (None, 1, 32)        0           dropout[0][0]
+                                                                 permute_1[0][0]
+__________________________________________________________________________________________________
+flatten (Flatten)               (None, 32)           0           multiply[0][0]
+__________________________________________________________________________________________________
+dense_1 (Dense)                 (None, 1)            33          flatten[0][0]
+==================================================================================================
+Total params: 7,420
+Trainable params: 7,418
+Non-trainable params: 2
+__________________________________________________________________________________________________
+[34m[1mwandb[39m[22m: [33mWARNING[39m The save_model argument by default saves the model in the HDF5 format that cannot save custom objects like subclassed models and custom layers. This behavior will be deprecated in a future release in favor of the SavedModel format. Meanwhile, the HDF5 model is saved as W&B files and the SavedModel as W&B Artifacts.
+Epoch 1/100
+
+24/24 [==============================] - ETA: 0s - loss: 0.2677 - mae: 0.2677 - root_mean_squared_error: 0.3077Epoch 00000: val_loss improved from inf to 0.35476, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+WARNING:tensorflow:From C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\training\tracking\tracking.py:111: Model.state_updates (from tensorflow.python.keras.engine.training) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+WARNING:tensorflow:From C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\training\tracking\tracking.py:111: Layer.updates (from tensorflow.python.keras.engine.base_layer) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 677ms/step - loss: 0.2677 - mae: 0.2677 - root_mean_squared_error: 0.3077 - val_loss: 0.3548 - val_mae: 0.3548 - val_root_mean_squared_error: 0.4067
+Epoch 2/100
+24/24 [==============================] - ETA: 0s - loss: 0.1797 - mae: 0.1797 - root_mean_squared_error: 0.2274Epoch 00001: val_loss improved from 0.35476 to 0.23625, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 666ms/step - loss: 0.1797 - mae: 0.1797 - root_mean_squared_error: 0.2274 - val_loss: 0.2363 - val_mae: 0.2363 - val_root_mean_squared_error: 0.2760
+Epoch 3/100
+24/24 [==============================] - ETA: 0s - loss: 0.1274 - mae: 0.1274 - root_mean_squared_error: 0.1715Epoch 00002: val_loss improved from 0.23625 to 0.09025, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 663ms/step - loss: 0.1274 - mae: 0.1274 - root_mean_squared_error: 0.1715 - val_loss: 0.0903 - val_mae: 0.0903 - val_root_mean_squared_error: 0.1140
+Epoch 4/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.1205 - mae: 0.1205 - root_mean_squared_error: 0.1593Epoch 00003: val_loss improved from 0.09025 to 0.04785, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 667ms/step - loss: 0.1187 - mae: 0.1187 - root_mean_squared_error: 0.1572 - val_loss: 0.0478 - val_mae: 0.0478 - val_root_mean_squared_error: 0.0635
+Epoch 5/100
+23/24 [===========================>..] - ETA: 0s - loss: 0.1069 - mae: 0.1069 - root_mean_squared_error: 0.1381Epoch 00004: val_loss improved from 0.04785 to 0.03812, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 17s 708ms/step - loss: 0.1071 - mae: 0.1071 - root_mean_squared_error: 0.1380 - val_loss: 0.0381 - val_mae: 0.0381 - val_root_mean_squared_error: 0.0518
+Epoch 6/100
+24/24 [==============================] - 1s 25ms/step - loss: 0.0995 - mae: 0.0995 - root_mean_squared_error: 0.1315 - val_loss: 0.0389 - val_mae: 0.0389 - val_root_mean_squared_error: 0.0515
+Epoch 7/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0991 - mae: 0.0991 - root_mean_squared_error: 0.1283Epoch 00006: val_loss improved from 0.03812 to 0.02768, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 682ms/step - loss: 0.0972 - mae: 0.0972 - root_mean_squared_error: 0.1259 - val_loss: 0.0277 - val_mae: 0.0277 - val_root_mean_squared_error: 0.0386
+Epoch 8/100
+24/24 [==============================] - 1s 24ms/step - loss: 0.0946 - mae: 0.0946 - root_mean_squared_error: 0.1220 - val_loss: 0.0304 - val_mae: 0.0304 - val_root_mean_squared_error: 0.0405
+Epoch 9/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0887 - mae: 0.0887 - root_mean_squared_error: 0.1187 - val_loss: 0.0311 - val_mae: 0.0311 - val_root_mean_squared_error: 0.0409
+Epoch 10/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0870 - mae: 0.0870 - root_mean_squared_error: 0.1135Epoch 00009: val_loss improved from 0.02768 to 0.02109, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 662ms/step - loss: 0.0873 - mae: 0.0873 - root_mean_squared_error: 0.1132 - val_loss: 0.0211 - val_mae: 0.0211 - val_root_mean_squared_error: 0.0300
+Epoch 11/100
+24/24 [==============================] - 1s 24ms/step - loss: 0.0824 - mae: 0.0824 - root_mean_squared_error: 0.1074 - val_loss: 0.0302 - val_mae: 0.0302 - val_root_mean_squared_error: 0.0392
+Epoch 12/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0853 - mae: 0.0853 - root_mean_squared_error: 0.1093 - val_loss: 0.0237 - val_mae: 0.0237 - val_root_mean_squared_error: 0.0326
+Epoch 13/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0789 - mae: 0.0789 - root_mean_squared_error: 0.1047 - val_loss: 0.0216 - val_mae: 0.0216 - val_root_mean_squared_error: 0.0298
+Epoch 14/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0827 - mae: 0.0827 - root_mean_squared_error: 0.1088 - val_loss: 0.0238 - val_mae: 0.0238 - val_root_mean_squared_error: 0.0317
+Epoch 15/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0801 - mae: 0.0801 - root_mean_squared_error: 0.1049Epoch 00014: val_loss improved from 0.02109 to 0.01942, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 680ms/step - loss: 0.0798 - mae: 0.0798 - root_mean_squared_error: 0.1040 - val_loss: 0.0194 - val_mae: 0.0194 - val_root_mean_squared_error: 0.0273
+Epoch 16/100
+24/24 [==============================] - 1s 24ms/step - loss: 0.0753 - mae: 0.0753 - root_mean_squared_error: 0.1004 - val_loss: 0.0251 - val_mae: 0.0251 - val_root_mean_squared_error: 0.0333
+Epoch 17/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0729 - mae: 0.0729 - root_mean_squared_error: 0.0942Epoch 00016: val_loss improved from 0.01942 to 0.01891, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 17s 698ms/step - loss: 0.0719 - mae: 0.0719 - root_mean_squared_error: 0.0929 - val_loss: 0.0189 - val_mae: 0.0189 - val_root_mean_squared_error: 0.0266
+Epoch 18/100
+24/24 [==============================] - 1s 26ms/step - loss: 0.0695 - mae: 0.0695 - root_mean_squared_error: 0.0914 - val_loss: 0.0221 - val_mae: 0.0221 - val_root_mean_squared_error: 0.0295
+Epoch 19/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0720 - mae: 0.0720 - root_mean_squared_error: 0.0941 - val_loss: 0.0200 - val_mae: 0.0200 - val_root_mean_squared_error: 0.0274
+Epoch 20/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0691 - mae: 0.0691 - root_mean_squared_error: 0.0922 - val_loss: 0.0214 - val_mae: 0.0214 - val_root_mean_squared_error: 0.0289
+Epoch 21/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0670 - mae: 0.0670 - root_mean_squared_error: 0.0889 - val_loss: 0.0207 - val_mae: 0.0207 - val_root_mean_squared_error: 0.0282
+Epoch 22/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0671 - mae: 0.0671 - root_mean_squared_error: 0.0876 - val_loss: 0.0263 - val_mae: 0.0263 - val_root_mean_squared_error: 0.0340
+Epoch 23/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0678 - mae: 0.0678 - root_mean_squared_error: 0.0883 - val_loss: 0.0197 - val_mae: 0.0197 - val_root_mean_squared_error: 0.0272
+Epoch 24/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0624 - mae: 0.0624 - root_mean_squared_error: 0.0822 - val_loss: 0.0194 - val_mae: 0.0194 - val_root_mean_squared_error: 0.0268
+Epoch 25/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0651 - mae: 0.0651 - root_mean_squared_error: 0.0869 - val_loss: 0.0251 - val_mae: 0.0251 - val_root_mean_squared_error: 0.0338
+Epoch 26/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0657 - mae: 0.0657 - root_mean_squared_error: 0.0864 - val_loss: 0.0237 - val_mae: 0.0237 - val_root_mean_squared_error: 0.0321
+Epoch 27/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0624 - mae: 0.0624 - root_mean_squared_error: 0.0821 - val_loss: 0.0191 - val_mae: 0.0191 - val_root_mean_squared_error: 0.0267
+Epoch 28/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0638 - mae: 0.0638 - root_mean_squared_error: 0.0837Epoch 00027: val_loss improved from 0.01891 to 0.01876, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 677ms/step - loss: 0.0635 - mae: 0.0635 - root_mean_squared_error: 0.0836 - val_loss: 0.0188 - val_mae: 0.0188 - val_root_mean_squared_error: 0.0264
+Epoch 29/100
+24/24 [==============================] - 1s 24ms/step - loss: 0.0623 - mae: 0.0623 - root_mean_squared_error: 0.0829 - val_loss: 0.0213 - val_mae: 0.0213 - val_root_mean_squared_error: 0.0300
+Epoch 30/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0609 - mae: 0.0609 - root_mean_squared_error: 0.0849 - val_loss: 0.0205 - val_mae: 0.0205 - val_root_mean_squared_error: 0.0289
+Epoch 31/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0627 - mae: 0.0627 - root_mean_squared_error: 0.0839Epoch 00030: val_loss improved from 0.01876 to 0.01844, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 661ms/step - loss: 0.0623 - mae: 0.0623 - root_mean_squared_error: 0.0840 - val_loss: 0.0184 - val_mae: 0.0184 - val_root_mean_squared_error: 0.0264
+Epoch 32/100
+24/24 [==============================] - 1s 24ms/step - loss: 0.0621 - mae: 0.0621 - root_mean_squared_error: 0.0840 - val_loss: 0.0231 - val_mae: 0.0231 - val_root_mean_squared_error: 0.0307
+Epoch 33/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0585 - mae: 0.0585 - root_mean_squared_error: 0.0787 - val_loss: 0.0185 - val_mae: 0.0185 - val_root_mean_squared_error: 0.0260
+Epoch 34/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0593 - mae: 0.0593 - root_mean_squared_error: 0.0797 - val_loss: 0.0210 - val_mae: 0.0210 - val_root_mean_squared_error: 0.0291
+Epoch 35/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0611 - mae: 0.0611 - root_mean_squared_error: 0.0831 - val_loss: 0.0232 - val_mae: 0.0232 - val_root_mean_squared_error: 0.0319
+Epoch 36/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0571 - mae: 0.0571 - root_mean_squared_error: 0.0753 - val_loss: 0.0253 - val_mae: 0.0253 - val_root_mean_squared_error: 0.0341
+Epoch 37/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0554 - mae: 0.0554 - root_mean_squared_error: 0.0751 - val_loss: 0.0258 - val_mae: 0.0258 - val_root_mean_squared_error: 0.0335
+Epoch 38/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0581 - mae: 0.0581 - root_mean_squared_error: 0.0792Epoch 00037: val_loss improved from 0.01844 to 0.01771, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 673ms/step - loss: 0.0590 - mae: 0.0590 - root_mean_squared_error: 0.0796 - val_loss: 0.0177 - val_mae: 0.0177 - val_root_mean_squared_error: 0.0256
+Epoch 39/100
+24/24 [==============================] - 1s 24ms/step - loss: 0.0582 - mae: 0.0582 - root_mean_squared_error: 0.0805 - val_loss: 0.0220 - val_mae: 0.0220 - val_root_mean_squared_error: 0.0299
+Epoch 40/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0551 - mae: 0.0551 - root_mean_squared_error: 0.0742 - val_loss: 0.0182 - val_mae: 0.0182 - val_root_mean_squared_error: 0.0263
+Epoch 41/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0555 - mae: 0.0555 - root_mean_squared_error: 0.0746 - val_loss: 0.0178 - val_mae: 0.0178 - val_root_mean_squared_error: 0.0260
+Epoch 42/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0547 - mae: 0.0547 - root_mean_squared_error: 0.0736 - val_loss: 0.0193 - val_mae: 0.0193 - val_root_mean_squared_error: 0.0273
+Epoch 43/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0542 - mae: 0.0542 - root_mean_squared_error: 0.0758 - val_loss: 0.0183 - val_mae: 0.0183 - val_root_mean_squared_error: 0.0262
+Epoch 44/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0556 - mae: 0.0556 - root_mean_squared_error: 0.0752 - val_loss: 0.0180 - val_mae: 0.0180 - val_root_mean_squared_error: 0.0261
+Epoch 45/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0523 - mae: 0.0523 - root_mean_squared_error: 0.0724Epoch 00044: val_loss improved from 0.01771 to 0.01762, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 663ms/step - loss: 0.0526 - mae: 0.0526 - root_mean_squared_error: 0.0727 - val_loss: 0.0176 - val_mae: 0.0176 - val_root_mean_squared_error: 0.0254
+Epoch 46/100
+24/24 [==============================] - 1s 23ms/step - loss: 0.0545 - mae: 0.0545 - root_mean_squared_error: 0.0724 - val_loss: 0.0184 - val_mae: 0.0184 - val_root_mean_squared_error: 0.0268
+Epoch 47/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0531 - mae: 0.0531 - root_mean_squared_error: 0.0723 - val_loss: 0.0218 - val_mae: 0.0218 - val_root_mean_squared_error: 0.0287
+Epoch 48/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0517 - mae: 0.0517 - root_mean_squared_error: 0.0698Epoch 00047: val_loss improved from 0.01762 to 0.01735, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 670ms/step - loss: 0.0519 - mae: 0.0519 - root_mean_squared_error: 0.0698 - val_loss: 0.0174 - val_mae: 0.0174 - val_root_mean_squared_error: 0.0252
+Epoch 49/100
+24/24 [==============================] - 1s 24ms/step - loss: 0.0514 - mae: 0.0514 - root_mean_squared_error: 0.0698 - val_loss: 0.0195 - val_mae: 0.0195 - val_root_mean_squared_error: 0.0279
+Epoch 50/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0511 - mae: 0.0511 - root_mean_squared_error: 0.0682Epoch 00049: val_loss improved from 0.01735 to 0.01727, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 17s 689ms/step - loss: 0.0502 - mae: 0.0502 - root_mean_squared_error: 0.0670 - val_loss: 0.0173 - val_mae: 0.0173 - val_root_mean_squared_error: 0.0254
+Epoch 51/100
+24/24 [==============================] - 1s 24ms/step - loss: 0.0506 - mae: 0.0506 - root_mean_squared_error: 0.0673 - val_loss: 0.0179 - val_mae: 0.0179 - val_root_mean_squared_error: 0.0255
+Epoch 52/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0495 - mae: 0.0495 - root_mean_squared_error: 0.0686 - val_loss: 0.0185 - val_mae: 0.0185 - val_root_mean_squared_error: 0.0267
+Epoch 53/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0483 - mae: 0.0483 - root_mean_squared_error: 0.0641Epoch 00052: val_loss improved from 0.01727 to 0.01718, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 682ms/step - loss: 0.0489 - mae: 0.0489 - root_mean_squared_error: 0.0650 - val_loss: 0.0172 - val_mae: 0.0172 - val_root_mean_squared_error: 0.0250
+Epoch 54/100
+24/24 [==============================] - 1s 23ms/step - loss: 0.0500 - mae: 0.0500 - root_mean_squared_error: 0.0685 - val_loss: 0.0186 - val_mae: 0.0186 - val_root_mean_squared_error: 0.0271
+Epoch 55/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0512 - mae: 0.0512 - root_mean_squared_error: 0.0695 - val_loss: 0.0183 - val_mae: 0.0183 - val_root_mean_squared_error: 0.0256
+Epoch 56/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0485 - mae: 0.0485 - root_mean_squared_error: 0.0656 - val_loss: 0.0223 - val_mae: 0.0223 - val_root_mean_squared_error: 0.0293
+Epoch 57/100
+24/24 [==============================] - 1s 21ms/step - loss: 0.0524 - mae: 0.0524 - root_mean_squared_error: 0.0749 - val_loss: 0.0185 - val_mae: 0.0185 - val_root_mean_squared_error: 0.0269
+Epoch 58/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0501 - mae: 0.0501 - root_mean_squared_error: 0.0696Epoch 00057: val_loss improved from 0.01718 to 0.01690, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 666ms/step - loss: 0.0504 - mae: 0.0504 - root_mean_squared_error: 0.0698 - val_loss: 0.0169 - val_mae: 0.0169 - val_root_mean_squared_error: 0.0246
+Epoch 59/100
+24/24 [==============================] - ETA: 0s - loss: 0.0477 - mae: 0.0477 - root_mean_squared_error: 0.0653Epoch 00058: val_loss improved from 0.01690 to 0.01677, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 685ms/step - loss: 0.0477 - mae: 0.0477 - root_mean_squared_error: 0.0653 - val_loss: 0.0168 - val_mae: 0.0168 - val_root_mean_squared_error: 0.0245
+Epoch 60/100
+24/24 [==============================] - 1s 23ms/step - loss: 0.0496 - mae: 0.0496 - root_mean_squared_error: 0.0693 - val_loss: 0.0171 - val_mae: 0.0171 - val_root_mean_squared_error: 0.0250
+Epoch 61/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0495 - mae: 0.0495 - root_mean_squared_error: 0.0673 - val_loss: 0.0227 - val_mae: 0.0227 - val_root_mean_squared_error: 0.0297
+Epoch 62/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0470 - mae: 0.0470 - root_mean_squared_error: 0.0636 - val_loss: 0.0189 - val_mae: 0.0189 - val_root_mean_squared_error: 0.0260
+Epoch 63/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0466 - mae: 0.0466 - root_mean_squared_error: 0.0622 - val_loss: 0.0189 - val_mae: 0.0189 - val_root_mean_squared_error: 0.0258
+Epoch 64/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0488 - mae: 0.0488 - root_mean_squared_error: 0.0668Epoch 00063: val_loss improved from 0.01677 to 0.01674, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 681ms/step - loss: 0.0483 - mae: 0.0483 - root_mean_squared_error: 0.0660 - val_loss: 0.0167 - val_mae: 0.0167 - val_root_mean_squared_error: 0.0245
+Epoch 65/100
+24/24 [==============================] - 1s 22ms/step - loss: 0.0491 - mae: 0.0491 - root_mean_squared_error: 0.0688 - val_loss: 0.0215 - val_mae: 0.0215 - val_root_mean_squared_error: 0.0296
+Epoch 66/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0476 - mae: 0.0476 - root_mean_squared_error: 0.0666 - val_loss: 0.0174 - val_mae: 0.0174 - val_root_mean_squared_error: 0.0248
+Epoch 67/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0475 - mae: 0.0475 - root_mean_squared_error: 0.0645 - val_loss: 0.0179 - val_mae: 0.0179 - val_root_mean_squared_error: 0.0258
+Epoch 68/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0479 - mae: 0.0479 - root_mean_squared_error: 0.0670 - val_loss: 0.0190 - val_mae: 0.0190 - val_root_mean_squared_error: 0.0270
+Epoch 69/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0459 - mae: 0.0459 - root_mean_squared_error: 0.0637 - val_loss: 0.0209 - val_mae: 0.0209 - val_root_mean_squared_error: 0.0284
+Epoch 70/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0472 - mae: 0.0472 - root_mean_squared_error: 0.0679 - val_loss: 0.0221 - val_mae: 0.0221 - val_root_mean_squared_error: 0.0300
+Epoch 71/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0456 - mae: 0.0456 - root_mean_squared_error: 0.0601 - val_loss: 0.0168 - val_mae: 0.0168 - val_root_mean_squared_error: 0.0246
+Epoch 72/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0460 - mae: 0.0460 - root_mean_squared_error: 0.0627 - val_loss: 0.0169 - val_mae: 0.0169 - val_root_mean_squared_error: 0.0244
+Epoch 73/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0444 - mae: 0.0444 - root_mean_squared_error: 0.0622 - val_loss: 0.0169 - val_mae: 0.0169 - val_root_mean_squared_error: 0.0244
+Epoch 74/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0453 - mae: 0.0453 - root_mean_squared_error: 0.0619 - val_loss: 0.0251 - val_mae: 0.0251 - val_root_mean_squared_error: 0.0320
+Epoch 75/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0440 - mae: 0.0440 - root_mean_squared_error: 0.0589 - val_loss: 0.0171 - val_mae: 0.0171 - val_root_mean_squared_error: 0.0250
+Epoch 76/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0431 - mae: 0.0431 - root_mean_squared_error: 0.0596 - val_loss: 0.0181 - val_mae: 0.0181 - val_root_mean_squared_error: 0.0254
+Epoch 77/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0466 - mae: 0.0466 - root_mean_squared_error: 0.0636Epoch 00076: val_loss improved from 0.01674 to 0.01648, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 16s 655ms/step - loss: 0.0462 - mae: 0.0462 - root_mean_squared_error: 0.0631 - val_loss: 0.0165 - val_mae: 0.0165 - val_root_mean_squared_error: 0.0241
+Epoch 78/100
+24/24 [==============================] - 1s 24ms/step - loss: 0.0463 - mae: 0.0463 - root_mean_squared_error: 0.0643 - val_loss: 0.0165 - val_mae: 0.0165 - val_root_mean_squared_error: 0.0242
+Epoch 79/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0445 - mae: 0.0445 - root_mean_squared_error: 0.0611 - val_loss: 0.0209 - val_mae: 0.0209 - val_root_mean_squared_error: 0.0294
+Epoch 80/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.0427 - mae: 0.0427 - root_mean_squared_error: 0.0606Epoch 00079: val_loss improved from 0.01648 to 0.01642, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230407_110821-w09i6xg8\files\model-best)... Done. 0.1s
+24/24 [==============================] - 18s 759ms/step - loss: 0.0434 - mae: 0.0434 - root_mean_squared_error: 0.0619 - val_loss: 0.0164 - val_mae: 0.0164 - val_root_mean_squared_error: 0.0241
+Epoch 81/100
+24/24 [==============================] - 1s 26ms/step - loss: 0.0435 - mae: 0.0435 - root_mean_squared_error: 0.0591 - val_loss: 0.0176 - val_mae: 0.0176 - val_root_mean_squared_error: 0.0253
+Epoch 82/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0434 - mae: 0.0434 - root_mean_squared_error: 0.0596 - val_loss: 0.0205 - val_mae: 0.0205 - val_root_mean_squared_error: 0.0282
+Epoch 83/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0452 - mae: 0.0452 - root_mean_squared_error: 0.0629 - val_loss: 0.0180 - val_mae: 0.0180 - val_root_mean_squared_error: 0.0259
+Epoch 84/100
+24/24 [==============================] - 1s 21ms/step - loss: 0.0445 - mae: 0.0445 - root_mean_squared_error: 0.0615 - val_loss: 0.0184 - val_mae: 0.0184 - val_root_mean_squared_error: 0.0256
+Epoch 85/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0455 - mae: 0.0455 - root_mean_squared_error: 0.0628 - val_loss: 0.0180 - val_mae: 0.0180 - val_root_mean_squared_error: 0.0256
+Epoch 86/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0423 - mae: 0.0423 - root_mean_squared_error: 0.0588 - val_loss: 0.0172 - val_mae: 0.0172 - val_root_mean_squared_error: 0.0251
+Epoch 87/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0423 - mae: 0.0423 - root_mean_squared_error: 0.0598 - val_loss: 0.0179 - val_mae: 0.0179 - val_root_mean_squared_error: 0.0258
+Epoch 88/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0462 - mae: 0.0462 - root_mean_squared_error: 0.0644 - val_loss: 0.0182 - val_mae: 0.0182 - val_root_mean_squared_error: 0.0262
+Epoch 89/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0406 - mae: 0.0406 - root_mean_squared_error: 0.0556 - val_loss: 0.0178 - val_mae: 0.0178 - val_root_mean_squared_error: 0.0256
+Epoch 90/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0421 - mae: 0.0421 - root_mean_squared_error: 0.0577 - val_loss: 0.0197 - val_mae: 0.0197 - val_root_mean_squared_error: 0.0268
+Epoch 91/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0436 - mae: 0.0436 - root_mean_squared_error: 0.0595 - val_loss: 0.0177 - val_mae: 0.0177 - val_root_mean_squared_error: 0.0254
+Epoch 92/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0422 - mae: 0.0422 - root_mean_squared_error: 0.0594 - val_loss: 0.0188 - val_mae: 0.0188 - val_root_mean_squared_error: 0.0257
+Epoch 93/100
+24/24 [==============================] - 1s 21ms/step - loss: 0.0422 - mae: 0.0422 - root_mean_squared_error: 0.0590 - val_loss: 0.0180 - val_mae: 0.0180 - val_root_mean_squared_error: 0.0254
+Epoch 94/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0411 - mae: 0.0411 - root_mean_squared_error: 0.0597 - val_loss: 0.0165 - val_mae: 0.0165 - val_root_mean_squared_error: 0.0243
+Epoch 95/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0424 - mae: 0.0424 - root_mean_squared_error: 0.0603 - val_loss: 0.0235 - val_mae: 0.0235 - val_root_mean_squared_error: 0.0305
+Epoch 96/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0416 - mae: 0.0416 - root_mean_squared_error: 0.0586 - val_loss: 0.0205 - val_mae: 0.0205 - val_root_mean_squared_error: 0.0281
+Epoch 97/100
+24/24 [==============================] - 0s 20ms/step - loss: 0.0430 - mae: 0.0430 - root_mean_squared_error: 0.0612 - val_loss: 0.0174 - val_mae: 0.0174 - val_root_mean_squared_error: 0.0252
+Epoch 98/100
+24/24 [==============================] - 0s 21ms/step - loss: 0.0435 - mae: 0.0435 - root_mean_squared_error: 0.0614 - val_loss: 0.0187 - val_mae: 0.0187 - val_root_mean_squared_error: 0.0268
+Epoch 99/100
+24/24 [==============================] - 1s 21ms/step - loss: 0.0424 - mae: 0.0424 - root_mean_squared_error: 0.0596 - val_loss: 0.0168 - val_mae: 0.0168 - val_root_mean_squared_error: 0.0246
+Epoch 100/100
+10/24 [===========>..................] - ETA: 0s - loss: 0.0441 - mae: 0.0441 - root_mean_squared_error: 0.0616
+24/24 [==============================] - 0s 21ms/step - loss: 0.0416 - mae: 0.0416 - root_mean_squared_error: 0.0586 - val_loss: 0.0205 - val_mae: 0.0205 - val_root_mean_squared_error: 0.0281
+24/24 [==============================] - 0s 21ms/step - loss: 0.0416 - mae: 0.0416 - root_mean_squared_error: 0.0586 - val_loss: 0.0205 - val_mae: 0.0205 - val_root_mean_squared_error: 0.0281
