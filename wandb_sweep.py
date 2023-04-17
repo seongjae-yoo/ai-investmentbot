@@ -9,7 +9,7 @@ from tensorflow.keras.callbacks import EarlyStopping #모델을 더 이상 학�
 from tensorflow.keras.layers import LSTM,GRU
 
 
-from ai.SPPModel import load_data, DataNotEnough, sweep_predict, wandb_sweep_train, LSTM_CNN, Deep_CNN, CNN_GRU, BiGRU_BiLSTM, BiLSTM_GRU_LSTM_CNN ,CNN, CNN_BiLSTM_Attention, BiGRU_CNN_BiLSTM_Attention, BiLSTM_GRU_LSTM_CNN_BiLSTM_attention,TCN_BiLSTM, plot_graph, Create_Bidirectional_GRU_LSTM_v3, create_Transformer_model, create_Transformer_model_v2, CNN_Attention, create_model_bidirectional_v4,create_model_lstm_basic, GRU_CNN, BiLSTM_TCN, TCN, create_model_bidirectional_GRU_v4,CNN_BiGRU_Attention,BiLSTM_Attention_CNN , CNN_Attention_BiLSTM, LSTM_layers_4_v2,LSTM_layers_4, Bi_LSTM_layers_4, CNN_Attention_BiLSTM_Version2, CNN_Attention_BiLSTM_Version3, CNN_Attention_BiLSTM_Version4,Deep_CNN_BiGRU, BiLSTM_layers_4_Version2, CNN_Attention_BiLSTM_Attention,BiLSTM_Attention, BiLSTM_Attention_sigmoid, CNN_Attention_BiLSTM_Version5, BiLSTM_single_attention_vector,CNN_Attention_BiLSTM_Version6, CNN_Attention_BiLSTM_Version7, CNN_Attention_BiLSTM_Version8, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version10, CNN_Attention_BiLSTM_Version11, CNN_Attention_BiLSTM_Version12, CNN_Attention_BiLSTM_Version13, CNN_Attention_BiLSTM_Version14, CNN_Attention_BiLSTM_Version15, CNN_Attention_BiLSTM_Version16, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version18, CNN_Attention_BiLSTM_Version17_test,CNN_Attention_BiLSTM_Version11_version2, CNN_Attention_BiLSTM_Version11_version3,CNN_Attention_BiLSTM_Version17_load_weights, CNN_Attention_BiLSTM_Version19, CNN_Attention_BiLSTM_Version20, CNN_Attention_BiLSTM_Version21, CNN_Attention_BiLSTM_Version22,CNN_Attention_BiLSTM_Version23, CNN_Attention_BiLSTM_Version20_test,sweep_model, wandb_sweep_train_version2
+from ai.SPPModel import load_data, DataNotEnough, sweep_predict, wandb_sweep_train, LSTM_CNN, Deep_CNN, CNN_GRU, BiGRU_BiLSTM, BiLSTM_GRU_LSTM_CNN ,CNN, CNN_BiLSTM_Attention, BiGRU_CNN_BiLSTM_Attention, BiLSTM_GRU_LSTM_CNN_BiLSTM_attention,TCN_BiLSTM, plot_graph, Create_Bidirectional_GRU_LSTM_v3, create_Transformer_model, create_Transformer_model_v2, CNN_Attention, create_model_bidirectional_v4,create_model_lstm_basic, GRU_CNN, BiLSTM_TCN, TCN, create_model_bidirectional_GRU_v4,CNN_BiGRU_Attention,BiLSTM_Attention_CNN , CNN_Attention_BiLSTM, LSTM_layers_4_v2,LSTM_layers_4, Bi_LSTM_layers_4, CNN_Attention_BiLSTM_Version2, CNN_Attention_BiLSTM_Version3, CNN_Attention_BiLSTM_Version4,Deep_CNN_BiGRU, BiLSTM_layers_4_Version2, CNN_Attention_BiLSTM_Attention,BiLSTM_Attention, BiLSTM_Attention_sigmoid, CNN_Attention_BiLSTM_Version5, BiLSTM_single_attention_vector,CNN_Attention_BiLSTM_Version6, CNN_Attention_BiLSTM_Version7, CNN_Attention_BiLSTM_Version8, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version10, CNN_Attention_BiLSTM_Version11, CNN_Attention_BiLSTM_Version12, CNN_Attention_BiLSTM_Version13, CNN_Attention_BiLSTM_Version14, CNN_Attention_BiLSTM_Version15, CNN_Attention_BiLSTM_Version16, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version18, CNN_Attention_BiLSTM_Version17_test,CNN_Attention_BiLSTM_Version11_version2, CNN_Attention_BiLSTM_Version11_version3,CNN_Attention_BiLSTM_Version17_load_weights, CNN_Attention_BiLSTM_Version19, CNN_Attention_BiLSTM_Version20, CNN_Attention_BiLSTM_Version21, CNN_Attention_BiLSTM_Version22,CNN_Attention_BiLSTM_Version23, CNN_Attention_BiLSTM_Version20_test,sweep_model, wandb_sweep_train_version2, wandb_sweep_train_version3   
 from library import cf
 
 ####2022-11-02
@@ -68,7 +68,7 @@ FEATURE_COLUMNS = ["close", "volume", "open", "high", "low"]
 #     WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
 # """.format(','.join(FEATURE_COLUMNS), code_name, until) #STR_TO_DATE : 형식 문자열에 날짜 및 시간 부분이 모두 포함 된 경우 DATETIME 값을 반환
 
-# 셀트리온헬스케어
+
 #code_name = '셀트리온헬스케어'
 
 code_name = '삼성전자'
@@ -158,7 +158,7 @@ except DataNotEnough:
 
 
 #sweep_model = sweep_model()  
-history = wandb_sweep_train_version2(shuffled_data, sweep_model, EPOCHS, BATCH_SIZE, verbose=1)  # wandb_sweep_train 함수명 바꾸면 CNN_Attention_BiLSTM 모델 sweep 실험할 수 있음
+history = wandb_sweep_train_version3(shuffled_data, sweep_model, EPOCHS, BATCH_SIZE, verbose=1)  # wandb_sweep_train 함수명 바꾸면 CNN_Attention_BiLSTM 모델 sweep 실험할 수 있음
 
 # def model():
 #     recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05, seed=1)
