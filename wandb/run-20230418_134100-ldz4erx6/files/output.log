@@ -1,0 +1,256 @@
+Model: "functional_1"
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to
+==================================================================================================
+input_1 (InputLayer)            [(None, 5, 1)]       0
+__________________________________________________________________________________________________
+bilstm (Bidirectional)          (None, 5, 42)        3864        input_1[0][0]
+__________________________________________________________________________________________________
+dropout (Dropout)               (None, 5, 42)        0           bilstm[0][0]
+__________________________________________________________________________________________________
+permute (Permute)               (None, 42, 5)        0           dropout[0][0]
+__________________________________________________________________________________________________
+dense (Dense)                   (None, 42, 5)        30          permute[0][0]
+__________________________________________________________________________________________________
+permute_1 (Permute)             (None, 5, 42)        0           dense[0][0]
+__________________________________________________________________________________________________
+multiply (Multiply)             (None, 5, 42)        0           dropout[0][0]
+                                                                 permute_1[0][0]
+__________________________________________________________________________________________________
+conv1d (Conv1D)                 (None, 1, 21)        903         multiply[0][0]
+__________________________________________________________________________________________________
+batch_normalization (BatchNorma (None, 1, 21)        4           conv1d[0][0]
+__________________________________________________________________________________________________
+max_pooling1d (MaxPooling1D)    (None, 1, 21)        0           batch_normalization[0][0]
+__________________________________________________________________________________________________
+flatten (Flatten)               (None, 21)           0           max_pooling1d[0][0]
+__________________________________________________________________________________________________
+dense_1 (Dense)                 (None, 1)            22          flatten[0][0]
+==================================================================================================
+Total params: 4,823
+Trainable params: 4,821
+Non-trainable params: 2
+__________________________________________________________________________________________________
+[34m[1mwandb[39m[22m: [33mWARNING[39m The save_model argument by default saves the model in the HDF5 format that cannot save custom objects like subclassed models and custom layers. This behavior will be deprecated in a future release in favor of the SavedModel format. Meanwhile, the HDF5 model is saved as W&B files and the SavedModel as W&B Artifacts.
+Epoch 1/100
+
+
+214/214 [==============================] - ETA: 0s - loss: 0.4046 - mae: 0.4046 - root_mean_squared_error: 0.5218Epoch 00000: val_loss improved from inf to 0.05985, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+WARNING:tensorflow:From C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\training\tracking\tracking.py:111: Model.state_updates (from tensorflow.python.keras.engine.training) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+WARNING:tensorflow:From C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\training\tracking\tracking.py:111: Layer.updates (from tensorflow.python.keras.engine.base_layer) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 58ms/step - loss: 0.4046 - mae: 0.4046 - root_mean_squared_error: 0.5218 - val_loss: 0.0598 - val_mae: 0.0598 - val_root_mean_squared_error: 0.0910
+Epoch 2/100
+212/214 [============================>.] - ETA: 0s - loss: 0.2666 - mae: 0.2666 - root_mean_squared_error: 0.3347Epoch 00001: val_loss improved from 0.05985 to 0.04215, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 56ms/step - loss: 0.2662 - mae: 0.2662 - root_mean_squared_error: 0.3342 - val_loss: 0.0421 - val_mae: 0.0421 - val_root_mean_squared_error: 0.0673
+Epoch 3/100
+214/214 [==============================] - ETA: 0s - loss: 0.1998 - mae: 0.1998 - root_mean_squared_error: 0.2503Epoch 00002: val_loss improved from 0.04215 to 0.03022, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 56ms/step - loss: 0.1998 - mae: 0.1998 - root_mean_squared_error: 0.2503 - val_loss: 0.0302 - val_mae: 0.0302 - val_root_mean_squared_error: 0.0511
+Epoch 4/100
+214/214 [==============================] - 3s 14ms/step - loss: 0.1456 - mae: 0.1456 - root_mean_squared_error: 0.1834 - val_loss: 0.0352 - val_mae: 0.0352 - val_root_mean_squared_error: 0.0440
+Epoch 5/100
+
+212/214 [============================>.] - ETA: 0s - loss: 0.1161 - mae: 0.1161 - root_mean_squared_error: 0.1466Epoch 00004: val_loss improved from 0.03022 to 0.02160, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 56ms/step - loss: 0.1160 - mae: 0.1160 - root_mean_squared_error: 0.1465 - val_loss: 0.0216 - val_mae: 0.0216 - val_root_mean_squared_error: 0.0376
+Epoch 6/100
+210/214 [============================>.] - ETA: 0s - loss: 0.0880 - mae: 0.0880 - root_mean_squared_error: 0.1122Epoch 00005: val_loss improved from 0.02160 to 0.01862, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 57ms/step - loss: 0.0878 - mae: 0.0878 - root_mean_squared_error: 0.1120 - val_loss: 0.0186 - val_mae: 0.0186 - val_root_mean_squared_error: 0.0342
+Epoch 7/100
+213/214 [============================>.] - ETA: 0s - loss: 0.0725 - mae: 0.0725 - root_mean_squared_error: 0.0947Epoch 00006: val_loss improved from 0.01862 to 0.01380, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 56ms/step - loss: 0.0725 - mae: 0.0725 - root_mean_squared_error: 0.0946 - val_loss: 0.0138 - val_mae: 0.0138 - val_root_mean_squared_error: 0.0294
+Epoch 8/100
+214/214 [==============================] - 3s 15ms/step - loss: 0.0588 - mae: 0.0588 - root_mean_squared_error: 0.0779 - val_loss: 0.0161 - val_mae: 0.0161 - val_root_mean_squared_error: 0.0309
+Epoch 9/100
+
+211/214 [============================>.] - ETA: 0s - loss: 0.0500 - mae: 0.0500 - root_mean_squared_error: 0.0689Epoch 00008: val_loss improved from 0.01380 to 0.01307, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 58ms/step - loss: 0.0499 - mae: 0.0499 - root_mean_squared_error: 0.0688 - val_loss: 0.0131 - val_mae: 0.0131 - val_root_mean_squared_error: 0.0282
+Epoch 10/100
+214/214 [==============================] - 3s 15ms/step - loss: 0.0439 - mae: 0.0439 - root_mean_squared_error: 0.0625 - val_loss: 0.0200 - val_mae: 0.0200 - val_root_mean_squared_error: 0.0347
+Epoch 11/100
+214/214 [==============================] - 3s 15ms/step - loss: 0.0390 - mae: 0.0390 - root_mean_squared_error: 0.0573 - val_loss: 0.0215 - val_mae: 0.0215 - val_root_mean_squared_error: 0.0299
+Epoch 12/100
+
+214/214 [==============================] - 3s 15ms/step - loss: 0.0367 - mae: 0.0367 - root_mean_squared_error: 0.0551 - val_loss: 0.0284 - val_mae: 0.0284 - val_root_mean_squared_error: 0.0383
+Epoch 13/100
+214/214 [==============================] - 3s 15ms/step - loss: 0.0338 - mae: 0.0338 - root_mean_squared_error: 0.0529 - val_loss: 0.0181 - val_mae: 0.0181 - val_root_mean_squared_error: 0.0268
+Epoch 14/100
+
+
+213/214 [============================>.] - ETA: 0s - loss: 0.0320 - mae: 0.0320 - root_mean_squared_error: 0.0507Epoch 00013: val_loss improved from 0.01307 to 0.01273, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 57ms/step - loss: 0.0320 - mae: 0.0320 - root_mean_squared_error: 0.0506 - val_loss: 0.0127 - val_mae: 0.0127 - val_root_mean_squared_error: 0.0247
+Epoch 15/100
+211/214 [============================>.] - ETA: 0s - loss: 0.0311 - mae: 0.0311 - root_mean_squared_error: 0.0489Epoch 00014: val_loss improved from 0.01273 to 0.01180, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 13s 59ms/step - loss: 0.0311 - mae: 0.0311 - root_mean_squared_error: 0.0490 - val_loss: 0.0118 - val_mae: 0.0118 - val_root_mean_squared_error: 0.0244
+Epoch 16/100
+212/214 [============================>.] - ETA: 0s - loss: 0.0306 - mae: 0.0306 - root_mean_squared_error: 0.0489Epoch 00015: val_loss improved from 0.01180 to 0.01104, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 57ms/step - loss: 0.0306 - mae: 0.0306 - root_mean_squared_error: 0.0489 - val_loss: 0.0110 - val_mae: 0.0110 - val_root_mean_squared_error: 0.0236
+Epoch 17/100
+214/214 [==============================] - 3s 15ms/step - loss: 0.0302 - mae: 0.0302 - root_mean_squared_error: 0.0500 - val_loss: 0.0143 - val_mae: 0.0143 - val_root_mean_squared_error: 0.0237
+Epoch 18/100
+
+213/214 [============================>.] - ETA: 0s - loss: 0.0286 - mae: 0.0286 - root_mean_squared_error: 0.0466Epoch 00017: val_loss improved from 0.01104 to 0.01098, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 56ms/step - loss: 0.0286 - mae: 0.0286 - root_mean_squared_error: 0.0466 - val_loss: 0.0110 - val_mae: 0.0110 - val_root_mean_squared_error: 0.0204
+Epoch 19/100
+214/214 [==============================] - 3s 15ms/step - loss: 0.0288 - mae: 0.0288 - root_mean_squared_error: 0.0475 - val_loss: 0.0159 - val_mae: 0.0159 - val_root_mean_squared_error: 0.0205
+Epoch 20/100
+
+214/214 [==============================] - 3s 15ms/step - loss: 0.0290 - mae: 0.0290 - root_mean_squared_error: 0.0489 - val_loss: 0.0140 - val_mae: 0.0140 - val_root_mean_squared_error: 0.0199
+Epoch 21/100
+
+213/214 [============================>.] - ETA: 0s - loss: 0.0269 - mae: 0.0269 - root_mean_squared_error: 0.0441Epoch 00020: val_loss improved from 0.01098 to 0.00990, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 12s 57ms/step - loss: 0.0269 - mae: 0.0269 - root_mean_squared_error: 0.0441 - val_loss: 0.0099 - val_mae: 0.0099 - val_root_mean_squared_error: 0.0185
+Epoch 22/100
+212/214 [============================>.] - ETA: 0s - loss: 0.0263 - mae: 0.0263 - root_mean_squared_error: 0.0434Epoch 00021: val_loss improved from 0.00990 to 0.00890, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best)... Done. 0.1s
+214/214 [==============================] - 13s 59ms/step - loss: 0.0264 - mae: 0.0264 - root_mean_squared_error: 0.0434 - val_loss: 0.0089 - val_mae: 0.0089 - val_root_mean_squared_error: 0.0158
+Epoch 23/100
+214/214 [==============================] - 4s 17ms/step - loss: 0.0279 - mae: 0.0279 - root_mean_squared_error: 0.0454 - val_loss: 0.0127 - val_mae: 0.0127 - val_root_mean_squared_error: 0.0174
+Epoch 24/100
+
+214/214 [==============================] - 3s 16ms/step - loss: 0.0271 - mae: 0.0271 - root_mean_squared_error: 0.0440 - val_loss: 0.0159 - val_mae: 0.0159 - val_root_mean_squared_error: 0.0190
+Epoch 25/100
+214/214 [==============================] - 3s 15ms/step - loss: 0.0256 - mae: 0.0256 - root_mean_squared_error: 0.0429 - val_loss: 0.0135 - val_mae: 0.0135 - val_root_mean_squared_error: 0.0182
+Epoch 26/100
+
+214/214 [==============================] - 3s 15ms/step - loss: 0.0263 - mae: 0.0263 - root_mean_squared_error: 0.0434 - val_loss: 0.0130 - val_mae: 0.0130 - val_root_mean_squared_error: 0.0176
+Epoch 27/100
+214/214 [==============================] - 3s 16ms/step - loss: 0.0259 - mae: 0.0259 - root_mean_squared_error: 0.0434 - val_loss: 0.0102 - val_mae: 0.0102 - val_root_mean_squared_error: 0.0140
+Epoch 28/100
+129/214 [=================>............] - ETA: 1s - loss: 0.0247 - mae: 0.0247 - root_mean_squared_error: 0.0402
+212/214 [============================>.] - ETA: 0s - loss: 0.0244 - mae: 0.0244 - root_mean_squared_error: 0.0397Epoch 00027: val_loss improved from 0.00890 to 0.00885, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+212/214 [============================>.] - ETA: 0s - loss: 0.0244 - mae: 0.0244 - root_mean_squared_error: 0.0397Epoch 00027: val_loss improved from 0.00890 to 0.00885, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 29/100=========================>.] - ETA: 0s - loss: 0.0244 - mae: 0.0244 - root_mean_squared_error: 0.0397Epoch 00027: val_loss improved from 0.00890 to 0.00885, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 29/100=========================>.] - ETA: 0s - loss: 0.0244 - mae: 0.0244 - root_mean_squared_error: 0.0397Epoch 00027: val_loss improved from 0.00890 to 0.00885, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+119/214 [===============>..............] - ETA: 1s - loss: 0.0239 - mae: 0.0239 - root_mean_squared_error: 0.0388.0412 - val_loss: 0.0124 - val_mae: 0.0124 - val_root_mean_squared_error: 0.01438SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 31/100
+212/214 [============================>.] - ETA: 0s - loss: 0.0242 - mae: 0.0242 - root_mean_squared_error: 0.0405.0412 - val_loss: 0.0124 - val_mae: 0.0124 - val_root_mean_squared_error: 0.01438SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+129/214 [=================>............] - ETA: 1s - loss: 0.0242 - mae: 0.0242 - root_mean_squared_error: 0.0421.0404 - val_loss: 0.0073 - val_mae: 0.0073 - val_root_mean_squared_error: 0.01188SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 33/214 [===>..........................] - ETA: 2s - loss: 0.0260 - mae: 0.0260 - root_mean_squared_error: 0.0444.0410 - val_loss: 0.0083 - val_mae: 0.0083 - val_root_mean_squared_error: 0.01238SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+178/214 [=======================>......] - ETA: 0s - loss: 0.0240 - mae: 0.0240 - root_mean_squared_error: 0.0395.0410 - val_loss: 0.0083 - val_mae: 0.0083 - val_root_mean_squared_error: 0.01238SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 82/214 [==========>...................] - ETA: 1s - loss: 0.0239 - mae: 0.0239 - root_mean_squared_error: 0.0416.0393 - val_loss: 0.0091 - val_mae: 0.0091 - val_root_mean_squared_error: 0.01288SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+211/214 [============================>.] - ETA: 0s - loss: 0.0238 - mae: 0.0238 - root_mean_squared_error: 0.0395.0393 - val_loss: 0.0091 - val_mae: 0.0091 - val_root_mean_squared_error: 0.01288SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+124/214 [================>.............] - ETA: 1s - loss: 0.0230 - mae: 0.0230 - root_mean_squared_error: 0.0376.0394 - val_loss: 0.0094 - val_mae: 0.0094 - val_root_mean_squared_error: 0.01328SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 33/214 [===>..........................] - ETA: 2s - loss: 0.0231 - mae: 0.0231 - root_mean_squared_error: 0.0375.0385 - val_loss: 0.0100 - val_mae: 0.0100 - val_root_mean_squared_error: 0.01328SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+175/214 [=======================>......] - ETA: 0s - loss: 0.0225 - mae: 0.0225 - root_mean_squared_error: 0.0387.0385 - val_loss: 0.0100 - val_mae: 0.0100 - val_root_mean_squared_error: 0.01328SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+211/214 [============================>.] - ETA: 0s - loss: 0.0226 - mae: 0.0226 - root_mean_squared_error: 0.0384Epoch 00035: val_loss improved from 0.00711 to 0.00663, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+211/214 [============================>.] - ETA: 0s - loss: 0.0226 - mae: 0.0226 - root_mean_squared_error: 0.0384Epoch 00035: val_loss improved from 0.00711 to 0.00663, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 37/100=========================>.] - ETA: 0s - loss: 0.0226 - mae: 0.0226 - root_mean_squared_error: 0.0384Epoch 00035: val_loss improved from 0.00711 to 0.00663, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 37/100=========================>.] - ETA: 0s - loss: 0.0226 - mae: 0.0226 - root_mean_squared_error: 0.0384Epoch 00035: val_loss improved from 0.00711 to 0.00663, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+212/214 [============================>.] - ETA: 0s - loss: 0.0217 - mae: 0.0217 - root_mean_squared_error: 0.03630.0381 - val_loss: 0.0065 - val_mae: 0.0065 - val_root_mean_squared_error: 0.0097SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+168/214 [======================>.......] - ETA: 0s - loss: 0.0224 - mae: 0.0224 - root_mean_squared_error: 0.0376.0362 - val_loss: 0.0067 - val_mae: 0.0067 - val_root_mean_squared_error: 0.00967SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 85/214 [==========>...................] - ETA: 1s - loss: 0.0231 - mae: 0.0231 - root_mean_squared_error: 0.0435.0369 - val_loss: 0.0066 - val_mae: 0.0066 - val_root_mean_squared_error: 0.01047SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+213/214 [============================>.] - ETA: 0s - loss: 0.0223 - mae: 0.0223 - root_mean_squared_error: 0.0391.0369 - val_loss: 0.0066 - val_mae: 0.0066 - val_root_mean_squared_error: 0.01047SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+154/214 [====================>.........] - ETA: 0s - loss: 0.0212 - mae: 0.0212 - root_mean_squared_error: 0.0378.0391 - val_loss: 0.0075 - val_mae: 0.0075 - val_root_mean_squared_error: 0.01177SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 65/214 [========>.....................] - ETA: 1s - loss: 0.0215 - mae: 0.0215 - root_mean_squared_error: 0.0341.0369 - val_loss: 0.0083 - val_mae: 0.0083 - val_root_mean_squared_error: 0.01227SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+213/214 [============================>.] - ETA: 0s - loss: 0.0213 - mae: 0.0213 - root_mean_squared_error: 0.0350.0369 - val_loss: 0.0083 - val_mae: 0.0083 - val_root_mean_squared_error: 0.01227SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+133/214 [=================>............] - ETA: 1s - loss: 0.0213 - mae: 0.0213 - root_mean_squared_error: 0.0353.0351 - val_loss: 0.0078 - val_mae: 0.0078 - val_root_mean_squared_error: 0.01117SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 45/214 [=====>........................] - ETA: 2s - loss: 0.0205 - mae: 0.0205 - root_mean_squared_error: 0.0337.0353 - val_loss: 0.0068 - val_mae: 0.0068 - val_root_mean_squared_error: 0.00987SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+195/214 [==========================>...] - ETA: 0s - loss: 0.0211 - mae: 0.0211 - root_mean_squared_error: 0.0365.0353 - val_loss: 0.0068 - val_mae: 0.0068 - val_root_mean_squared_error: 0.00987SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 69/214 [========>.....................] - ETA: 1s - loss: 0.0211 - mae: 0.0211 - root_mean_squared_error: 0.0343.0365 - val_loss: 0.0091 - val_mae: 0.0091 - val_root_mean_squared_error: 0.01177SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+213/214 [============================>.] - ETA: 0s - loss: 0.0213 - mae: 0.0213 - root_mean_squared_error: 0.0371.0365 - val_loss: 0.0091 - val_mae: 0.0091 - val_root_mean_squared_error: 0.01177SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+137/214 [==================>...........] - ETA: 1s - loss: 0.0209 - mae: 0.0209 - root_mean_squared_error: 0.0352.0370 - val_loss: 0.0070 - val_mae: 0.0070 - val_root_mean_squared_error: 0.00997SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+213/214 [============================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+213/214 [============================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 48/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 48/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 49/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 50/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 50/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 51/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 51/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 52/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 53/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 53/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 54/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 55/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 55/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 56/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 57/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 57/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 58/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 58/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 59/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 60/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 60/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 61/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 62/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 62/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 63/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 63/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 64/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 65/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 65/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 65/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 65/100=========================>.] - ETA: 0s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0361Epoch 00045: val_loss improved from 0.00651 to 0.00457, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 63/214 [=======>......................] - ETA: 1s - loss: 0.0182 - mae: 0.0182 - root_mean_squared_error: 0.0304.0355 - val_loss: 0.0064 - val_mae: 0.0064 - val_root_mean_squared_error: 0.01064SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+214/214 [==============================] - ETA: 0s - loss: 0.0193 - mae: 0.0193 - root_mean_squared_error: 0.0333.0355 - val_loss: 0.0064 - val_mae: 0.0064 - val_root_mean_squared_error: 0.01064SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+126/214 [================>.............] - ETA: 1s - loss: 0.0209 - mae: 0.0209 - root_mean_squared_error: 0.0397.0333 - val_loss: 0.0073 - val_mae: 0.0073 - val_root_mean_squared_error: 0.00994SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 41/214 [====>.........................] - ETA: 2s - loss: 0.0194 - mae: 0.0194 - root_mean_squared_error: 0.0317.0372 - val_loss: 0.0055 - val_mae: 0.0055 - val_root_mean_squared_error: 0.00754SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+200/214 [===========================>..] - ETA: 0s - loss: 0.0200 - mae: 0.0200 - root_mean_squared_error: 0.0353.0372 - val_loss: 0.0055 - val_mae: 0.0055 - val_root_mean_squared_error: 0.00754SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+114/214 [==============>...............] - ETA: 1s - loss: 0.0192 - mae: 0.0192 - root_mean_squared_error: 0.0355.0350 - val_loss: 0.0052 - val_mae: 0.0052 - val_root_mean_squared_error: 0.00884SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 33/214 [===>..........................] - ETA: 2s - loss: 0.0203 - mae: 0.0203 - root_mean_squared_error: 0.0441.0354 - val_loss: 0.0077 - val_mae: 0.0077 - val_root_mean_squared_error: 0.01014SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+145/214 [===================>..........] - ETA: 0s - loss: 0.0193 - mae: 0.0193 - root_mean_squared_error: 0.0357.0354 - val_loss: 0.0077 - val_mae: 0.0077 - val_root_mean_squared_error: 0.01014SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 58/214 [=======>......................] - ETA: 2s - loss: 0.0196 - mae: 0.0196 - root_mean_squared_error: 0.0354.0350 - val_loss: 0.0091 - val_mae: 0.0091 - val_root_mean_squared_error: 0.01124SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+205/214 [===========================>..] - ETA: 0s - loss: 0.0192 - mae: 0.0192 - root_mean_squared_error: 0.0336.0350 - val_loss: 0.0091 - val_mae: 0.0091 - val_root_mean_squared_error: 0.01124SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+118/214 [===============>..............] - ETA: 1s - loss: 0.0200 - mae: 0.0200 - root_mean_squared_error: 0.0354.0362 - val_loss: 0.0056 - val_mae: 0.0056 - val_root_mean_squared_error: 0.00824SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 33/214 [===>..........................] - ETA: 2s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0347.0357 - val_loss: 0.0090 - val_mae: 0.0090 - val_root_mean_squared_error: 0.01064SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+186/214 [=========================>....] - ETA: 0s - loss: 0.0190 - mae: 0.0190 - root_mean_squared_error: 0.0327.0357 - val_loss: 0.0090 - val_mae: 0.0090 - val_root_mean_squared_error: 0.01064SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+105/214 [=============>................] - ETA: 1s - loss: 0.0188 - mae: 0.0188 - root_mean_squared_error: 0.0345.0346 - val_loss: 0.0066 - val_mae: 0.0066 - val_root_mean_squared_error: 0.00944SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 17/214 [=>............................] - ETA: 2s - loss: 0.0209 - mae: 0.0209 - root_mean_squared_error: 0.0393.0343 - val_loss: 0.0066 - val_mae: 0.0066 - val_root_mean_squared_error: 0.00864SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+174/214 [=======================>......] - ETA: 0s - loss: 0.0197 - mae: 0.0197 - root_mean_squared_error: 0.0362.0343 - val_loss: 0.0066 - val_mae: 0.0066 - val_root_mean_squared_error: 0.00864SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 89/214 [===========>..................] - ETA: 1s - loss: 0.0196 - mae: 0.0196 - root_mean_squared_error: 0.0370.0357 - val_loss: 0.0068 - val_mae: 0.0068 - val_root_mean_squared_error: 0.00894SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+204/214 [===========================>..] - ETA: 0s - loss: 0.0198 - mae: 0.0198 - root_mean_squared_error: 0.0363.0357 - val_loss: 0.0068 - val_mae: 0.0068 - val_root_mean_squared_error: 0.00894SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+121/214 [===============>..............] - ETA: 1s - loss: 0.0199 - mae: 0.0199 - root_mean_squared_error: 0.0336.0359 - val_loss: 0.0074 - val_mae: 0.0074 - val_root_mean_squared_error: 0.00974SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 37/214 [====>.........................] - ETA: 2s - loss: 0.0207 - mae: 0.0207 - root_mean_squared_error: 0.0354.0348 - val_loss: 0.0052 - val_mae: 0.0052 - val_root_mean_squared_error: 0.00794SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+187/214 [=========================>....] - ETA: 0s - loss: 0.0196 - mae: 0.0196 - root_mean_squared_error: 0.0352.0348 - val_loss: 0.0052 - val_mae: 0.0052 - val_root_mean_squared_error: 0.00794SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+104/214 [=============>................] - ETA: 1s - loss: 0.0195 - mae: 0.0195 - root_mean_squared_error: 0.0343.0347 - val_loss: 0.0064 - val_mae: 0.0064 - val_root_mean_squared_error: 0.00894SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 17/214 [=>............................] - ETA: 2s - loss: 0.0198 - mae: 0.0198 - root_mean_squared_error: 0.0368.0363 - val_loss: 0.0056 - val_mae: 0.0056 - val_root_mean_squared_error: 0.00774SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+166/214 [======================>.......] - ETA: 0s - loss: 0.0192 - mae: 0.0192 - root_mean_squared_error: 0.0356.0363 - val_loss: 0.0056 - val_mae: 0.0056 - val_root_mean_squared_error: 0.00774SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 81/214 [==========>...................] - ETA: 1s - loss: 0.0198 - mae: 0.0198 - root_mean_squared_error: 0.0382.0364 - val_loss: 0.0119 - val_mae: 0.0119 - val_root_mean_squared_error: 0.01374SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+  1/214 [..............................] - ETA: 0s - loss: 0.0157 - mae: 0.0157 - root_mean_squared_error: 0.0194.0343 - val_loss: 0.0046 - val_mae: 0.0046 - val_root_mean_squared_error: 0.00784SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+149/214 [===================>..........] - ETA: 0s - loss: 0.0188 - mae: 0.0188 - root_mean_squared_error: 0.0343.0343 - val_loss: 0.0046 - val_mae: 0.0046 - val_root_mean_squared_error: 0.00784SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 61/214 [=======>......................] - ETA: 2s - loss: 0.0198 - mae: 0.0198 - root_mean_squared_error: 0.0359.0339 - val_loss: 0.0060 - val_mae: 0.0060 - val_root_mean_squared_error: 0.00904SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+213/214 [============================>.] - ETA: 0s - loss: 0.0193 - mae: 0.0193 - root_mean_squared_error: 0.0354.0339 - val_loss: 0.0060 - val_mae: 0.0060 - val_root_mean_squared_error: 0.00904SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 90/214 [===========>..................] - ETA: 1s - loss: 0.0191 - mae: 0.0191 - root_mean_squared_error: 0.0363.0354 - val_loss: 0.0053 - val_mae: 0.0053 - val_root_mean_squared_error: 0.00764SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+  5/214 [..............................] - ETA: 2s - loss: 0.0195 - mae: 0.0195 - root_mean_squared_error: 0.0330.0345 - val_loss: 0.0068 - val_mae: 0.0068 - val_root_mean_squared_error: 0.00924SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+157/214 [=====================>........] - ETA: 0s - loss: 0.0196 - mae: 0.0196 - root_mean_squared_error: 0.0374.0345 - val_loss: 0.0068 - val_mae: 0.0068 - val_root_mean_squared_error: 0.00924SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 77/214 [=========>....................] - ETA: 1s - loss: 0.0180 - mae: 0.0180 - root_mean_squared_error: 0.0319.0360 - val_loss: 0.0057 - val_mae: 0.0057 - val_root_mean_squared_error: 0.00964SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+213/214 [============================>.] - ETA: 0s - loss: 0.0190 - mae: 0.0190 - root_mean_squared_error: 0.0347.0360 - val_loss: 0.0057 - val_mae: 0.0057 - val_root_mean_squared_error: 0.00964SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+140/214 [==================>...........] - ETA: 1s - loss: 0.0191 - mae: 0.0191 - root_mean_squared_error: 0.0352.0348 - val_loss: 0.0073 - val_mae: 0.0073 - val_root_mean_squared_error: 0.01064SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 57/214 [======>.......................] - ETA: 2s - loss: 0.0188 - mae: 0.0188 - root_mean_squared_error: 0.0325.0343 - val_loss: 0.0070 - val_mae: 0.0070 - val_root_mean_squared_error: 0.00874SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+205/214 [===========================>..] - ETA: 0s - loss: 0.0193 - mae: 0.0193 - root_mean_squared_error: 0.0361.0343 - val_loss: 0.0070 - val_mae: 0.0070 - val_root_mean_squared_error: 0.00874SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+121/214 [===============>..............] - ETA: 1s - loss: 0.0182 - mae: 0.0182 - root_mean_squared_error: 0.0351.0359 - val_loss: 0.0071 - val_mae: 0.0071 - val_root_mean_squared_error: 0.01114SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 33/214 [===>..........................] - ETA: 2s - loss: 0.0197 - mae: 0.0197 - root_mean_squared_error: 0.0372.0336 - val_loss: 0.0054 - val_mae: 0.0054 - val_root_mean_squared_error: 0.00904SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+182/214 [========================>.....] - ETA: 0s - loss: 0.0194 - mae: 0.0194 - root_mean_squared_error: 0.0373.0336 - val_loss: 0.0054 - val_mae: 0.0054 - val_root_mean_squared_error: 0.00904SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+213/214 [============================>.] - ETA: 0s - loss: 0.0193 - mae: 0.0193 - root_mean_squared_error: 0.0368Epoch 00090: val_loss improved from 0.00432 to 0.00417, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+213/214 [============================>.] - ETA: 0s - loss: 0.0193 - mae: 0.0193 - root_mean_squared_error: 0.0368Epoch 00090: val_loss improved from 0.00432 to 0.00417, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 93/100=========================>.] - ETA: 0s - loss: 0.0193 - mae: 0.0193 - root_mean_squared_error: 0.0368Epoch 00090: val_loss improved from 0.00432 to 0.00417, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 93/100=========================>.] - ETA: 0s - loss: 0.0193 - mae: 0.0193 - root_mean_squared_error: 0.0368Epoch 00090: val_loss improved from 0.00432 to 0.00417, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 93/100=========================>.] - ETA: 0s - loss: 0.0193 - mae: 0.0193 - root_mean_squared_error: 0.0368Epoch 00090: val_loss improved from 0.00432 to 0.00417, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+212/214 [============================>.] - ETA: 0s - loss: 0.0185 - mae: 0.0185 - root_mean_squared_error: 0.0339.0347 - val_loss: 0.0070 - val_mae: 0.0070 - val_root_mean_squared_error: 0.01137SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+141/214 [==================>...........] - ETA: 0s - loss: 0.0186 - mae: 0.0186 - root_mean_squared_error: 0.0362.0338 - val_loss: 0.0046 - val_mae: 0.0046 - val_root_mean_squared_error: 0.00787SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 56/214 [======>.......................] - ETA: 2s - loss: 0.0177 - mae: 0.0177 - root_mean_squared_error: 0.0320.0350 - val_loss: 0.0050 - val_mae: 0.0050 - val_root_mean_squared_error: 0.00837SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+173/214 [=======================>......] - ETA: 0s - loss: 0.0184 - mae: 0.0184 - root_mean_squared_error: 0.0356.0350 - val_loss: 0.0050 - val_mae: 0.0050 - val_root_mean_squared_error: 0.00837SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+ 94/214 [============>.................] - ETA: 1s - loss: 0.0175 - mae: 0.0175 - root_mean_squared_error: 0.0313.0346 - val_loss: 0.0079 - val_mae: 0.0079 - val_root_mean_squared_error: 0.00977SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+  8/214 [>.............................] - ETA: 2s - loss: 0.0163 - mae: 0.0163 - root_mean_squared_error: 0.0281.0349 - val_loss: 0.0067 - val_mae: 0.0067 - val_root_mean_squared_error: 0.00857SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+166/214 [======================>.......] - ETA: 0s - loss: 0.0190 - mae: 0.0190 - root_mean_squared_error: 0.0361.0349 - val_loss: 0.0067 - val_mae: 0.0067 - val_root_mean_squared_error: 0.00857SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+214/214 [==============================] - ETA: 0s - loss: 0.0186 - mae: 0.0186 - root_mean_squared_error: 0.0353Epoch 00098: val_loss improved from 0.00389 to 0.00342, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+214/214 [==============================] - ETA: 0s - loss: 0.0186 - mae: 0.0186 - root_mean_squared_error: 0.0353Epoch 00098: val_loss improved from 0.00389 to 0.00342, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 100/100==========================] - ETA: 0s - loss: 0.0186 - mae: 0.0186 - root_mean_squared_error: 0.0353Epoch 00098: val_loss improved from 0.00389 to 0.00342, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
+Epoch 100/100==========================] - ETA: 0s - loss: 0.0186 - mae: 0.0186 - root_mean_squared_error: 0.0353Epoch 00098: val_loss improved from 0.00389 to 0.00342, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230418_134100-ldz4erx6\files\model-best.h5
