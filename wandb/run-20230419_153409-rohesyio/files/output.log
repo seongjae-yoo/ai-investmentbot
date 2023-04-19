@@ -1,0 +1,133 @@
+Model: "functional_1"
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to
+==================================================================================================
+input_1 (InputLayer)            [(None, 5, 1)]       0
+__________________________________________________________________________________________________
+bilstm (Bidirectional)          (None, 5, 42)        3864        input_1[0][0]
+__________________________________________________________________________________________________
+dropout (Dropout)               (None, 5, 42)        0           bilstm[0][0]
+__________________________________________________________________________________________________
+permute (Permute)               (None, 42, 5)        0           dropout[0][0]
+__________________________________________________________________________________________________
+dense (Dense)                   (None, 42, 5)        30          permute[0][0]
+__________________________________________________________________________________________________
+permute_1 (Permute)             (None, 5, 42)        0           dense[0][0]
+__________________________________________________________________________________________________
+multiply (Multiply)             (None, 5, 42)        0           dropout[0][0]
+                                                                 permute_1[0][0]
+__________________________________________________________________________________________________
+conv1d (Conv1D)                 (None, 1, 31)        1333        multiply[0][0]
+__________________________________________________________________________________________________
+batch_normalization (BatchNorma (None, 1, 31)        4           conv1d[0][0]
+__________________________________________________________________________________________________
+max_pooling1d (MaxPooling1D)    (None, 1, 31)        0           batch_normalization[0][0]
+__________________________________________________________________________________________________
+flatten (Flatten)               (None, 31)           0           max_pooling1d[0][0]
+__________________________________________________________________________________________________
+dense_1 (Dense)                 (None, 1)            32          flatten[0][0]
+==================================================================================================
+Total params: 5,263
+Trainable params: 5,261
+Non-trainable params: 2
+__________________________________________________________________________________________________
+[34m[1mwandb[39m[22m: [33mWARNING[39m The save_model argument by default saves the model in the HDF5 format that cannot save custom objects like subclassed models and custom layers. This behavior will be deprecated in a future release in favor of the SavedModel format. Meanwhile, the HDF5 model is saved as W&B files and the SavedModel as W&B Artifacts.
+Epoch 1/100
+
+24/24 [==============================] - ETA: 0s - loss: 0.8116 - mae: 0.8116 - root_mean_squared_error: 0.9927Epoch 00000: val_loss improved from inf to 0.36552, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best.h5
+WARNING:tensorflow:From C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\training\tracking\tracking.py:111: Model.state_updates (from tensorflow.python.keras.engine.training) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+WARNING:tensorflow:From C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\training\tracking\tracking.py:111: Layer.updates (from tensorflow.python.keras.engine.base_layer) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best)... Done. 0.1s
+24/24 [==============================] - 13s 561ms/step - loss: 0.8116 - mae: 0.8116 - root_mean_squared_error: 0.9927 - val_loss: 0.3655 - val_mae: 0.3655 - val_root_mean_squared_error: 0.4367
+Epoch 2/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.4616 - mae: 0.4616 - root_mean_squared_error: 0.5862Epoch 00001: val_loss improved from 0.36552 to 0.27323, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best)... Done. 0.1s
+24/24 [==============================] - 12s 490ms/step - loss: 0.4626 - mae: 0.4626 - root_mean_squared_error: 0.5857 - val_loss: 0.2732 - val_mae: 0.2732 - val_root_mean_squared_error: 0.3475
+Epoch 3/100
+24/24 [==============================] - 1s 26ms/step - loss: 0.4619 - mae: 0.4619 - root_mean_squared_error: 0.5800 - val_loss: 0.2800 - val_mae: 0.2800 - val_root_mean_squared_error: 0.3492
+Epoch 4/100
+24/24 [==============================] - ETA: 0s - loss: 0.4104 - mae: 0.4104 - root_mean_squared_error: 0.5184Epoch 00003: val_loss improved from 0.27323 to 0.27083, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best)... Done. 0.1s
+24/24 [==============================] - 12s 481ms/step - loss: 0.4104 - mae: 0.4104 - root_mean_squared_error: 0.5184 - val_loss: 0.2708 - val_mae: 0.2708 - val_root_mean_squared_error: 0.3375
+Epoch 5/100
+24/24 [==============================] - ETA: 0s - loss: 0.4153 - mae: 0.4153 - root_mean_squared_error: 0.5265Epoch 00004: val_loss improved from 0.27083 to 0.25002, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best)... Done. 0.1s
+24/24 [==============================] - 12s 482ms/step - loss: 0.4153 - mae: 0.4153 - root_mean_squared_error: 0.5265 - val_loss: 0.2500 - val_mae: 0.2500 - val_root_mean_squared_error: 0.3117
+Epoch 6/100
+23/24 [===========================>..] - ETA: 0s - loss: 0.3938 - mae: 0.3938 - root_mean_squared_error: 0.4953Epoch 00005: val_loss improved from 0.25002 to 0.23006, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best.h5
+
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best)... Done. 4.0s
+24/24 [==============================] - 16s 659ms/step - loss: 0.3911 - mae: 0.3911 - root_mean_squared_error: 0.4928 - val_loss: 0.2301 - val_mae: 0.2301 - val_root_mean_squared_error: 0.2871
+Epoch 7/100
+24/24 [==============================] - ETA: 0s - loss: 0.3417 - mae: 0.3417 - root_mean_squared_error: 0.4343Epoch 00006: val_loss improved from 0.23006 to 0.20968, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best)... Done. 0.1s
+24/24 [==============================] - 12s 502ms/step - loss: 0.3417 - mae: 0.3417 - root_mean_squared_error: 0.4343 - val_loss: 0.2097 - val_mae: 0.2097 - val_root_mean_squared_error: 0.2617
+Epoch 8/100
+24/24 [==============================] - ETA: 0s - loss: 0.3499 - mae: 0.3499 - root_mean_squared_error: 0.4437Epoch 00007: val_loss improved from 0.20968 to 0.19458, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best)... Done. 0.1s
+24/24 [==============================] - 12s 502ms/step - loss: 0.3499 - mae: 0.3499 - root_mean_squared_error: 0.4437 - val_loss: 0.1946 - val_mae: 0.1946 - val_root_mean_squared_error: 0.2431
+Epoch 9/100
+23/24 [===========================>..] - ETA: 0s - loss: 0.3289 - mae: 0.3289 - root_mean_squared_error: 0.4093Epoch 00008: val_loss improved from 0.19458 to 0.17589, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best)... Done. 0.1s
+24/24 [==============================] - 12s 483ms/step - loss: 0.3302 - mae: 0.3302 - root_mean_squared_error: 0.4094 - val_loss: 0.1759 - val_mae: 0.1759 - val_root_mean_squared_error: 0.2199
+Epoch 10/100
+24/24 [==============================] - ETA: 0s - loss: 0.3073 - mae: 0.3073 - root_mean_squared_error: 0.3818Epoch 00009: val_loss improved from 0.17589 to 0.15440, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230419_153409-rohesyio\files\model-best)... Done. 0.1s
+[34m[1mwandb[39m[22m: [32m[41mERROR[39m[49m Permission denied to access seongjae-yoo/celltrionhealthcare/rohesyio
+Traceback (most recent call last):
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\sdk\lib\retry.py", line 131, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\apis\public.py", line 246, in execute
+    return self._client.execute(*args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\vendor\gql-0.2.0\wandb_gql\client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\vendor\gql-0.2.0\wandb_gql\client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\vendor\gql-0.2.0\wandb_gql\transport\requests.py", line 39, in execute
+    request.raise_for_status()
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\requests\models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://api.wandb.ai/graphql
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File "wandb_sweep.py", line 161, in <module>
+    history = wandb_sweep_train_version3(shuffled_data, sweep_model, EPOCHS, BATCH_SIZE, verbose=1)  # wandb_sweep_train 함수명 바꾸면 CNN_Attention_BiLSTM 모델 sweep 실험할 수 있음
+  File "C:\Users\SeongJae-Yoo\AI-InvestmentBot\ai\SPPModel.py", line 387, in wandb_sweep_train_version3
+    verbose=verbose)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\integration\keras\keras.py", line 174, in new_v2
+    return old_v2(*args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\integration\keras\keras.py", line 174, in new_v2
+    return old_v2(*args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\integration\keras\keras.py", line 174, in new_v2
+    return old_v2(*args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\keras\engine\training.py", line 108, in _method_wrapper
+    return method(self, *args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\keras\engine\training.py", line 1137, in fit
+    callbacks.on_epoch_end(epoch, epoch_logs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\keras\callbacks.py", line 416, in on_epoch_end
+    callback.on_epoch_end(epoch, numpy_logs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\integration\keras\keras.py", line 630, in on_epoch_end
+    self._save_model_as_artifact(epoch)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\integration\keras\keras.py", line 1038, in _save_model_as_artifact
+    wandb.run.log_artifact(model_artifact, aliases=["latest", f"epoch_{epoch}"])
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\sdk\wandb_run.py", line 334, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\sdk\wandb_run.py", line 2734, in log_artifact
+    artifact_or_path, name=name, type=type, aliases=aliases
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\sdk\wandb_run.py", line 2870, in _log_artifact
+    self._assert_can_log_artifact(artifact)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\sdk\wandb_run.py", line 2920, in _assert_can_log_artifact
+    public_api.settings["project"],
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\apis\public.py", line 4539, in expected_type
+    "name": name,
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\sdk\lib\retry.py", line 212, in wrapped_fn
+    return retrier(*args, **kargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\sdk\lib\retry.py", line 147, in __call__
+    retry_timedelta_triggered = check_retry_fn(e)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\util.py", line 1011, in no_retry_auth
+    raise CommError(f"Permission denied to access {wandb.run.path}")
+wandb.errors.CommError: Permission denied to access seongjae-yoo/celltrionhealthcare/rohesyio
