@@ -1176,6 +1176,37 @@ def CNN_BiLSTM_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae
                 metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
     return model
 
+def CNN_BiLSTM_Attention_version2(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+
+
+    input_layer = Input(shape=(maxlen, n_steps), )
+
+    x = Conv1D(filters = 31, kernel_size = 1, activation=keras.activations.elu,strides=30)(input_layer)
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+    
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=units,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(x)
+    lstm_out = Dropout(dropout)(lstm_out)
+    attention_mul = attention_3d_block2(lstm_out)
+    attention_mul = Flatten()(attention_mul)
+
+    output = Dense(1, activation='linear')(attention_mul) # linear 성능 향상에 꼭 필요함
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()
+    tf.keras.utils.plot_model(model=model,to_file='CNN_BiLSTM_Attention_version2.png', show_shapes=True, dpi=100)
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    return model
+
+
+
+
+
 # BiLSTM_Attention_CNN
 def BiLSTM_Attention_CNN(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
     input_layer = Input(shape=(maxlen, n_steps), )

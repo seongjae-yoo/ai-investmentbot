@@ -25,7 +25,7 @@ from library.trading_algorithms import BBands
 import numpy as np
 
 #sell_ai function
-from ai.SPPModel import CNN_Attention_BiLSTM_Version11 ,load_data,predict,DataNotEnough, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version27,BiGRU_CNN_BiLSTM_Attention_version2, BiLSTM_Attention_CNN_version2 
+from ai.SPPModel import CNN_Attention_BiLSTM_Version11 ,load_data,predict,DataNotEnough, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version27,BiGRU_CNN_BiLSTM_Attention_version2, BiLSTM_Attention_CNN_version2, CNN_BiLSTM_Attention_version2 
 from tensorflow.keras.callbacks import EarlyStopping
 import tensorflow as tf  
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
@@ -415,7 +415,7 @@ class simulator_func_mysql:
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함 (실시간 조건 매수 조건)
         # self.use_min 옵션이 반드시 True로 설정이 되어야함 (실시간 조건 매수 조건)
         # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다. !@
-        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31):
+        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32):
             
             self.simul_start_date = "20220502"
 
@@ -782,7 +782,7 @@ class simulator_func_mysql:
                 # # AI알고리즘 사용 여부 
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 3  # ai 알고리즘 선택   
-            # ratio_cut = 0 은 수익률 마이너스 , ratio_cut =1 , 매도 할때는 -1 로 실험   
+            # ratio_cut = 0 은 수익률 마이너스 , ratio_cut =1 , 매도 할때는 -1 로 실험, !@
             # 29부터 논문 시뮬레이션 ! 가장 중요!          
             elif self.simul_num == 29:       
                  
@@ -816,6 +816,18 @@ class simulator_func_mysql:
                 # # AI알고리즘 사용 여부 
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 6  # ai 알고리즘 선택                
+
+            elif self.simul_num == 32:       
+                 
+                self.db_to_realtime_daily_buy_list_num = 24                
+                self.sell_list_num = 21
+                self.simul_start_date = "20210113"            
+                self.diff_point = 1 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수)
+                self.margin = 100      
+                # # AI알고리즘 사용 여부 
+                self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                self.ai_filter_num = 7  # ai 알고리즘 선택                
+
 
 
 
@@ -4027,8 +4039,83 @@ class simulator_func_mysql:
                     print(f"기준에 부합되므로 추가됨")
                     sell_list.append(row)
 
+        elif self.sell_list_num == 21:
+            #sell_list_1 = ''
+            sell_list = []
 
+            sell_ai_settings = {
+                "model": None,   
+                "n_steps": 1, # 시퀀스 데이터를 몇개씩 담을지 설정       
+                "lookup_step": 1, #단위 :(일/분) 몇 일(분) 뒤의 종가를 예측 할 것 인지 설정 : daily_craw -> 일 / min_craw -> 분
+                "test_size": 0.3,
+                "batch_size": 32,
+                "epochs": 100,
+                "ratio_cut": -1,
+                "table": "daily_craw",
+                "is_used_predicted_close" : True
+            }
 
+            tr_engine = create_training_engine(sell_ai_settings['table']) 
+           
+            sql_temp = "SELECT code, rate, present_price, valuation_profit,code_name FROM all_item_db WHERE sell_date = 0 group by code"  
+                  
+            # 
+            sell_list_temp = self.engine_simulator.execute(sql_temp).fetchall()
+            for row in sell_list_temp:
+                code = row[0]
+                
+                code_name= row.code_name
+                # code_name = row[1]
+                # code_name = pd.DataFrame([code_name],columns=['code_name'])
+                #rate = row[1]
+                #close = row[2]
+
+               # date_before = self.date_rows[i - self.day_before][0]
+            
+            
+
+                                                                               
+                            
+                feature_columns = ["close", "volume", "open", "high", "low"]
+                               
+                date_rows_yesterday = self.date_rows[i-1][0]
+                # sell_sql = f"""
+                #         SELECT close, volume, open, high, low
+                #         FROM `{code_name}`
+                #         WHERE date <= '{date_rows_yesterday}'
+                        
+                #         """
+                # sell_df_1 = self.engine_daily_craw.execute(sell_sql).fetchall()
+
+                sql = """
+                        SELECT {} FROM `{}`
+                        WHERE STR_TO_DATE(date, '%Y%m%d%H%i') <= '{}'
+                """.format(','.join(feature_columns), code_name, date_rows_yesterday)
+                sell_df = pd.read_sql(sql, tr_engine)
+                
+                # 데이터가 없으면 필터링
+                if len(sell_df) < 1:
+                    # filtered_list.append(code_name)
+                    print(f"테스트 데이터가 적어요")
+                    continue
+                try:
+                    if 1<= len(sell_df) <=5000:
+                        sell_ai_settings['model'] = CNN_BiLSTM_Attention_version2()
+                        filtered = sell_list_ai(sell_df, sell_ai_settings)
+                    elif len(sell_df) >5000:                          
+                        sell_ai_settings['model'] = CNN_BiLSTM_Attention_version2()
+                        filtered = sell_list_ai_v2(sell_df, sell_ai_settings)
+                except (DataNotEnough, ValueError):
+                    print(f"테스트 데이터가 적어요")
+                    #filtered_list.append(code_name)
+                    continue
+
+                print(code_name)
+
+                # filtered가 True 이면 sell_list에 해당 종목을 append 
+                if filtered:
+                    print(f"기준에 부합되므로 추가됨")
+                    sell_list.append(row)
 
         ##################################################################################################################################################################################################################
         else:
