@@ -78,3 +78,13 @@ from simulator31.all_item_db
 select code, code_name, rate, purchase_price,holding_amount,item_total_purchase,buy_date,sell_date
 from simulator32.all_item_db
 ```
+
+
+# Supplementary Materials: 
+The outcomes of the comparative analysis, which encompassed 
+eight deep learning models utilized in this research, along with the findings from the 
+WandB Sweep experiment, are presented on the subsequent page.
+
+In the master's thesis, Celltrion Healthcare and Samsung Electronics stocks, the deep learning model experiment results can be found on the link page below.
+
+[https://wandb.ai/seongjae-yoo/projects](https://wandb.ai/seongjae-yoo/projects)
