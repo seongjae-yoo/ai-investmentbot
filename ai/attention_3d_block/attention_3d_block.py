@@ -2,8 +2,13 @@
 참고한 사이트
 https://github.com/PatientEz/CNN-BiLSTM-Attention-Time-Series-Prediction_Keras/blob/master/Main.py
 '''
-from keras.layers import Input, Dense, LSTM, merge ,Conv1D,Dropout,Bidirectional,Multiply
+from keras.layers import Input, Dense, LSTM, merge ,Conv1D,Dropout,Bidirectional,Multiply 
 from keras.models import Model
+
+##### 05-23 Add
+from tensorflow.keras.layers import Permute, RepeatVector, Lambda, Add
+from tensorflow.keras.backend import mean, int_shape
+from tensorflow.keras.activations import tanh
 
 
 #from attention_utils import get_activations
@@ -57,3 +62,85 @@ def attention_3d_block2(inputs, single_attention_vector=False):
     # element-wise
     output_attention_mul = Multiply()([inputs, a_probs])
     return output_attention_mul
+
+
+###################################################################################################################3
+
+def attention_3d_block3(inputs, single_attention_vector=False):
+    time_steps = K.int_shape(inputs)[1]
+    input_dim = K.int_shape(inputs)[2]
+
+    a = Permute((2, 1))(inputs)
+    query = Dense(input_dim, activation='linear')(a)  # Query (no activation)
+    value = Dense(input_dim, activation='linear')(a)  # Value (no activation)
+
+    query_value_dot = Multiply()([query, value])
+    a = Dense(time_steps, activation='softmax')(query_value_dot)  # Multiplicative attention (Luong's style)
+
+    if single_attention_vector:
+        a = Lambda(lambda x: mean(x, axis=1))(a)
+        a = RepeatVector(input_dim)(a)
+
+    a_probs = Permute((2, 1))(a)
+    output_attention_mul = Multiply()([inputs, a_probs])
+
+    return output_attention_mul
+
+#############################################################################################################################3
+
+
+def attention_3d_block4(inputs, single_attention_vector=False):
+    time_steps = int_shape(inputs)[1]
+    input_dim = int_shape(inputs)[2]
+
+    a = Permute((2, 1))(inputs)
+
+    query = Dense(input_dim, activation='linear')(a)  # Query (no activation)
+    value = Dense(input_dim, activation='linear')(a)  # Value (no activation)
+
+    query_value_sum = Add()([query, value])
+    a = Dense(time_steps, activation='tanh')(query_value_sum)  # Additive attention (Bahdanau's style) # tf.keras.activations.tanh
+    a = Dense(time_steps, activation='softmax')(a)
+
+    if single_attention_vector:
+        a = Lambda(lambda x: mean(x, axis=1))(a)
+        a = RepeatVector(input_dim)(a)
+
+    a_probs = Permute((2, 1))(a)
+    output_attention_mul = Multiply()([inputs, a_probs])
+
+    return output_attention_mul
+
+#########################################################################################################################################
+    
+class TransformedAttention(tf.keras.layers.Layer):
+    def __init__(self, dim, **kwargs):
+        super(TransformedAttention, self).__init__(**kwargs)
+        self.dim = dim
+        self.W_q = self.add_weight(shape=(dim, dim), initializer='random_normal')
+        self.W_k = self.add_weight(shape=(dim, dim), initializer='random_normal')
+
+    def call(self, query, key, value):
+        q = tf.matmul(query, self.W_q)
+        k = tf.matmul(key, self.W_k)
+        attention = tf.nn.softmax(tf.matmul(q, k, transpose_b=True))
+        return tf.matmul(attention, value)
+    
+    def get_config(self):
+        config = super(TransformedAttention, self).get_config()
+        config.update({"dim": self.dim})
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+
+###################################################################################3
+
+class ScaledDotProductAttention(tf.keras.layers.Layer):
+    def call(self, query, key, value):
+        matmul_qk = tf.matmul(query, key, transpose_b=True)
+        depth = tf.cast(tf.shape(key)[-1], tf.float32)
+        logits = matmul_qk / tf.math.sqrt(depth)
+        attention_weights = tf.nn.softmax(logits, axis=-1)
+        return tf.matmul(attention_weights, value)
