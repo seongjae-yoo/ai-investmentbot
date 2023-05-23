@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler,StandardScaler,Normalizer, MaxAbsScaler,RobustScaler,QuantileTransformer
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.layers import LSTM, Dense, Dropout , Activation, GRU
+from tensorflow.keras.layers import LSTM, Dense, Dropout , Activation, GRU ,Masking
 #from sklearn import preprocessing
 from tensorflow.keras import *
 from tensorflow.keras.models import Sequential
@@ -39,14 +39,15 @@ from .tcn.tcn import compiled_tcn
 from keras.regularizers import l2
 
 
-from .attention_3d_block.attention_3d_block import attention_3d_block2
+from .attention_3d_block.attention_3d_block import attention_3d_block2, attention_3d_block3
 
 #### 2022-11-02
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, median_absolute_error, mean_squared_log_error
 #from pyMetaheuristic.algorithm import cuckoo_search
 #from pyMetaheuristic.utils import graphs
 from tensorflow.keras.losses import Huber
-
+from tensorflow.keras.optimizers import Optimizer
+from tensorflow.keras.optimizers.schedules import ExponentialDecay
 from tensorflow.keras.utils import plot_model
 
 import keras
@@ -131,7 +132,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # api key :483c55b5c6488e6484b5173b3f6dfe92af598e2d
     #wandb.init(project="celltrionhealthcare", entity="SeongJae-Yoo")
     wandb.init(project="samsung", entity="SeongJae-Yoo")
-    wandb.run.name = 'BiGRU_CNN_BiLSTM_Attention_version2'
+    wandb.run.name = 'CNN_Smish_Attention_Version2_BiLSTM_masking'
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
@@ -171,7 +172,138 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
     #model.load_weights("weights.CNN_Attention_BiLSTM_Version7.hdf5")                    
     
     return history
+#################################################################
+# Create an instance of ExponentialDecay with the desired learning rate values 
+initial_learning_rate = 0.001
+decay_steps = 10000
+decay_rate = 0.96
+learning_rate_schedule = tf.keras.optimizers.schedules.ExponentialDecay(initial_learning_rate, decay_steps, decay_rate)
 
+# Define a custom callback to modify the learning rate during training
+class LearningRateScheduler(tf.keras.callbacks.Callback):
+    def __init__(self, learning_rate_schedule):
+        super(LearningRateScheduler, self).__init__()
+        self.learning_rate_schedule = learning_rate_schedule
+
+    def on_epoch_begin(self, epoch, logs=None):
+        lr = self.learning_rate_schedule(epoch)
+        tf.keras.backend.set_value(self.model.optimizer.lr, lr)
+        
+##########################################################################3
+class CustomAngularGrad(Optimizer):
+    def __init__(self, learning_rate=0.01, name="CustomAngularGrad", **kwargs):
+        super().__init__(name, **kwargs)
+        self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
+
+    def _create_slots(self, var_list):
+        for var in var_list:
+            self.add_slot(var, "previous_grad")
+
+    def _resource_apply_dense(self, grad, var):
+        var_dtype = var.dtype.base_dtype
+        lr_t = self._decayed_lr(var_dtype)
+        
+        # This is just a placeholder for how the AngularGrad update might look like.
+        # Please refer to the original paper for the actual formula.
+        new_grad = grad + self.get_slot(var, "previous_grad")
+        var.assign_sub(lr_t * new_grad)
+
+    def _resource_apply_sparse(self, grad, var):
+        raise NotImplementedError
+
+    def get_config(self):
+        base_config = super().get_config()
+        return {
+            **base_config,
+            "learning_rate": self._serialize_hyperparameter("learning_rate"),
+        }
+
+
+#############################################################################33        
+        
+
+# 학습 함수
+def train_version2(data, model, n_epochs=100, batch_size=32, verbose=1):
+    #1106 Add
+    # date_now = time.strftime("%Y-%m-%d")
+    # model_function_name= "attention_model_1114_v3_20120901"
+
+    #model_name = f"{date_now}_{model_function_name}"
+    #checkpoint_filepath = 'ModelCheckpoint/CNN_Attention_BiLSTM_Version3_100/Checkpoint'
+    #checkpoint_filepath="weights.CNN_Attention_BiLSTM_Version8.hdf5"
+
+    #early_stopping = EarlyStopping(monitor='val_loss', patience=500)  # patience 번이상 더 좋은 결과가 없으면 학습을 멈춤
+    #callback = tf.keras.callbacks.ModelCheckpoint('Transformer+TimeEmbedding.hdf5', 
+    #                                          monitor='val_loss', 
+    #                                          save_best_only=True, verbose=1)
+
+    #tensorboard = TensorBoard(log_dir=os.path.join("logs", model_name))
+    #ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, save_best_only=True, verbose=1, mode='min',monitor='val_loss')
+    # val_loss 인 경우, loss 값이기 때문에 값이 작을수록 좋습니다. 따라서 이때는 min을 입력해줘야합니다.
+    # monitor=>모델을 저장할 때, 기준이 되는 값을 지정합니다.
+    # 예를 들어, validation set의 loss가 가장 작을 때 저장하고 싶으면 'val_loss'를 입력하고
+    # 만약 train set의 loss가 가장 작을 때 모델을 저장하고 싶으면 'loss'를 입력합니다
+
+
+    #tensorboard --logdir="logs" 
+    # verbose 옵션은 실행 과정을 콘솔에 띄워줄지 말지에 대한 옵션
+    # 0 - 끔, 1 - 움직이는 실시간 그래프, 2 - 정적 메시지
+    # history = model.fit(data["X_train"], data["y_train"],
+    #                     batch_size=batch_size,
+    #                     epochs=n_epochs,
+    #                     validation_data=(data["X_test"], data["y_test"]),
+    #                     callbacks=[early_stopping],
+    #                     verbose=verbose)
+    
+# api key :483c55b5c6488e6484b5173b3f6dfe92af598e2d
+    #wandb.init(project="celltrionhealthcare", entity="SeongJae-Yoo")
+    wandb.init(project="samsung", entity="SeongJae-Yoo")
+    wandb.run.name = 'CNN_Attention_bilstm_Masking_AngularGrad_ExponentialDecay'
+    # Save a model file manually from the current directory:
+    #wandb.save('model-best.h5')
+
+#     # restore the model file "model.h5" from a specific run by user 
+# # in project "save_and_restore" 
+    #best_model = wandb.restore('model-best.h5', run_path="SeongJae-Yoo/modetour/runs/c2s4ydod")
+   #modetour/runs/c2s4ydod
+
+# use the "name" attribute of the returned object if your framework expects a filename, e.g. as in Keras
+    #model.load_weights(best_model.name)
+
+    # generted run ID로 하고 싶다면 다음과 같이 쓴다.
+    # wandb.run.name = wandb.run.id
+    #wandb.run.save()
+    #wandb.save("C:/Users/SeongJae-Yoo/AI-InvestmentBot/wandb",base_path="C:/Users/SeongJae-Yoo/AI-InvestmentBot")
+    # wandb.log({"gradients": wandb.Histogram(numpy_array_or_sequence)})
+    # wandb.run.summary.update({"gradients": wandb.Histogram(np_histogram=np.histogram(data))})
+
+    # wandb   Hyperparameter Sweeps   시각화 할 수 있는 자료 (아래 확인)
+    #https://colab.research.google.com/drive/1gKixa6hNUB8qrn1CfHirOfTEQm0qLCSS#scrollTo=1gD9qhA9yOYs
+    
+    wandb_callback = WandbCallback(monitor='val_loss',save_model=True,mode='min',log_weights=True,log_evaluation=True,validation_steps=5,verbose=1)
+    #lr_callback = tf.keras.callbacks.LearningRateScheduler(lr_scheduler)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+                              patience=1, min_lr=0.0001, mode='min',verbose=1)
+# reduceLROnPlat = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+#                                    patience=1, verbose=1, mode='min',
+#                                    min_delta=0.0001, cooldown=0, min_lr=1e-8)
+   
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(learning_rate_schedule)
+
+    history = model.fit(data["X_train"], data["y_train"],
+                        batch_size=batch_size,
+                        epochs=n_epochs,
+                        validation_data=(data["X_test"], data["y_test"]),
+                        callbacks=[wandb_callback],
+                        verbose=verbose)
+    # # 아래구문 추가하면  best_mae 값으로 실제값과 예측값의 plot_graph 가 나온다.
+    #model.load_weights("weights.CNN_Attention_BiLSTM_Version7.hdf5")                    
+    
+    return history
+
+
+
+######################################################3
 # CNN_Attention_BiLSTM_Version9 적용
 # 학습 함수
 def wandb_sweep_train(data, sweep_model, n_epochs=100, batch_size=32, verbose=1):
@@ -1146,7 +1278,7 @@ def CNN_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", opti
 """
 ELU의 특징은 다음과 같음
 ReLU의 장점을 모두 포함
-Dying ReLU 문제 해결
+Dying ReLU 문제 해결    
 출력값이 거의 zero-centered함
 ReLU, Leaky ReLU와 달리 exp()에 대한 미분값을 계산해야 하는 비용이 발생
 """
@@ -2594,6 +2726,180 @@ def CNN_Attention_BiLSTM_Version20_test(maxlen=5, n_steps=1, LOSS = "mae", optim
     return model
 
 
+
+def CNN_Attention_BiLSTM_masking(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS="mae", optimizer='cos'):
+    input_layer = Input(shape=(maxlen, n_steps))
+
+    x = Conv1D(filters=units, padding='valid', kernel_size=1, activation=tf.keras.activations.elu, strides=30)(input_layer)
+    x = tf.keras.layers.BatchNormalization(axis=1, momentum=0.9)(x)
+    x = MaxPooling1D(pool_size=1, strides=2)(x)
+
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True), name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    x = Masking(mask_value=0.0)(x)  # 마스킹 추가
+
+    output = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()
+    tf.keras.utils.plot_model(model=model, to_file='CNN_Attention_BiLSTM_masking.png', show_shapes=True, dpi=100)
+
+    model.compile(loss=LOSS,
+                  optimizer=AngularGrad(optimizer),
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+    return model
+
+
+###
+def CNN_Attention_BiLSTM_Version30(maxlen=5, n_features=1, units=50, dropout=0.3, LOSS = "mse", optimizer= 'adam'):
+
+    recurrent_initializer = tf.keras.initializers.Orthogonal()
+    bias_initializer = tf.keras.initializers.Zeros()
+    kernel_initializer = tf.keras.initializers.GlorotUniform()
+
+    input_layer = Input(shape=(maxlen, n_features), )
+
+    x = Conv1D(filters = 64, padding='valid', activation='relu', kernel_size = 3, kernel_initializer=kernel_initializer)(input_layer)
+    x = BatchNormalization()(x) 
+    x = MaxPooling1D(pool_size=2)(x)
+
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=units, kernel_initializer=kernel_initializer, 
+                                  recurrent_initializer=recurrent_initializer, 
+                                  bias_initializer=bias_initializer, return_sequences=True), 
+                             name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+
+    output_layer = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output_layer, name='CNN_Attention_BiLSTM_Version30')
+    model.summary()
+    tf.keras.utils.plot_model(model=model, to_file='CNN_Attention_BiLSTM_Version30.png', show_shapes=True, dpi=100 )
+    
+    model.compile(loss=LOSS, 
+                  optimizer=optimizer, 
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+
+    return model
+
+
+
+
+
+####
+
+def CNN_Attention_BiLSTM_Version31(maxlen=5, n_features=1, units=21, dropout=0.2, LOSS = "mae", optimizer= 'cos'):
+
+    recurrent_initializer = tf.keras.initializers.Orthogonal()
+    bias_initializer = tf.keras.initializers.Zeros()
+    kernel_initializer = tf.keras.initializers.GlorotUniform()
+
+    input_layer = Input(shape=(maxlen, n_features), )
+
+    x = Conv1D(filters = 31, padding='valid', activation='elu', kernel_size = 3, kernel_initializer=kernel_initializer)(input_layer)
+    x = BatchNormalization()(x) 
+    x = MaxPooling1D(pool_size=2)(x)
+
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=units, kernel_initializer=kernel_initializer, 
+                                  recurrent_initializer=recurrent_initializer, 
+                                  bias_initializer=bias_initializer, return_sequences=True), 
+                             name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    x = Masking(mask_value=0.0)(x)  # 마스킹 추가
+
+    output_layer = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output_layer, name='CNN_Attention_BiLSTM_Version31')
+    model.summary()
+    tf.keras.utils.plot_model(model=model, to_file='CNN_Attention_BiLSTM_Version31.png', show_shapes=True, dpi=100 )
+    
+    model.compile(loss=LOSS, 
+                  optimizer=AngularGrad(optimizer),
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+
+    return model
+
+###############################################################################################################
+
+class Smish(Layer):
+    def __init__(self, **kwargs):
+        super(Smish, self).__init__(**kwargs)
+        self.supports_masking = True
+
+    def call(self, inputs):
+        return inputs * K.sigmoid(inputs)  # Replace with your Smish formula
+
+    def get_config(self):
+        base_config = super(Smish, self).get_config()
+        return dict(list(base_config.items()))
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+
+
+
+def CNN_Smish_Attention_BiLSTM_masking(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS="mae", optimizer='cos'):
+    input_layer = Input(shape=(maxlen, n_steps))
+
+    x = Conv1D(filters=units, padding='valid', kernel_size=1, activation=tf.keras.activations.elu, strides=30)(input_layer)
+    x = Smish()(x)
+    x = tf.keras.layers.BatchNormalization(axis=1, momentum=0.9)(x)
+    x = MaxPooling1D(pool_size=1, strides=2)(x)
+
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True), name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    x = Masking(mask_value=0.0)(x)  # 마스킹 추가
+
+    output = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()
+    tf.keras.utils.plot_model(model=model, to_file='CNN_Smish_Attention_BiLSTM_masking.png', show_shapes=True, dpi=100)
+
+    model.compile(loss=LOSS,
+                  optimizer=AngularGrad(optimizer),
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+    return model
+
+
+
+###############################################################################################################
+
+# attention_3d_block3 (Add)
+
+
+
+
+def CNN_Smish_Attention_Version2_BiLSTM_masking(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS="mae", optimizer='cos'):
+    input_layer = Input(shape=(maxlen, n_steps))
+
+    x = Conv1D(filters=units, padding='valid', kernel_size=1, activation=tf.keras.activations.elu, strides=30)(input_layer)
+    x = Smish()(x)
+    x = tf.keras.layers.BatchNormalization(axis=1, momentum=0.9)(x)
+    x = MaxPooling1D(pool_size=1, strides=2)(x)
+
+    attention_mul = attention_3d_block3(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True), name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    x = Masking(mask_value=0.0)(x)  # 마스킹 추가
+
+    output = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()
+    tf.keras.utils.plot_model(model=model, to_file='CNN_Smish_Attention_Version2_BiLSTM_masking.png', show_shapes=True, dpi=100)
+
+    model.compile(loss=LOSS,
+                  optimizer=AngularGrad(optimizer),
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+    return model
+
+
+#####
 # cnn-attention-bilstm-attention 
 def CNN_Attention_BiLSTM_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -2795,6 +3101,90 @@ def BiLSTM_GRU_LSTM_CNN_BiLSTM_attention(maxlen=5, units=21, dropout=0.3, n_step
 
 
 
+
+def BiGRU_CNN_BiLSTM_Attention_masking(maxlen=5,dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
+    
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    
+    input_layer = Input(shape=(maxlen, n_steps), )
+   
+    x = tf.keras.layers.Bidirectional(GRU(units=16,return_sequences=True),name='biGRU')(input_layer) 
+
+
+
+    x =Conv1D(filters=31, kernel_size=1, activation=keras.activations.selu,strides=40)(x)                       
+    x = tf.keras.layers.BatchNormalization(axis=1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=1,strides=2)(x)
+
+
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=21,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(x)
+    lstm_out = Dropout(dropout)(lstm_out)
+    attention_mul = attention_3d_block2(lstm_out)
+    attention_mul = Flatten()(attention_mul)
+    attention_mul = Masking(mask_value=0.0)(attention_mul)  # 마스킹 추가
+    
+    output_layer = Dense(1, activation="linear")(attention_mul)
+    model = Model(inputs=input_layer, outputs=output_layer,name='BiGRU_CNN_BiLSTM_Attention_version2')
+    model.summary()
+    tf.keras.utils.plot_model(model=model,to_file='BiGRU_CNN_BiLSTM_Attention_version2.png', show_shapes=True, dpi=100 )  
+    
+    
+    model.compile(loss=LOSS, 
+                optimizer=AngularGrad(optimizer),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()])
+
+    return model   
+
+
+
+#####################################
+
+def BiGRU_CNN_BiLSTM_Attention_version3(maxlen=5, n_steps=1, dropout=0.2, LOSS = "mae", optimizer= 'cos'):
+    
+    recurrent_initializer = tf.keras.initializers.Orthogonal()
+    bias_initializer = tf.keras.initializers.Zeros()
+    kernel_initializer = tf.keras.initializers.VarianceScaling(scale=2.0, mode='fan_in', distribution='truncated_normal')
+
+    input_layer = Input(shape=(maxlen, n_steps), )
+   
+    x = tf.keras.layers.Bidirectional(GRU(units=10,return_sequences=True,
+                                          kernel_initializer=kernel_initializer, 
+                                          recurrent_initializer=recurrent_initializer, 
+                                          bias_initializer=bias_initializer),
+                                      name='biGRU')(input_layer) 
+
+    x = Conv1D(filters=64, kernel_size=3, activation=keras.activations.elu)(x)                       
+    x = tf.keras.layers.BatchNormalization(axis=-1,momentum=0.9)(x) 
+    x = MaxPooling1D(pool_size=2)(x)
+
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=10,
+                                                  kernel_initializer = kernel_initializer, 
+                                                  recurrent_initializer=recurrent_initializer, 
+                                                  bias_initializer=bias_initializer,
+                                                  return_sequences=True),
+                                             name='bilstm')(x)
+    lstm_out = Dropout(dropout)(lstm_out)
+    attention_mul = attention_3d_block2(lstm_out)
+    attention_mul = Flatten()(attention_mul)
+    
+    output_layer = Dense(1, activation="linear")(attention_mul)
+    model = Model(inputs=input_layer, outputs=output_layer, name='BiGRU_CNN_BiLSTM_Attention_version3')
+    model.summary()
+    tf.keras.utils.plot_model(model=model, to_file='BiGRU_CNN_BiLSTM_Attention_version3.png', show_shapes=True, dpi=100 )  
+    
+    model.compile(loss=LOSS, 
+                  optimizer=AngularGrad(optimizer),  
+                  metrics=['mae',tf.keras.metrics.RootMeanSquaredError()])
+
+    return model
+
+
+
+
+
+
 # bilstm-attention
 def BiLSTM_Attention(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'cos'):
     input_layer = Input(shape=(maxlen, n_steps), )
@@ -2965,6 +3355,240 @@ def TCN(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS = "mae", optimizer= 'co
                 metrics=['mae',tf.keras.metrics.RootMeanSquaredError()])
 
     return model           
+
+
+##################
+
+
+
+def CNN_ResidualBiLSTM_GRU_Model(maxlen=5, n_features=1, units=21, dropout=0.3, LOSS = "mae", optimizer= 'cos'):
+
+    recurrent_initializer = tf.keras.initializers.Orthogonal()
+    bias_initializer = tf.keras.initializers.Zeros()
+    kernel_initializer = tf.keras.initializers.GlorotUniform()
+    
+    inputs = layers.Input(shape=(maxlen, n_features), )
+
+    # 1D convolutional layer with filters = units * 2
+    conv = layers.Conv1D(filters=units*2, strides=40, kernel_size=1, padding='same', activation='elu', kernel_initializer=kernel_initializer)(inputs)
+    conv = layers.BatchNormalization()(conv)
+
+    # Bidirectional LSTM layers
+    lstm = layers.Bidirectional(layers.LSTM(units=units, return_sequences=True, 
+                                            kernel_initializer=kernel_initializer, 
+                                            recurrent_initializer=recurrent_initializer,
+                                            bias_initializer=bias_initializer,
+                                            dropout=dropout,
+                                            recurrent_dropout=dropout))(conv)
+
+    # Residual connection
+    res1 = layers.add([conv, lstm])
+    res1 = layers.LayerNormalization()(res1)
+
+    # GRU layer
+    gru = layers.GRU(units=units*2, return_sequences=True, 
+                     kernel_initializer=kernel_initializer, 
+                     recurrent_initializer=recurrent_initializer,
+                     bias_initializer=bias_initializer,
+                     dropout=dropout,
+                     recurrent_dropout=dropout)(res1)
+
+    # Residual connection
+    res2 = layers.add([res1, gru])
+    res2 = layers.LayerNormalization()(res2)
+
+    # Flatten and output layer
+    x = layers.Flatten()(res2)
+    outputs = layers.Dense(1, activation='linear')(x)
+
+    # Create and compile model
+    model = Model(inputs=inputs, outputs=outputs, name='CNN_ResidualBiLSTM_GRU_Model')
+    model.summary()
+    tf.keras.utils.plot_model(model=model, to_file='CNN_ResidualBiLSTM_GRU_Model.png', show_shapes=True, dpi=100)
+
+    model.compile(loss=LOSS, 
+                  optimizer=AngularGrad(optimizer), 
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+
+    return model
+
+
+########
+
+
+def HybridAttentionModel(maxlen=5, n_features=1, units=16, dropout=0.2, LOSS = "mae", optimizer= 'cos'):
+
+    recurrent_initializer = tf.keras.initializers.Orthogonal()
+    bias_initializer = tf.keras.initializers.Zeros()
+    kernel_initializer = tf.keras.initializers.GlorotUniform()
+    
+    inputs = layers.Input(shape=(maxlen, n_features), )
+
+    # 1D convolutional layer
+    conv = layers.Conv1D(filters=units*2, kernel_size=3, padding='same', activation='relu', kernel_initializer=kernel_initializer)(inputs)
+    conv = layers.BatchNormalization()(conv)
+    conv = layers.Dropout(dropout)(conv)
+
+    # Bidirectional GRU layers
+    gru = layers.Bidirectional(layers.GRU(units=units, return_sequences=True, 
+                                          kernel_initializer=kernel_initializer, 
+                                          recurrent_initializer=recurrent_initializer,
+                                          bias_initializer=bias_initializer,
+                                          dropout=dropout))(conv)
+
+    # Residual connection
+    res = layers.add([conv, gru])
+    res = layers.LayerNormalization()(res)
+
+    # LSTM layer
+    lstm = layers.LSTM(units=units, return_sequences=True, 
+                       kernel_initializer=kernel_initializer, 
+                       recurrent_initializer=recurrent_initializer,
+                       bias_initializer=bias_initializer,
+                       dropout=dropout)(res)
+
+    # TimeDistributed layer to match the dimensionality	
+    lstm = layers.TimeDistributed(layers.Dense(units * 2))(lstm)	
+
+
+    # Attention layer
+    attention = layers.Attention()([lstm, res])
+
+    # Flatten and output layer
+    x = layers.Flatten()(attention)
+    outputs = layers.Dense(1, activation='linear')(x)
+
+    # Create and compile model
+    model = Model(inputs=inputs, outputs=outputs, name='HybridAttentionModel')
+    model.summary()
+    tf.keras.utils.plot_model(model=model, to_file='HybridAttentionModel.png', show_shapes=True, dpi=100)
+
+    model.compile(loss=LOSS, 
+                  optimizer=AngularGrad(optimizer), 
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+
+    
+    return model
+##################
+import gym
+import numpy as np
+from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import MeanSquaredError
+from tensorflow.keras.activations import linear
+from tensorflow.keras.initializers import RandomUniform
+from tensorflow.keras import backend as K
+from rl.agents import DQNAgent     
+from rl.memory import SequentialMemory
+from rl.policy import BoltzmannQPolicy
+from rl.processors import MultiInputProcessor
+from rl.core import Env
+from rl.policy import EpsGreedyQPolicy
+
+
+# class CustomEnv(Env):
+#     def __init__(self, maxlen, units, dropout, input_shape):
+#         self.maxlen = maxlen
+#         self.units = units
+#         self.dropout = dropout
+#         self.input_shape = model.input_shape[0:]        
+#         # Define your custom environment logic here
+
+#     def reset(self):
+#         # Reset the environment
+#         pass
+
+#     def step(self, action):
+#         # Take a step in the environment
+#         pass
+
+#     def render(self):
+#         # Render the environment (optional)
+#         pass
+
+
+def CNN_Attention_bilstm_Masking_Adam_ExponentialDecay(maxlen=5, units=16, dropout=0.3):
+    input_layer = Input(shape=(maxlen, 1))
+
+    x = Conv1D(filters=units, padding='valid', kernel_size=1, activation='elu', strides=30)(input_layer)
+    x = tf.keras.layers.BatchNormalization(axis=1, momentum=0.9)(x)
+    x = MaxPooling1D(pool_size=1, strides=2)(x)
+
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True), name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    x = Masking(mask_value=0.0)(x)
+
+    output = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output)
+    
+    # memory = SequentialMemory(limit=50000, window_length=1)
+    # policy = EpsGreedyQPolicy()
+    # nb_actions = 1  # Define the number of actions in your reinforcement learning problem
+
+    # model = DQNAgent(model=model[0:], nb_actions=nb_actions,memory=memory, policy=policy, enable_double_dqn=True, enable_dueling_network=True)
+    model.summary()
+    
+
+    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate_schedule)
+    # model.compile(optimizer=optimizer, loss='mean_squared_error')
+    model.compile(loss='mae', optimizer=optimizer, metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+
+    return model
+
+
+################################################3 
+
+def CNN_Attention_bilstm_Masking_AngularGrad_ExponentialDecay(maxlen=5, units=16, dropout=0.3):
+    input_layer = Input(shape=(maxlen, 1))
+
+    x = Conv1D(filters=units, padding='valid', kernel_size=1, activation='elu', strides=30)(input_layer)
+    x = tf.keras.layers.BatchNormalization(axis=1, momentum=0.9)(x)
+    x = MaxPooling1D(pool_size=1, strides=2)(x)
+
+    attention_mul = attention_3d_block2(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True), name='bilstm')(attention_mul)
+    lstm_out = Dropout(dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    x = Masking(mask_value=0.0)(x)
+
+    output = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output)
+    
+    # memory = SequentialMemory(limit=50000, window_length=1)
+    # policy = EpsGreedyQPolicy()
+    # nb_actions = 1  # Define the number of actions in your reinforcement learning problem
+
+    # model = DQNAgent(model=model[0:], nb_actions=nb_actions,memory=memory, policy=policy, enable_double_dqn=True, enable_dueling_network=True)
+    model.summary()
+    # Now you can use this custom optimizer with a learning rate schedule:
+    lr_schedule = ExponentialDecay(
+    initial_learning_rate=0.0001,
+    decay_steps=100000,
+    decay_rate=0.9,
+    staircase=False)
+
+    optimizer = CustomAngularGrad(learning_rate=lr_schedule)
+
+    #optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate_schedule)
+    # model.compile(optimizer=optimizer, loss='mean_squared_error')
+    model.compile(loss='mae', optimizer= AngularGrad(optimizer), metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+
+    return model
+
+
+
+#################################################3
+
+# def create_reinforcement_learning_model(maxlen=5, units=21, dropout=0.3, LOSS='mae', optimizer='cos'):
+#     #Env = CustomEnv(maxlen, units, dropout, input_shape)
+#     model, dqn = create_model()
+#     #model.compile(loss=LOSS, optimizer=AngularGrad(optimizer), metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+#     return model, dqn
+
+
 
 #####
 # CNN_Deep_BiGRU Deep_CNN_BiGRU
@@ -3183,11 +3807,40 @@ def create_model_lstm_basic( n_steps=1,maxlen=5, LOSS = "mae", optimizer="cos"):
     return model       
 
      
+######
+
+
+def Transformer_Model(maxlen=5, n_features=1, num_heads=8, ff_dim=32, dropout=0.1, LOSS = "mae", optimizer= 'adam'):
+
+    input_layer = Input(shape=(maxlen, n_features))
+
+    attn_layer1 = tf.keras.layers.MultiHeadAttention(num_heads=num_heads, key_dim=n_features, dropout=dropout)(input_layer, input_layer)
+    attn_layer1 = Dropout(dropout)(attn_layer1)
+    out1 = LayerNormalization(epsilon=1e-6)(input_layer + attn_layer1)
+
+    ffn_layer1 = Dense(ff_dim, activation='relu')(out1)
+    ffn_layer1 = Dense(n_features)(ffn_layer1)
+    ffn_layer1 = Dropout(dropout)(ffn_layer1)
+    out2 = LayerNormalization(epsilon=1e-6)(out1 + ffn_layer1)
+
+    x = GlobalAveragePooling1D()(out2)
+    x = Dropout(dropout)(x)
+
+    output_layer = Dense(1, activation="linear")(x)
+
+    model = Model(inputs=input_layer, outputs=output_layer, name='Transformer_Model')
+    model.summary()
+    tf.keras.utils.plot_model(model=model, to_file='Transformer_Model.png', show_shapes=True, dpi=100 )
+
+    model.compile(loss=LOSS, 
+                  optimizer=optimizer,  
+                  metrics=['mae',tf.keras.metrics.RootMeanSquaredError()])
+
+    return model
 
 
 
-
-
+#####
 
 
 #1104 Transformer_model
