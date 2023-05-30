@@ -144,3 +144,132 @@ class ScaledDotProductAttention(tf.keras.layers.Layer):
         logits = matmul_qk / tf.math.sqrt(depth)
         attention_weights = tf.nn.softmax(logits, axis=-1)
         return tf.matmul(attention_weights, value)
+    
+#######################################################################################3
+
+class MultiHeadAttention(tf.keras.layers.Layer):
+    def __init__(self, num_heads, key_dim):
+        super(MultiHeadAttention, self).__init__()
+        self.num_heads = num_heads
+        self.key_dim = key_dim
+
+        # Adjust key_dim to be divisible by num_heads
+        self.key_dim = key_dim // num_heads * num_heads
+
+        self.wq = tf.keras.layers.Dense(self.key_dim)
+        self.wk = tf.keras.layers.Dense(self.key_dim)
+        self.wv = tf.keras.layers.Dense(self.key_dim)
+        self.dense = tf.keras.layers.Dense(self.key_dim)
+
+    def split_heads(self, x, batch_size):
+        x = tf.reshape(x, (batch_size, -1, self.num_heads, self.key_dim // self.num_heads))
+        return tf.transpose(x, perm=[0, 2, 1, 3])
+
+    def call(self, inputs):
+        q = self.wq(inputs)
+        k = self.wk(inputs)
+        v = self.wv(inputs)
+
+        batch_size = tf.shape(q)[0]
+
+        q = self.split_heads(q, batch_size)
+        k = self.split_heads(k, batch_size)
+        v = self.split_heads(v, batch_size)
+
+        scaled_attention_logits = tf.matmul(q, k, transpose_b=True)
+        scaled_attention_logits /= tf.math.sqrt(tf.cast(self.key_dim // self.num_heads, tf.float32))
+
+        attention_weights = tf.nn.softmax(scaled_attention_logits, axis=-1)
+        attention_output = tf.matmul(attention_weights, v)
+
+        attention_output = tf.transpose(attention_output, perm=[0, 2, 1, 3])
+        attention_output = tf.reshape(attention_output, (batch_size, -1, self.key_dim))
+
+        output = self.dense(attention_output)
+        return output
+
+###################################################################################################################
+
+
+
+class TransformerBlock_MultiHeadAttention(tf.keras.layers.Layer):
+    def __init__(self, num_heads, d_model, dropout_rate=0.1):
+        super(TransformerBlock_MultiHeadAttention, self).__init__()
+        self.num_heads = num_heads
+        self.d_model = d_model
+        self.dropout_rate = dropout_rate
+        
+        assert d_model % num_heads == 0
+        self.depth = d_model // num_heads
+        
+        self.wq = tf.keras.layers.Dense(d_model)
+        self.wk = tf.keras.layers.Dense(d_model)
+        self.wv = tf.keras.layers.Dense(d_model)
+        self.dropout = tf.keras.layers.Dropout(dropout_rate)
+        self.dense = tf.keras.layers.Dense(d_model)
+    
+    def split_heads(self, x, batch_size):
+        x = tf.reshape(x, (batch_size, -1, self.num_heads, self.depth))
+        return tf.transpose(x, perm=[0, 2, 1, 3])
+    
+    def call(self, q, k, v, mask=None):
+        batch_size = tf.shape(q)[0]
+        
+        q = self.wq(q)
+        k = self.wk(k)
+        v = self.wv(v)
+        
+        q = self.split_heads(q, batch_size)
+        k = self.split_heads(k, batch_size)
+        v = self.split_heads(v, batch_size)
+        
+        scaled_attention_logits = tf.matmul(q, k, transpose_b=True)
+        scaled_attention_logits /= tf.math.sqrt(tf.cast(self.depth, tf.float32))
+        
+        if mask is not None:
+            scaled_attention_logits += (mask * -1e9)
+        
+        attention_weights = tf.nn.softmax(scaled_attention_logits, axis=-1)
+        attention_weights = self.dropout(attention_weights)
+        attention_output = tf.matmul(attention_weights, v)
+        
+        attention_output = tf.transpose(attention_output, perm=[0, 2, 1, 3])
+        attention_output = tf.reshape(attention_output, (batch_size, -1, self.d_model))
+        
+        output = self.dense(attention_output)
+        return output
+
+
+class TransformerBlock(tf.keras.layers.Layer):
+    def __init__(self, d_model, num_heads, ff_dim, dropout_rate=0.2):
+        super(TransformerBlock, self).__init__()
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.ff_dim = ff_dim
+        self.dropout_rate = dropout_rate
+
+        self.multihead_attention = TransformerBlock_MultiHeadAttention(
+            num_heads=num_heads,
+            d_model=d_model,
+            dropout_rate=dropout_rate
+        )
+        self.ffn = tf.keras.Sequential([
+            tf.keras.layers.Dense(ff_dim, activation='relu'),
+            tf.keras.layers.Dense(d_model)
+        ])
+        self.layernorm1 = tf.keras.layers.LayerNormalization()
+        self.layernorm2 = tf.keras.layers.LayerNormalization()
+        self.dropout1 = tf.keras.layers.Dropout(dropout_rate)
+        self.dropout2 = tf.keras.layers.Dropout(dropout_rate)
+
+    def call(self, inputs, mask=None):
+        q = inputs
+        k = inputs
+        v = inputs
+
+        attn_output = self.multihead_attention(q, k, v, mask=mask)
+        attn_output = self.dropout1(attn_output)
+        out1 = self.layernorm1(inputs + attn_output)
+        ffn_output = self.ffn(out1)
+        ffn_output = self.dropout2(ffn_output)
+        return self.layernorm2(out1 + ffn_output)
