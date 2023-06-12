@@ -15,12 +15,12 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler,StandardScaler,Normalizer, MaxAbsScaler,RobustScaler,QuantileTransformer
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.layers import LSTM, Dense, Dropout , Activation, GRU ,Masking
+from tensorflow.keras.layers import LSTM, Dense, Dropout , Activation, GRU ,Masking, GlobalMaxPooling1D, GlobalAveragePooling1D, Attention, GlobalMaxPooling2D,Conv2D
 #from sklearn import preprocessing
 from tensorflow.keras import *
 from tensorflow.keras.models import Sequential
 from tensorflow.python.keras.callbacks import EarlyStopping
-from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, ReduceLROnPlateau, LearningRateScheduler
+from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, ReduceLROnPlateau, LearningRateScheduler, Callback
 import tensorflow as tf
 from tensorflow.keras.optimizers import SGD
 import tensorflow_hub as hub # pip install tensorflow-hub  
@@ -29,7 +29,7 @@ import tensorflow_hub as hub # pip install tensorflow-hub
 from .angular_grad import AngularGrad
 from matplotlib import pyplot
 ####
-from keras.layers import GRU, MaxPooling1D, Conv1D, GlobalMaxPool1D, Activation, Add, Flatten, BatchNormalization , GlobalAveragePooling1D
+from keras.layers import GRU, MaxPooling1D, Conv1D, GlobalMaxPool1D, Activation, Add, Flatten, BatchNormalization 
 from keras.layers import Dense, Embedding, Input, concatenate, TimeDistributed, Attention, PReLU, ELU,LeakyReLU
 #### 2022 11 01 add
 ## pip install dropconnect-tensorflow (Successfully installed dropconnect-tensorflow-0.1.1)
@@ -41,7 +41,7 @@ from .tcn.tcn import compiled_tcn
 from keras.regularizers import l2
 
 
-from .attention_3d_block.attention_3d_block import attention_3d_block2, attention_3d_block3, TransformedAttention, ScaledDotProductAttention, MultiHeadAttention, TransformerBlock
+from .attention_3d_block.attention_3d_block import attention_3d_block2, attention_3d_block3, TransformedAttention, ScaledDotProductAttention, MultiHeadAttention, TransformerBlock, TransformerBlock_version2
 
 #### 2022-11-02
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, median_absolute_error, mean_squared_log_error
@@ -61,6 +61,7 @@ keras.utils.vis_utils.pydot = pyd
 
 from .Transformer.Transformer import *
 
+
 import time
 import os
 
@@ -68,6 +69,10 @@ import os
 from keras.initializers import glorot_uniform,GlorotUniform
 from wandb.keras import WandbCallback
 import wandb
+
+# 2023-05-30 Add
+from .RadamaxAngularGrad import RadamaxAngularGrad
+
 
 
 
@@ -134,7 +139,7 @@ def train(data, model, n_epochs=100, batch_size=32, verbose=1):
 # api key :483c55b5c6488e6484b5173b3f6dfe92af598e2d
     #wandb.init(project="celltrionhealthcare", entity="SeongJae-Yoo")
     wandb.init(project="samsung", entity="SeongJae-Yoo")
-    wandb.run.name = 'TEST_0529'
+    wandb.run.name = 'CNN_Attention_BiLSTM_Version32'
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
@@ -269,7 +274,7 @@ def train_version2(data, model, n_epochs=100, batch_size=32, verbose=1):
 # api key :483c55b5c6488e6484b5173b3f6dfe92af598e2d
     #wandb.init(project="celltrionhealthcare", entity="SeongJae-Yoo")
     wandb.init(project="samsung", entity="SeongJae-Yoo")
-    wandb.run.name = 'CNN_Mish_tfhub_BiLSTM_masking'
+    wandb.run.name = 'CNN_Mish_TransformedAttention_BiLSTM_masking_version5'
     # Save a model file manually from the current directory:
     #wandb.save('model-best.h5')
 
@@ -291,7 +296,7 @@ def train_version2(data, model, n_epochs=100, batch_size=32, verbose=1):
     # wandb   Hyperparameter Sweeps   시각화 할 수 있는 자료 (아래 확인)
     #https://colab.research.google.com/drive/1gKixa6hNUB8qrn1CfHirOfTEQm0qLCSS#scrollTo=1gD9qhA9yOYs
     
-    wandb_callback = WandbCallback(monitor='val_loss',save_model=False,mode='min',log_weights=True,log_evaluation=True,validation_steps=5,verbose=1)
+    wandb_callback = WandbCallback(monitor='val_loss',save_model=True,mode='min',log_weights=True,log_evaluation=True,validation_steps=5,verbose=1)
     #lr_callback = tf.keras.callbacks.LearningRateScheduler(lr_scheduler)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
                               patience=1, min_lr=0.0001, mode='min',verbose=1)
@@ -308,6 +313,52 @@ def train_version2(data, model, n_epochs=100, batch_size=32, verbose=1):
                         epochs=n_epochs,
                         validation_data=(data["X_test"], data["y_test"]),
                         callbacks=[wandb_callback],
+                        verbose=verbose)
+    # # 아래구문 추가하면  best_mae 값으로 실제값과 예측값의 plot_graph 가 나온다.
+    #model.load_weights("weights.CNN_Attention_BiLSTM_Version7.hdf5")                    
+    
+    return history
+
+
+####################################
+
+
+
+
+def train_version3(data, model, n_epochs=100, batch_size=32, verbose=1):
+    #wandb.init(project='my_project', name='run1', dir='path/to/save/models')  # Set a different directory for saving the models
+    
+
+    run_name = "CNN_Mish_TransformedAttention_Bi_Stacked_LSTM_masking"  # Set a unique run name
+    model_dir = f"models/{run_name}"  # Create a subdirectory for each run
+    os.makedirs(model_dir, exist_ok=True)  # Create the directory if it doesn't exist
+
+    wandb.init(project="samsung", entity="SeongJae-Yoo", name=run_name, dir=model_dir)
+
+
+    # Create ModelCheckpoint callback to save the best model
+    checkpoint_callback = ModelCheckpoint('model-best.h5', monitor='val_loss', save_best_only=True)
+
+    # Create WandbCallback with save_model=True and specify the file name , # WandbCallback = wandb.keras.WandbCallback
+    wandb_callback = wandb.keras.WandbCallback(monitor='val_loss', save_model=False, save_weights_only=True, filename='model-best.h5')
+    
+    #################################################################################################################################
+
+    
+    # Create the ReduceLROnPlateau callback with the One Cycle Learning Rate Schedule
+    # A good starting point for "patience" is often between 5 to 10 epochs. 
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=0.0001, verbose=1, mode='min', cooldown=10, min_delta=1e-4)
+    
+        
+   
+
+
+
+    history = model.fit(data["X_train"], data["y_train"],
+                        batch_size=batch_size,
+                        epochs=n_epochs,
+                        validation_data=(data["X_test"], data["y_test"]),
+                        callbacks=[wandb_callback,checkpoint_callback,reduce_lr],
                         verbose=verbose)
     # # 아래구문 추가하면  best_mae 값으로 실제값과 예측값의 plot_graph 가 나온다.
     #model.load_weights("weights.CNN_Attention_BiLSTM_Version7.hdf5")                    
@@ -603,6 +654,65 @@ def wandb_sweep_train_version4(data, sweep_model, n_epochs=100, batch_size=32, v
     
     return history
 
+# CNN_Smish_ScaledDotProductAttention_BiLSTM_masking wandb sweep function
+def wandb_sweep_train_version5(data, sweep_model, n_epochs=100, batch_size=32, verbose=1):
+    # Default values for hyper-parameters we're going to sweep over
+    config_defaults = {
+        "name": "CNN_Smish_ScaledDotProductAttention_BiLSTM_masking",
+        'Conv1D_filters': 21,
+        'Conv1D_activation': 'elu',
+        'Conv1D_strides': 30,
+        'BiLstm_units': 21,
+        'dropout' : 0.3
+    }
+
+    # Initialize a new wandb run
+    wandb.init(config=config_defaults)
+    
+    
+    # Config is a variable that holds and saves hyperparameters and inputs  
+    config = wandb.config
+    
+    recurrent_initializer = tf.random_normal_initializer(mean=0.2, stddev=0.05)
+    bias_initializer = tf.keras.initializers.HeUniform()
+    kernel_initializer = tf.keras.initializers.GlorotNormal()
+    
+    input_layer = Input(shape=(5, 1))
+    
+    x = Conv1D(filters = config.Conv1D_filters,padding='valid',activation=config.Conv1D_activation,kernel_size = 1,strides=config.Conv1D_strides)(input_layer)
+    x = Smish()(x)
+    x = tf.keras.layers.BatchNormalization(axis=1, momentum=0.9)(x)
+    x = MaxPooling1D(pool_size=1, strides=2)(x)
+
+    attention = ScaledDotProductAttention()(x, x, x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=config.BiLstm_units,kernel_initializer = kernel_initializer, recurrent_initializer=recurrent_initializer, bias_initializer=bias_initializer,return_sequences=True),name='bilstm')(attention)	
+    lstm_out = Dropout(config.dropout)(lstm_out)
+    x = Flatten()(lstm_out)
+    x = Masking(mask_value=0.0)(x)
+    
+    output = Dense(1, activation='linear')(x) # linear 성능 향상에 꼭 필요함	
+    sweep_model = Model(inputs=[input_layer], outputs=output)	
+    sweep_model.summary()  
+    
+    
+    sweep_model.compile(loss="mae", 
+                optimizer=AngularGrad('cos'),  
+                metrics=['mae',tf.keras.metrics.RootMeanSquaredError()]) 
+    
+                
+    wandb_callback = WandbCallback(monitor='val_loss',save_model=True,mode='min',log_weights=True,log_evaluation=True,validation_steps=5,verbose=1)    
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=2, min_lr=0.0001, verbose=1, mode='min', cooldown=10, min_delta=1e-4)
+
+    history = sweep_model.fit(data["X_train"], data["y_train"],
+                        batch_size=batch_size,
+                        epochs=n_epochs,
+                        validation_data=(data["X_test"], data["y_test"]),
+                        callbacks=[wandb_callback,reduce_lr],
+                        verbose=verbose)
+    # # 아래구문 추가하면  best_mae 값으로 실제값과 예측값의 plot_graph 가 나온다.
+    #model.load_weights("weights.CNN_Attention_BiLSTM_Version7.hdf5")                    
+    
+    return history
 
 # 에러 평가 함수 # 스케일링된 결과 값을 본래 값으로 복원한다 (inverse_transform 함수란?)
 # 참고 사이트 
@@ -2834,6 +2944,37 @@ def CNN_Attention_BiLSTM_Version31(maxlen=5, n_features=1, units=21, dropout=0.2
 
     return model
 
+####################################################################################################################
+def CNN_Attention_BiLSTM_Version32(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS="mae", optimizer='cos'):
+    recurrent_initializer = tf.keras.initializers.Orthogonal()
+    bias_initializer = tf.keras.initializers.Zeros()
+    kernel_initializer = tf.keras.initializers.GlorotUniform()
+    
+    input_layer = Input(shape=(maxlen, n_steps))
+
+    x = Conv1D(filters=units, padding='valid', kernel_size=1, activation='elu', strides=1)(input_layer)
+    x = GlobalMaxPooling1D()(x)
+    x = Dropout(dropout)(x)
+
+    # Using built-in Attention layer
+    attention = Attention(use_scale=True)([x, x])
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units=units, kernel_initializer=kernel_initializer, 
+                                  recurrent_initializer=recurrent_initializer, 
+                                  bias_initializer=bias_initializer, return_sequences=True), 
+                             name='bilstm')(attention)
+    lstm_out = Dropout(dropout)(lstm_out)
+    
+    x = Flatten()(lstm_out)
+
+    output = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()
+
+    model.compile(loss=LOSS,
+                  optimizer=AngularGrad(optimizer),
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+    return model
+
 ###############################################################################################################
 
 class Smish(Layer):
@@ -3024,7 +3165,187 @@ def CNN_Mish_TransformedAttention_BiLSTM_masking_version4(maxlen=5, units=21, dr
 ############################################################################################################################################33
 
 
-def CNN_Mish_TransformedAttention_BiLSTM_masking_version5(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS="mae", optimizer='cos'):
+'''
+Improving the performance of an attention mechanism and a hybrid model can depend on several factors. Here are a few techniques that can be incorporated into the TransformedAttention class:
+
+Scaled dot-product Attention: This scaling factor under the softmax can prevent large dot products in higher dimensions.
+
+Multi-head Attention: It allows the model to jointly attend to information at different positions from different feature spaces.
+
+Residual Connections and Layer Normalization: These are used in almost all transformer-based models to help with training deep networks.
+
+'''
+
+# units=64 가 최고로 좋은 모델 => num_heads of 8 설정 필수
+'''
+Remember that units should be a multiple of the num_heads. In this example, 64 is a multiple of 8, 
+which is why this value is used. 
+'''
+
+def CNN_Mish_TransformedAttention_BiLSTM_masking_version5(maxlen=5, units=64, dropout=0.3, n_steps=1, LOSS="mae"):
+    class TransformedAttention(tf.keras.layers.Layer):
+        def __init__(self, dim, num_heads=8, **kwargs):
+            super(TransformedAttention, self).__init__(**kwargs)
+            self.dim = dim
+            self.num_heads = num_heads
+            self.depth = dim // num_heads
+
+            self.W_q = self.add_weight(shape=(dim, dim), initializer='he_normal')
+            self.W_k = self.add_weight(shape=(dim, dim), initializer='he_normal')
+            self.W_v = self.add_weight(shape=(dim, dim), initializer='he_normal')
+
+            self.dense = tf.keras.layers.Dense(units=dim)
+
+        def split_heads(self, x, batch_size):
+            """Split the last dimension into (num_heads, depth).
+            Transpose the result such that the shape is (batch_size, num_heads, seq_len, depth)
+            """
+            x = tf.reshape(x, (batch_size, -1, self.num_heads, self.depth))
+            return tf.transpose(x, perm=[0, 2, 1, 3])
+
+        def call(self, query, key, value):
+            batch_size = tf.shape(query)[0]
+
+            q = tf.matmul(query, self.W_q)
+            k = tf.matmul(key, self.W_k)
+            v = tf.matmul(value, self.W_v)
+
+            q = self.split_heads(q, batch_size)  
+            k = self.split_heads(k, batch_size)
+            v = self.split_heads(v, batch_size)
+
+            matmul_qk = tf.matmul(q, k, transpose_b=True)
+
+            dk = tf.cast(tf.shape(k)[-1], tf.float32)
+            scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
+
+            attention_weights = tf.nn.softmax(scaled_attention_logits, axis=-1)
+
+            output = tf.matmul(attention_weights, v)
+            output = tf.transpose(output, perm=[0, 2, 1, 3])
+            concat_attention = tf.reshape(output, (batch_size, -1, self.dim))
+
+            output = self.dense(concat_attention)
+
+            return output
+
+        def get_config(self):
+            config = super(TransformedAttention, self).get_config()
+            config.update({"dim": self.dim, "num_heads": self.num_heads})
+            return config
+
+        @classmethod
+        def from_config(cls, config):
+            return cls(**config)
+
+    input_layer = Input(shape=(maxlen, n_steps))
+
+    x = Conv1D(filters=units, padding='valid', kernel_size=1, activation=mish, strides=30)(input_layer)
+    x = Smish()(x)
+    x = tf.keras.layers.BatchNormalization(axis=1, momentum=0.9)(x)
+    x = MaxPooling1D(pool_size=1, strides=2)(x)
+
+    attention = TransformedAttention(units, num_heads=8)(x, x, x)  # num_heads=8
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True), name='bilstm')(attention)
+    lstm_out = Dropout(dropout)(lstm_out)
+    lstm_out = Masking(mask_value=0.0)(lstm_out)
+    x = GlobalMaxPooling1D()(lstm_out)
+
+    output = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()
+    
+
+    model.compile(loss=LOSS,
+                  optimizer=AngularGrad('cos'),
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+    return model
+####################################################################################################################################################
+def CNN_Mish_TransformedAttention_BiLSTM_masking_version6(maxlen=5, units=81, dropout=0.3, n_steps=1, LOSS="mae"):
+    class TransformedAttention(tf.keras.layers.Layer):
+        def __init__(self, dim, num_heads=9, **kwargs):
+            super(TransformedAttention, self).__init__(**kwargs)
+            self.dim = dim
+            self.num_heads = num_heads
+            self.depth = dim // num_heads
+
+            self.W_q = self.add_weight(shape=(dim, dim), initializer='he_normal')
+            self.W_k = self.add_weight(shape=(dim, dim), initializer='he_normal')
+            self.W_v = self.add_weight(shape=(dim, dim), initializer='he_normal')
+
+            self.dense = tf.keras.layers.Dense(units=dim)
+
+        def split_heads(self, x, batch_size):
+            """Split the last dimension into (num_heads, depth).
+            Transpose the result such that the shape is (batch_size, num_heads, seq_len, depth)
+            """
+            x = tf.reshape(x, (batch_size, -1, self.num_heads, self.depth))
+            return tf.transpose(x, perm=[0, 2, 1, 3])
+
+        def call(self, query, key, value):
+            batch_size = tf.shape(query)[0]
+
+            q = tf.matmul(query, self.W_q)
+            k = tf.matmul(key, self.W_k)
+            v = tf.matmul(value, self.W_v)
+
+            q = self.split_heads(q, batch_size)  
+            k = self.split_heads(k, batch_size)
+            v = self.split_heads(v, batch_size)
+
+            matmul_qk = tf.matmul(q, k, transpose_b=True)
+
+            dk = tf.cast(tf.shape(k)[-1], tf.float32)
+            scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
+
+            attention_weights = tf.nn.softmax(scaled_attention_logits, axis=-1)
+
+            output = tf.matmul(attention_weights, v)
+            output = tf.transpose(output, perm=[0, 2, 1, 3])
+            concat_attention = tf.reshape(output, (batch_size, -1, self.dim))
+
+            output = self.dense(concat_attention)
+
+            return output
+
+        def get_config(self):
+            config = super(TransformedAttention, self).get_config()
+            config.update({"dim": self.dim, "num_heads": self.num_heads})
+            return config
+
+        @classmethod
+        def from_config(cls, config):
+            return cls(**config)
+
+    input_layer = Input(shape=(maxlen, n_steps))
+
+    x = Conv1D(filters=units, padding='valid', kernel_size=1, activation=mish, strides=30)(input_layer)
+    x = Smish()(x)
+    x = tf.keras.layers.BatchNormalization(axis=1, momentum=0.9)(x)
+    x = MaxPooling1D(pool_size=1, strides=2)(x)
+
+    # Adjust the num_heads value to ensure units > 81
+    num_heads = units // 9 + 1 if units % 9 != 0 else units // 9
+    attention = TransformedAttention(units, num_heads=num_heads)(x, x, x)
+
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True), name='bilstm')(attention)
+
+    lstm_out = Dropout(dropout)(lstm_out)
+    lstm_out = Masking(mask_value=0.0)(lstm_out)
+    x = GlobalMaxPooling1D()(lstm_out)
+
+    output = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()
+
+    model.compile(loss=LOSS,
+                  optimizer=AngularGrad('cos'),
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+    return model
+
+##################################################################################################################################################
+# overfiting model
+def CNN_Mish_TransformedAttention_Bi_Stacked_LSTM_masking(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS="mae", optimizer='cos'):
     input_layer = Input(shape=(maxlen, n_steps))
 
     x = Conv1D(filters=units, padding='valid', kernel_size=1, activation=mish, strides=30)(input_layer)
@@ -3033,7 +3354,10 @@ def CNN_Mish_TransformedAttention_BiLSTM_masking_version5(maxlen=5, units=21, dr
     x = MaxPooling1D(pool_size=1, strides=2)(x)
 
     attention = TransformedAttention(units)(x, x, x)
-    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True), name='bilstm')(attention)
+    lstm_layer1 = LSTM(units, return_sequences=True, dropout=0.2, recurrent_dropout=0.2)
+    lstm_layer2 = LSTM(units, dropout=0.2, recurrent_dropout=0.2)
+    lstm_out = tf.keras.layers.Bidirectional(lstm_layer1)(attention)
+    lstm_out = tf.keras.layers.Bidirectional(lstm_layer2)(lstm_out)
     lstm_out = Dropout(dropout)(lstm_out)
     x = Flatten()(lstm_out)
     x = Masking(mask_value=0.0)(x)
@@ -3041,16 +3365,16 @@ def CNN_Mish_TransformedAttention_BiLSTM_masking_version5(maxlen=5, units=21, dr
     output = Dense(1, activation='linear')(x)
     model = Model(inputs=[input_layer], outputs=output)
     model.summary()
-    plot_model(model=model, to_file='CNN_Mish_TransformedAttention_BiLSTM_masking_version2.png', show_shapes=True, dpi=100)
+    plot_model(model=model, to_file='CNN_Mish_TransformedAttention_Bi_Stacked_LSTM_masking.png', show_shapes=True, dpi=100)
 
     model.compile(loss=LOSS,
                   optimizer=AngularGrad(optimizer),
                   metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+
     return model
 
 
-
-##################################################################################################################################################
+############################################################3
 
 def CNN_Mish_Transformer_MultiHeadAttention(maxlen=5, units=8, dropout=0.2, embed_dim=8, num_heads=2, ff_dim=8, num_transformer_blocks=1, dropout_rate=0.1, n_steps=1, LOSS="mae", optimizer='cos'):
     input_layer = Input(shape=(maxlen, n_steps))
@@ -3220,6 +3544,33 @@ def TransformerBlock_model(maxlen=5, n_steps=1, d_model=16, num_heads=2, ff_dim=
 
     return model
 ########################################################################################################33
+
+def CNN_TransformerBlock_BiLSTM_model(maxlen=5, units=64, num_heads=8, ff_dim=32, dropout=0.3, n_steps=1, LOSS="mae", optimizer='adam'):  # Make sure units is a multiple of num_heads
+    input_layer = Input(shape=(maxlen, n_steps))
+
+    x = Conv1D(filters=units, padding='valid', kernel_size=1, activation=mish, strides=30)(input_layer)
+    x = tf.keras.layers.BatchNormalization(axis=1, momentum=0.9)(x)
+    x = MaxPooling1D(pool_size=1, strides=2)(x)
+
+    x = TransformerBlock(units, num_heads, ff_dim)(x)
+    lstm_out = tf.keras.layers.Bidirectional(LSTM(units, return_sequences=True), name='bilstm')(x)
+    lstm_out = Dropout(dropout)(lstm_out)
+    lstm_out = Masking(mask_value=0.0)(lstm_out)
+    x = GlobalMaxPooling1D()(lstm_out)
+
+    output = Dense(1, activation='linear')(x)
+    model = Model(inputs=[input_layer], outputs=output)
+    model.summary()
+    #plot_model(model=model, to_file='CNN_TransformerBlock_BiLSTM_model.png', show_shapes=True, dpi=100)
+
+    model.compile(loss=LOSS,
+                  optimizer=AngularGrad(optimizer),
+                  metrics=['mae', tf.keras.metrics.RootMeanSquaredError()])
+    return model
+
+
+
+#############################################################################################################3
 
 def CNN_Mish_tfhub_BiLSTM_masking(maxlen=5, units=21, dropout=0.3, n_steps=1, LOSS="mae", optimizer='cos'):
     input_layer = tf.keras.layers.Input(shape=(maxlen, n_steps))

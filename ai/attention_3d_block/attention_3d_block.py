@@ -43,9 +43,39 @@ def attention_3d_block(inputs):
     return output_attention_mul
 
 # 注意力机制的另一种写法 适合上述报错使用 来源:https://blog.csdn.net/uhauha2929/article/details/80733255
+'''
+Let's define this process mathematically:
+
+Given a 3-dimensional input tensor X ∈ ℝ^(b×t×d), where b, t, and d are the batch size, time steps, and input dimension respectively.
+
+The attention mechanism can be defined as follows:
+
+Permute the dimensions of the input tensor:
+
+A = permute(X), such that A ∈ ℝ^(b×d×t)
+
+Apply a dense layer with 'softmax' activation:
+
+B = softmax(W_s * A + b_s), where W_s ∈ ℝ^(d×t) and b_s ∈ ℝ^t are the weight matrix and bias term of the softmax layer respectively. "*" denotes matrix multiplication, and softmax is applied along the second dimension. As a result, B ∈ ℝ^(b×d×t).
+
+Permute the dimensions back to the original order:
+
+C = permute(B), such that C ∈ ℝ^(b×t×d)
+
+Perform element-wise multiplication of the input tensor and the attention weights:
+
+Y = X * C, where "*" denotes element-wise multiplication. Y ∈ ℝ^(b×t×d) is the output tensor with the same shape as the input tensor X, but with the values scaled according to the attention weights.
+
+So, in a compact notation, the operation performed by the attention_3d_block2 function can be represented as:
+
+Y = X * permute(softmax(W_s * permute(X) + b_s))
+
+'''
+
+
 def attention_3d_block2(inputs, single_attention_vector=False):
     # 如果上一层是LSTM，需要return_sequences=True
-    # inputs.shape = (batch_size, time_steps, input_dim)
+    # inputs.shape = (batch_size, time_steps, input_dim) (0,1,2)
     time_steps = K.int_shape(inputs)[1]
     input_dim = K.int_shape(inputs)[2]
    
@@ -272,4 +302,29 @@ class TransformerBlock(tf.keras.layers.Layer):
         out1 = self.layernorm1(inputs + attn_output)
         ffn_output = self.ffn(out1)
         ffn_output = self.dropout2(ffn_output)
+        return self.layernorm2(out1 + ffn_output)
+    
+####################################################################################################################################
+
+
+#########################################################################################################
+
+class TransformerBlock_version2(tf.keras.layers.Layer):
+    def __init__(self, embed_dim, num_heads, ff_dim, rate=0.1):
+        super(TransformerBlock_version2, self).__init__()
+        self.att = MultiHeadAttention(num_heads=num_heads, key_dim=embed_dim)
+        self.ffn = tf.keras.Sequential(
+            [tf.keras.layers.Dense(ff_dim, activation="relu"), tf.keras.layers.Dense(embed_dim),]
+        )
+        self.layernorm1 = LayerNormalization(epsilon=1e-6)
+        self.layernorm2 = LayerNormalization(epsilon=1e-6)
+        self.dropout1 = Dropout(rate)
+        self.dropout2 = Dropout(rate)
+
+    def call(self, inputs, training):
+        attn_output = self.att(inputs, inputs)
+        attn_output = self.dropout1(attn_output, training=training)
+        out1 = self.layernorm1(inputs + attn_output)
+        ffn_output = self.ffn(out1)
+        ffn_output = self.dropout2(ffn_output, training=training)
         return self.layernorm2(out1 + ffn_output)
