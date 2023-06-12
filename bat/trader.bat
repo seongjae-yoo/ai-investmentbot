@@ -5,7 +5,7 @@ set time_unit=1
 set max=700
 set target_window="trader"
 set file="%~dp0\..\trader.py"
-set activate_path="C:\ProgramData\Miniconda3\Scripts\activate.bat"
+set activate_path="C:\ProgramData\miniconda3\Scripts\activate.bat"
 IF EXIST %activate_path% (
     call %activate_path% py37_32
 ) ELSE (
