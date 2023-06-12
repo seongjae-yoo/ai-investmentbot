@@ -4,10 +4,18 @@ import sys
 is_64bits = sys.maxsize > 2**32
 if is_64bits:
     print('64bit 환경입니다.')
+    # ai function 
+    from ai.SPPModel import CNN_Attention_BiLSTM_Version11 ,load_data,predict,DataNotEnough, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version27,BiGRU_CNN_BiLSTM_Attention_version2, BiLSTM_Attention_CNN_version2, CNN_BiLSTM_Attention_version2 
+    from tensorflow.keras.callbacks import EarlyStopping
+    import tensorflow as tf  
+    from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+
+    from wandb.keras import WandbCallback
+    import wandb
 else:
     print('32bit 환경입니다.')
 
-# SQLAlchemy is the Python SQL toolkit and Object Relational Mapper
+# SQLAlchemy is the Python SQL toolkit and Object Relational Mapper    
 from sqlalchemy import event
 
 import pymysql.cursors
@@ -24,14 +32,7 @@ from sqlalchemy import create_engine
 from library.trading_algorithms import BBands
 import numpy as np
 
-#sell_ai function
-from ai.SPPModel import CNN_Attention_BiLSTM_Version11 ,load_data,predict,DataNotEnough, CNN_Attention_BiLSTM_Version17, CNN_Attention_BiLSTM_Version9, CNN_Attention_BiLSTM_Version27,BiGRU_CNN_BiLSTM_Attention_version2, BiLSTM_Attention_CNN_version2, CNN_BiLSTM_Attention_version2 
-from tensorflow.keras.callbacks import EarlyStopping
-import tensorflow as tf  
-from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 
-from wandb.keras import WandbCallback
-import wandb
 
 
 def lr_scheduler(epoch, lr):
@@ -415,7 +416,7 @@ class simulator_func_mysql:
         # self.only_nine_buy 옵션을 반드시 False로 설정해야함 (실시간 조건 매수 조건)
         # self.use_min 옵션이 반드시 True로 설정이 되어야함 (실시간 조건 매수 조건)
         # 결론 - 분별 시뮬레이션 할때만 실시간 조건 매수를 할 수 있습니다. !@
-        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32):
+        elif self.simul_num in (12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33):
             
             self.simul_start_date = "20220502"
 
@@ -783,7 +784,7 @@ class simulator_func_mysql:
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 3  # ai 알고리즘 선택   
             # ratio_cut = 0 은 수익률 마이너스 , ratio_cut =1 , 매도 할때는 -1 로 실험, !@
-            # 29부터 논문 시뮬레이션 ! 가장 중요!          
+            # 29부터 논문 시뮬레이션 ! 가장 중요!  ## CNN_Attention_BiLSTM 백테스팅 실험    
             elif self.simul_num == 29:       
                  
                 self.db_to_realtime_daily_buy_list_num = 24                
@@ -816,7 +817,7 @@ class simulator_func_mysql:
                 # # AI알고리즘 사용 여부 
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 6  # ai 알고리즘 선택                
-
+            # CNN BiLSTM Attention Model 사용하여 백테스팅 가능
             elif self.simul_num == 32:       
                  
                 self.db_to_realtime_daily_buy_list_num = 24                
@@ -827,6 +828,18 @@ class simulator_func_mysql:
                 # # AI알고리즘 사용 여부 
                 self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
                 self.ai_filter_num = 7  # ai 알고리즘 선택                
+            
+            elif self.simul_num == 33:       
+                 
+                self.db_to_realtime_daily_buy_list_num = 24                
+                self.sell_list_num = 1
+                self.simul_start_date = "20210113"            
+                self.diff_point = 1 # 단위 % (모멘텀에서 n일 전 대비 종가(현재가)가 몇 프로 증가 했을 때 매수)
+                self.margin = 100      
+                # # AI알고리즘 사용 여부 
+                #self.use_ai = True  # ai 알고리즘 사용 시 True 사용 안하면 False
+                #self.ai_filter_num = 7  # ai 알고리즘 선택                
+
 
 
 
