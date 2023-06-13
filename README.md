@@ -5,9 +5,40 @@
 
 링크 클릭 - [https://github.com/SEONGJAE-YOO/AI-InvestmentBot/commits/main](https://github.com/SEONGJAE-YOO/AI-InvestmentBot/commits/main)
 
-# 1. Miniconda3 설치 
-# 2. 가상환경 conda create -n py37_64 python=3.7.13  설치
-# 3. pip install -r requirements_py37_64.txt  설치
+# "How to Set the Environment"
+
+## Why Miniconda3 is Superior to Anaconda
+
+Miniconda3 has several key advantages over Anaconda, making it a preferred choice for many users. Anaconda comes pre-packaged with a large number of libraries, making it bulky and potentially slowing down system performance. In contrast, Miniconda3 provides a lightweight, clean installation of Python and Conda, devoid of any superfluous packages.
+
+Miniconda3's minimalist design allows users more control over their working environment. You get to choose which libraries to install, which means you only have what you need and nothing more, resulting in a more efficient and optimized workspace.
+
+Therefore, as an initial step, this system was established by constructing a Miniconda3 working environment.
+
+
+# Stock Data Collection Methods
+
+### This research harnessed the Kiwoom Securities OpenAPI library, a Component Object Model (COM)-based library that exclusively supports a Python 32-bit environment, for gathering daily stock data from around 2,546 stocks listed on KOSPI, KOSDAQ, and KONEX, courtesy of Kiwoom Securities.
+
+## 1. set CONDA_FORCE_32BIT=1 && conda create -n py37_32 python=3.7.13
+
+
+## 2. pip install -r requirements_py37_32.txt
+
+## 3. In a 32-bit virtual environment, entering the command 'python batch_generator.py' in CMD will automatically create four files in the 'bat' folder: ai_filter.bat, collector.bat, simul_run.bat, and trader.bat.
+
+## Example 
+```cmd
+(py37_32) C:\Users\SeongJae-Yoo\AI-InvestmentBot>python batch_generator.py
+배치파일을 성공적으로 생성하였습니다.
+```
+
+
+
+
+## 
+## 1. 가상환경 conda create -n py37_64 python=3.7.13  설치
+## 2. pip install -r requirements_py37_64.txt  설치
 
 
 # error 해결방안
