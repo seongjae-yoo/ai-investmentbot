@@ -24,13 +24,13 @@ Enter the following command in the terminal within the cmd environment:
 python simulator.py
 Upon entering the command above, you will see the execution results as shown in the following picture.
 
-![cmd](image/20230510_213012_1.png)
+![cmd](https://github.com/SEONGJAE-YOO/AI-InvestmentBot/blob/main/Image/20230510_213012_1.png)
 
 
 When prompted with the sentence "Please enter the algorithm number you want to simulate:", if you enter 29, you can simulate backtesting the CNN Attention BiLSTM model. After entering the number 29, you can choose whether to initialize the database (y or n) for the results. If you enter 'y', it will be possible to run from the beginning of the set period. If you enter 'n', you can perform backtesting simulation from the last executed period.
 
 
-![cmd](image/20230510_213012_2.png)
+![cmd](https://github.com/SEONGJAE-YOO/AI-InvestmentBot/blob/main/Image/20230510_213012_2.png)
 
 When prompted with the sentence "Please enter the algorithm number you want to simulate:", if you enter 30, you can simulate backtesting the BiGRU CNN BiLSTM Attention model. The database initialization options (y or n) are the same as previously mentioned.
 
