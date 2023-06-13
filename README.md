@@ -34,19 +34,29 @@ Therefore, as an initial step, this system was established by constructing a Min
 ```
 
 
+### Setting Up Automatic Login
+After manually logging in via the Open API connection in KOAStudioSA, right-click on the Open API icon displayed on the taskbar in the bottom right corner.
+When the account password input window appears, automatic login can be configured by selecting the "Save Account Password" option.
+Enter the account and account password you wish to use and click on the 'Register' button to save.
+Lastly, select the AUTO checkbox.
 
 
-## 
-## 1. 가상환경 conda create -n py37_64 python=3.7.13  설치
-## 2. pip install -r requirements_py37_64.txt  설치
+## 4. Executing the collector.bat file automatically collects stock data.
 
 
-# error 해결방안
-## 1. python demo.py 파일 실행 할때 oserror symbolic link privilege not held 다음과 같이 에러 나면 vscode 터미널 관리자로 열어서 해결하세요  (아래 링크 참고 후 에러 해결하세요)
-## https://parodev.tistory.com/47   참고
+## Method for creating a 64-bit virtual environment.
+
+## 1. conda create -n py37_64 python=3.7.13 
+
+## 2. pip install -r requirements_py37_64.txt  
 
 
-# backtesting method 
+### Backtesting experiments can be conducted in a 64-bit virtual environment, and Deep learning models can be employed for forecasting stock trends.
+
+
+
+
+# Backtesting Methods
 
 ## Backtesting period starts from January 3, 2022, and simulations can be conducted up to the data collection period
 
@@ -119,3 +129,8 @@ WandB Sweep experiment, are presented on the subsequent page.
 In the master's thesis, Celltrion Healthcare and Samsung Electronics stocks, the deep learning model experiment results can be found on the link page below.
 
 [https://wandb.ai/seongjae-yoo/projects](https://wandb.ai/seongjae-yoo/projects)
+
+
+# error 해결방안
+## 1. python demo.py 파일 실행 할때 oserror symbolic link privilege not held 다음과 같이 에러 나면 vscode 터미널 관리자로 열어서 해결하세요  (아래 링크 참고 후 에러 해결하세요)
+## https://parodev.tistory.com/47   참고
