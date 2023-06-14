@@ -177,3 +177,11 @@ You can set up and conduct experiments as shown in the following image:
 
 
 ** "You can conduct a sweep experiment with the CNN_Attention_BiLSTM model by changing the function name to 'wandb_sweep_train'."
+
+
+# "Technical Analysis Methods Used in This Study"
+
+"By searching for 'self.db_to_realtime_daily_buy_list_num == 24' in the 'simulator_func_mysql.py' file, you can understand the technical analysis methods used in this study."
+
+
+
