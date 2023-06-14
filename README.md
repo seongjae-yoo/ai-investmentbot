@@ -1,7 +1,8 @@
 # AI-InvestmentBot
 자동주식투자프로그램
 
-* commit 기록 공간에 실행결과 캡쳐 사진들과 함께 올려 두었습니다.
+
+* "I've uploaded screenshots of the execution results along with the commit history."
 
 링크 클릭 - [https://github.com/SEONGJAE-YOO/AI-InvestmentBot/commits/main](https://github.com/SEONGJAE-YOO/AI-InvestmentBot/commits/main)
 
@@ -14,6 +15,16 @@ Miniconda3 has several key advantages over Anaconda, making it a preferred choic
 Miniconda3's minimalist design allows users more control over their working environment. You get to choose which libraries to install, which means you only have what you need and nothing more, resulting in a more efficient and optimized workspace.
 
 Therefore, as an initial step, this system was established by constructing a Miniconda3 working environment.
+
+
+## "Database Connection Settings Instructions
+
+* "Follow steps 1, 2, 3, and 4 in order to set up in the 'cf.py' file."
+
+Insert your MySQL ID into the variable named 'db_id'.
+Insert your MySQL password into the variable named 'db_passwd'.
+Insert the appropriate value corresponding to your computer's port into the 'db_port' variable.
+Insert the demo investment account number into the 'imi1_accout' variable. (Generate a demo investment account number from Kiwoom Securities and insert it).
 
 
 # Stock Data Collection Methods
@@ -133,4 +144,36 @@ In the master's thesis, Celltrion Healthcare and Samsung Electronics stocks, the
 
 # error 해결방안
 ## 1. python demo.py 파일 실행 할때 oserror symbolic link privilege not held 다음과 같이 에러 나면 vscode 터미널 관리자로 열어서 해결하세요  (아래 링크 참고 후 에러 해결하세요)
+
+## "If you encounter an 'OSError: Symbolic Link Privilege Not Held' while running the 'python demo.py' file, please resolve it by opening the VSCode terminal as an administrator (refer to the link below for troubleshooting the error)."
+
 ## https://parodev.tistory.com/47   참고
+
+
+# Individual Deep Learning Models Testing Instructions:
+
+1. In the 'demo.py' file, you can add variable names to the FEATURE_COLUMNS variable which currently contains a total of 5 column names ("close", "volume", "open", "high", "low"). If you want to use more, you can add 'clo5', 'clo10', 'clo20', 'clo40', 'clo60', 'clo80', 'clo100', 'clo120', 'yes_clo5', 'yes_clo10', 'yes_clo20', 'yes_clo40', 'yes_clo60','yes_clo80','yes_clo100', 'yes_clo120' to the list for experimentation.
+
+2. You can conduct experiments with other stocks by setting the 'code_name' variable to the Korean name of the stock you have collected, other than Samsung Electronics.
+
+3. You can conduct experiments over different time periods by setting the 'until' variable to a date within the range from the stock's listing date to the 'until' date.
+
+4. In 'model = CNN_Attention_BiLSTM_Version31()', you can conduct experiments with other models by changing the function name in the 'SPPModel.py' file.
+
+* For models like 'CNN_Mish_TransformedAttention_Bi_Stacked_LSTM_masking' that cannot be tested in the 'demo.py' file, you can run experiments in the 'demo_version2.py' file (set the 'history' variable to the 'train_version3' or 'train_version2' function for experimentation).
+
+
+# Hyperparameter Tuning Experiments Methods
+* "You can conduct hyperparameter tuning experiments for deep learning models in the 'wandb_sweep.py' file. 
+After setting the 'code_name' and 'until' variables to desired values as explained in the 'demo.py' file, you can conduct experiments with your desired hybrid model by simply changing the function name in the 'history' variable.
+
+* To conduct hyperparameter tuning experiments with the 'CNN_Smish_ScaledDotProductAttention_BiLSTM_masking' model, you can set the function name to 'wandb_sweep_train_version5' and conduct experiments (after setting values on the wandb sweep site).
+
+You can set up and conduct experiments as shown in the following image:
+
+
+![cmd](https://github.com/SEONGJAE-YOO/AI-InvestmentBot/blob/main/Image/CNN_Smish_ScaledDotProductAttention_BiLSTM_masking_Sweep_Testing.png)
+
+
+
+** "You can conduct a sweep experiment with the CNN_Attention_BiLSTM model by changing the function name to 'wandb_sweep_train'."
