@@ -1,0 +1,80 @@
+Model: "functional_1"
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to
+==================================================================================================
+input_1 (InputLayer)            [(None, 5, 1)]       0
+__________________________________________________________________________________________________
+conv1d (Conv1D)                 (None, 1, 31)        62          input_1[0][0]
+__________________________________________________________________________________________________
+batch_normalization (BatchNorma (None, 1, 31)        4           conv1d[0][0]
+__________________________________________________________________________________________________
+max_pooling1d (MaxPooling1D)    (None, 1, 31)        0           batch_normalization[0][0]
+__________________________________________________________________________________________________
+bilstm (Bidirectional)          (None, 1, 42)        8904        max_pooling1d[0][0]
+__________________________________________________________________________________________________
+dropout (Dropout)               (None, 1, 42)        0           bilstm[0][0]
+__________________________________________________________________________________________________
+permute (Permute)               (None, 42, 1)        0           dropout[0][0]
+__________________________________________________________________________________________________
+dense (Dense)                   (None, 42, 1)        2           permute[0][0]
+__________________________________________________________________________________________________
+permute_1 (Permute)             (None, 1, 42)        0           dense[0][0]
+__________________________________________________________________________________________________
+multiply (Multiply)             (None, 1, 42)        0           dropout[0][0]
+                                                                 permute_1[0][0]
+__________________________________________________________________________________________________
+flatten (Flatten)               (None, 42)           0           multiply[0][0]
+__________________________________________________________________________________________________
+dense_1 (Dense)                 (None, 1)            43          flatten[0][0]
+==================================================================================================
+Total params: 9,015
+Trainable params: 9,013
+Non-trainable params: 2
+__________________________________________________________________________________________________
+[34m[1mwandb[39m[22m: [33mWARNING[39m The save_model argument by default saves the model in the HDF5 format that cannot save custom objects like subclassed models and custom layers. This behavior will be deprecated in a future release in favor of the SavedModel format. Meanwhile, the HDF5 model is saved as W&B files and the SavedModel as W&B Artifacts.
+Epoch 1/100
+
+
+214/214 [==============================] - ETA: 0s - loss: 0.0580 - mae: 0.0580 - root_mean_squared_error: 0.0912Epoch 00000: val_loss improved from inf to 0.01268, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230421_230025-ajnfmi7f\files\model-best.h5
+WARNING:tensorflow:From C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\training\tracking\tracking.py:111: Model.state_updates (from tensorflow.python.keras.engine.training) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+WARNING:tensorflow:From C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\training\tracking\tracking.py:111: Layer.updates (from tensorflow.python.keras.engine.base_layer) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+Traceback (most recent call last):
+  File "wandb_sweep.py", line 161, in <module>
+    history = wandb_sweep_train_version4(shuffled_data, sweep_model, EPOCHS, BATCH_SIZE, verbose=1)  # wandb_sweep_train 함수명 바꾸면 CNN_Attention_BiLSTM 모델 sweep 실험할 수 있음
+  File "C:\Users\SeongJae-Yoo\AI-InvestmentBot\ai\SPPModel.py", line 455, in wandb_sweep_train_version4
+    verbose=verbose)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\integration\keras\keras.py", line 174, in new_v2
+    return old_v2(*args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\integration\keras\keras.py", line 174, in new_v2
+    return old_v2(*args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\integration\keras\keras.py", line 174, in new_v2
+    return old_v2(*args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\keras\engine\training.py", line 108, in _method_wrapper
+    return method(self, *args, **kwargs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\keras\engine\training.py", line 1137, in fit
+    callbacks.on_epoch_end(epoch, epoch_logs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\keras\callbacks.py", line 416, in on_epoch_end
+    callback.on_epoch_end(epoch, numpy_logs)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\integration\keras\keras.py", line 630, in on_epoch_end
+    self._save_model_as_artifact(epoch)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\wandb\integration\keras\keras.py", line 1032, in _save_model_as_artifact
+    self.model.save(self.filepath[:-3], overwrite=True, save_format="tf")
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\keras\engine\training.py", line 1979, in save
+    signatures, options)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\keras\saving\save.py", line 134, in save_model
+    signatures, options)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\keras\saving\saved_model\save.py", line 80, in save
+    save_lib.save(model, filepath, signatures, options)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\saved_model\save.py", line 1006, in save
+    path, saved_model.SerializeToString(deterministic=True))
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\lib\io\file_io.py", line 568, in atomic_write_string_to_file
+    write_string_to_file(temp_pathname, contents)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\lib\io\file_io.py", line 334, in write_string_to_file
+    f.write(file_content)
+  File "C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\lib\io\file_io.py", line 102, in write
+    self._writable_file.append(compat.as_bytes(file_content))
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xb5 in position 165: invalid start byte

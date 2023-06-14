@@ -1,0 +1,63 @@
+Model: "functional_1"
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to
+==================================================================================================
+input_1 (InputLayer)            [(None, 5, 1)]       0
+__________________________________________________________________________________________________
+conv1d (Conv1D)                 (None, 1, 21)        42          input_1[0][0]
+__________________________________________________________________________________________________
+batch_normalization (BatchNorma (None, 1, 21)        4           conv1d[0][0]
+__________________________________________________________________________________________________
+max_pooling1d (MaxPooling1D)    (None, 1, 21)        0           batch_normalization[0][0]
+__________________________________________________________________________________________________
+bilstm (Bidirectional)          (None, 1, 42)        7224        max_pooling1d[0][0]
+__________________________________________________________________________________________________
+dropout (Dropout)               (None, 1, 42)        0           bilstm[0][0]
+__________________________________________________________________________________________________
+permute (Permute)               (None, 42, 1)        0           dropout[0][0]
+__________________________________________________________________________________________________
+dense (Dense)                   (None, 42, 1)        2           permute[0][0]
+__________________________________________________________________________________________________
+permute_1 (Permute)             (None, 1, 42)        0           dense[0][0]
+__________________________________________________________________________________________________
+multiply (Multiply)             (None, 1, 42)        0           dropout[0][0]
+                                                                 permute_1[0][0]
+__________________________________________________________________________________________________
+flatten (Flatten)               (None, 42)           0           multiply[0][0]
+__________________________________________________________________________________________________
+dense_1 (Dense)                 (None, 1)            43          flatten[0][0]
+==================================================================================================
+Total params: 7,315
+Trainable params: 7,313
+Non-trainable params: 2
+__________________________________________________________________________________________________
+[34m[1mwandb[39m[22m: [33mWARNING[39m The save_model argument by default saves the model in the HDF5 format that cannot save custom objects like subclassed models and custom layers. This behavior will be deprecated in a future release in favor of the SavedModel format. Meanwhile, the HDF5 model is saved as W&B files and the SavedModel as W&B Artifacts.
+Epoch 1/100
+
+24/24 [==============================] - ETA: 0s - loss: 0.3146 - mae: 0.3146 - root_mean_squared_error: 0.3525Epoch 00000: val_loss improved from inf to 0.36591, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best.h5
+WARNING:tensorflow:From C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\training\tracking\tracking.py:111: Model.state_updates (from tensorflow.python.keras.engine.training) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+WARNING:tensorflow:From C:\Users\SeongJae-Yoo\.conda\envs\py37_64\lib\site-packages\tensorflow\python\training\tracking\tracking.py:111: Layer.updates (from tensorflow.python.keras.engine.base_layer) is deprecated and will be removed in a future version.
+Instructions for updating:
+This property should not be used in TensorFlow 2.0, as updates are applied automatically.
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best)... Done. 0.1s
+24/24 [==============================] - 11s 439ms/step - loss: 0.3146 - mae: 0.3146 - root_mean_squared_error: 0.3525 - val_loss: 0.3659 - val_mae: 0.3659 - val_root_mean_squared_error: 0.4034
+Epoch 2/100
+21/24 [=========================>....] - ETA: 0s - loss: 0.2344 - mae: 0.2344 - root_mean_squared_error: 0.2725Epoch 00001: val_loss improved from 0.36591 to 0.24344, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best)... Done. 0.1s
+24/24 [==============================] - 10s 422ms/step - loss: 0.2343 - mae: 0.2343 - root_mean_squared_error: 0.2718 - val_loss: 0.2434 - val_mae: 0.2434 - val_root_mean_squared_error: 0.2634
+Epoch 3/100
+21/24 [=========================>....] - ETA: 0s - loss: 0.1647 - mae: 0.1647 - root_mean_squared_error: 0.2029Epoch 00002: val_loss improved from 0.24344 to 0.12572, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best)... Done. 0.1s
+24/24 [==============================] - 10s 431ms/step - loss: 0.1619 - mae: 0.1619 - root_mean_squared_error: 0.2000 - val_loss: 0.1257 - val_mae: 0.1257 - val_root_mean_squared_error: 0.1436
+Epoch 4/100
+24/24 [==============================] - ETA: 0s - loss: 0.1181 - mae: 0.1181 - root_mean_squared_error: 0.1550Epoch 00003: val_loss improved from 0.12572 to 0.05696, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best)... Done. 0.1s
+24/24 [==============================] - 10s 403ms/step - loss: 0.1181 - mae: 0.1181 - root_mean_squared_error: 0.1550 - val_loss: 0.0570 - val_mae: 0.0570 - val_root_mean_squared_error: 0.0815
+Epoch 5/100
+22/24 [==========================>...] - ETA: 0s - loss: 0.1063 - mae: 0.1063 - root_mean_squared_error: 0.1373Epoch 00004: val_loss improved from 0.05696 to 0.03977, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best.h5
+[34m[1mwandb[39m[22m: Adding directory to artifact (C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best)... Done. 0.1s
+24/24 [==============================] - 10s 405ms/step - loss: 0.1093 - mae: 0.1093 - root_mean_squared_error: 0.1420 - val_loss: 0.0398 - val_mae: 0.0398 - val_root_mean_squared_error: 0.0659
+Epoch 6/100
+24/24 [==============================] - ETA: 0s - loss: 0.1020 - mae: 0.1020 - root_mean_squared_error: 0.1326Epoch 00005: val_loss improved from 0.03977 to 0.03274, saving model to C:\Users\SeongJae-Yoo\AI-InvestmentBot\wandb\run-20230420_083355-heimqyyr\files\model-best.h5
